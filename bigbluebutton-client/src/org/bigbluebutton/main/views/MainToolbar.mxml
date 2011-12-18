@@ -30,14 +30,13 @@
 	<mate:Listener type="{ConnectionFailedEvent.USER_LOGGED_OUT}" method="hideToolbar" />
 	<mate:Listener type="{SuccessfulLoginEvent.USER_LOGGED_IN}" method="loginSuccess" />
 	<mate:Listener type="{ConfigEvent.CONFIG_EVENT}" method="gotConfigParameters" />
+	<mate:Listener type="{SettingsEvent.SETTINGS_MODULE_LOADED}" method="showSettingsButton" />
 	
 	<mx:Script>
 		<![CDATA[
+			import org.bigbluebutton.main.model.LayoutOptions;
 			import com.asfusion.mate.events.Dispatcher;
-			
-			import mx.controls.Alert;
-			import mx.core.UIComponent;
-			
+			import mx.core.UIComponent;			
 			import org.bigbluebutton.common.IBbbToolbarComponent;
 			import org.bigbluebutton.common.LogUtil;
 			import org.bigbluebutton.common.events.CloseWindowEvent;
@@ -45,6 +44,7 @@
 			import org.bigbluebutton.main.events.BBBEvent;
 			import org.bigbluebutton.main.events.ConfigEvent;
 			import org.bigbluebutton.main.events.LogoutEvent;
+			import org.bigbluebutton.main.events.SettingsEvent;
 			import org.bigbluebutton.main.events.SuccessfulLoginEvent;
 			import org.bigbluebutton.main.model.users.events.ConnectionFailedEvent;
 			import org.bigbluebutton.util.i18n.ResourceUtil;
@@ -54,8 +54,21 @@
 			public static const ALIGN_RIGHT:String ="ALIGN_RIGHT";
 			public static const ALIGN_LEFT:String = "ALIGN_LEFT";
 			
+			[Bindable]
+			public var toolbarOptions:LayoutOptions = new LayoutOptions();
+						
 			public function loggedIn(name:String, room:String, role:String):void{
-				this.visible = true;
+				if (toolbarOptions.showToolbar) {
+					this.visible = true;
+				} else {
+					this.visible = false;
+				}
+				
+				if (toolbarOptions.showHelpButton) {
+					helpBtn.visible = true;
+				} else {
+					helpBtn.visible = false;
+				}
 			}
 			
 			public function addButton(name:String):Button{
@@ -83,7 +96,11 @@
 			}
 			
 			private function hideToolbar(e:ConnectionFailedEvent):void{
-				this.visible = false;
+				if (toolbarOptions.showToolbar) {
+					this.visible = false;
+				} else {
+					this.visible = true;
+				}
 			}
 			
 			private function handleAddToolbarButtonEvent(event:ToolbarButtonEvent):void {
@@ -105,7 +122,8 @@
 			
 			private function loginSuccess(e:SuccessfulLoginEvent):void{
 				loggedIn(e.conferenceParameters.username, e.conferenceParameters.room, e.conferenceParameters.role);
-				visible = true;
+				if (toolbarOptions.showToolbar)
+					visible = true;
 			}
 			
 			private function gotConfigParameters(e:ConfigEvent):void{
@@ -119,13 +137,26 @@
 				d.dispatchEvent(e);
 			}
 			
+			private function showSettingsButton(e:SettingsEvent):void{
+				var b:Button = new Button();
+				b.label = ResourceUtil.getInstance().getString('bbb.mainToolbar.settingsBtn');
+				b.toolTip = ResourceUtil.getInstance().getString('bbb.mainToolbar.settingsBtn.toolTip');
+				b.addEventListener(MouseEvent.CLICK, openSettings);
+				this.addChild(b);
+			}
+			
+			private function openSettings(e:Event = null):void{
+				var d:Dispatcher = new Dispatcher();
+				d.dispatchEvent(new SettingsEvent(SettingsEvent.OPEN_SETTINGS_PANEL));
+			}
+			
 		]]>
 	</mx:Script>	
 	<mx:HBox id="addedBtns">
 	</mx:HBox>		
 	<mx:Spacer width="100%"/>
 	<views:LanguageSelector id="langSelector" visible="false" />
-	<mx:LinkButton label="{ResourceUtil.getInstance().getString('bbb.mainToolbar.helpBtn')}" click="onHelpButtonClicked()"/>
+	<mx:LinkButton id="helpBtn" label="{ResourceUtil.getInstance().getString('bbb.mainToolbar.helpBtn')}" visible="false" click="onHelpButtonClicked()"/>
 	<mx:Button label="{ResourceUtil.getInstance().getString('bbb.mainToolbar.logoutBtn')}" id="btnLogout" 
 			   toolTip="{ResourceUtil.getInstance().getString('bbb.mainToolbar.logoutBtn.toolTip')}" right="10" click="doLogout()"/>
 </mx:ApplicationControlBar>
