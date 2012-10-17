@@ -74,7 +74,7 @@ setEventsOnThumbnail = function($thumb) {
   });
 
   // Click on thumbnail changes the slide in popcorn
-  $thumb.on("click", function() {
+  $thumb.parent().on("click", function() {
     goToSlide($thumb.attr("data-in"));
   });
 
