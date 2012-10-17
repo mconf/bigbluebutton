@@ -1,0 +1,10 @@
+        location /playback/slides-enhanced {
+                root    /var/bigbluebutton;
+                index  index.html index.htm;
+        }
+
+        location /slides-enhanced {
+                root    /var/bigbluebutton/published;
+                index  index.html index.htm;
+        }
+
