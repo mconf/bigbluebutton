@@ -17,6 +17,7 @@
 
 	Author: Fred Dixon <ffdixon@bigbluebutton.org> 
 */%>
+<%@page import="java.text.SimpleDateFormat"%>
 <%@page import="javax.xml.transform.dom.DOMSource"%>
 <%@page import="javax.xml.transform.stream.StreamResult"%>
 <%@page import="javax.xml.transform.OutputKeys"%>
@@ -221,7 +222,7 @@ public String getJoinURL(String username, String meetingID, String record, Strin
 //
 //Create a meeting and return a URL to join it as moderator
 //
-public String getJoinURLXML(String username, String meetingID, String welcome, String xml_param) {
+public String getJoinURLXML(String username, String meetingID, String welcome, String xml) {
 	String base_url_create = BigBlueButtonURL + "api/create?";
 	String base_url_join = BigBlueButtonURL + "api/join?";
 
@@ -234,6 +235,11 @@ public String getJoinURLXML(String username, String meetingID, String welcome, S
 		welcome_param = "&welcome=" + urlEncode(welcome);
 	}
 
+        String xml_param = "";
+        if ((xml != null) && !xml.equals("")) {
+                xml_param = xml;
+        }
+
 	String create_parameters = "name=" + urlEncode(meetingID)
 		+ "&meetingID=" + urlEncode(meetingID) + welcome_param
 		+ "&attendeePW=ap&moderatorPW=mp&voiceBridge=" + voiceBridge;
@@ -242,10 +248,10 @@ public String getJoinURLXML(String username, String meetingID, String welcome, S
 
 	try {
 		// Attempt to create a meeting using meetingID
-		String xml = postURL(base_url_create + create_parameters
+		String params = postURL(base_url_create + create_parameters
 			+ "&checksum="
 			+ checksum("create" + create_parameters + salt), xml_param);
-		doc = parseXml(xml);
+		doc = parseXml(params);
 	} catch (Exception e) {
 		e.printStackTrace();
 	}
@@ -454,6 +460,13 @@ public String getRecordings(String meetingID) {
 				}
 				
 				String starttime = recording.getElementsByTagName("startTime").item(0).getTextContent();
+				try{
+					SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+					Date resultdate = new Date(Long.parseLong(starttime));
+					starttime = sdf.format(resultdate);
+				}catch(Exception e){
+					
+				}
 				String published = recording.getElementsByTagName("published").item(0).getTextContent();
 				String playback = "";
 				String length = "";
@@ -478,8 +491,8 @@ public String getRecordings(String meetingID) {
 				newXMLdoc += "<recording>";
 				
 				newXMLdoc += "<recordID>" + recordID + "</recordID>";
-				newXMLdoc += "<name>" + name + "</name>";
-				newXMLdoc += "<description>" + description + "</description>";
+				newXMLdoc += "<name><![CDATA[" + name + "]]></name>";
+				newXMLdoc += "<description><![CDATA[" + description + "]]></description>";
 				newXMLdoc += "<startTime>" + starttime + "</startTime>";
 				newXMLdoc += "<published>" + published + "</published>";
 				newXMLdoc += "<playback>" + playback + "</playback>";
@@ -682,4 +695,51 @@ public static String urlEncode(String s) {
 	}
 	return "";
 }
+
+public String getMeetingsWithoutPasswords() {
+	try {
+        Document doc = parseXml( getURL( getMeetingsURL() ));
+		
+		// tags needed for parsing xml documents
+		final String startTag = "<meetings>";
+		final String endTag = "</meetings>";
+		final String startResponse = "<response>";
+		final String endResponse = "</response>";
+		
+		// if the request succeeded, then calculate the checksum of each meeting and insert it into the document
+		NodeList meetingsList = doc.getElementsByTagName("meeting");
+		
+		String newXMldocument = startTag;
+		for (int i = 0; i < meetingsList.getLength(); i++) {
+			Element meeting = (Element) meetingsList.item(i);
+			String meetingID = meeting.getElementsByTagName("meetingID").item(0).getTextContent();
+			String password = meeting.getElementsByTagName("moderatorPW").item(0).getTextContent();
+			
+			String data = getURL( getMeetingInfoURL(meetingID, password) );
+
+			if (data.indexOf("<response>") != -1) {
+				data = removeTag(data, "<attendeePW>", "</attendeePW>");
+				data = removeTag(data, "<moderatorPW>", "</moderatorPW>"); 
+				
+				int startIndex = data.indexOf(startResponse) + startResponse.length();
+				int endIndex = data.indexOf(endResponse);
+				newXMldocument +=  "<meeting>" + data.substring(startIndex, endIndex) + "</meeting>";
+			}
+		}
+		newXMldocument += endTag;
+
+		return newXMldocument;
+	} catch (Exception e) {
+		e.printStackTrace(System.out);
+		return null;
+	}
+}
+
+public static String removeTag(String data, String startTag, String endTag){
+	int startIndex = data.indexOf(startTag);
+	int endIndex = data.indexOf(endTag) + endTag.length();
+	String tagStr = data.substring(startIndex, endIndex);
+	return data.replace(tagStr,"");
+}
+
 %>
