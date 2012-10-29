@@ -476,6 +476,7 @@ while [ $# -gt 0 ]; do
 
 		if echo $HOST|grep -q ":"; then
 			HOST=`echo ${2}|cut -d: -f1`
+			PORT=`echo ${2}|cut -d: -f2`
 		fi
 		shift; shift
 		continue
@@ -1378,7 +1379,7 @@ check_state() {
 		fi
 	fi
 
-        PLAYBACK_IP=$(cat /usr/local/bigbluebutton/core/scripts/slides.yml  | sed -n '/playback_host/{s/.*:[ ]*//;s/;//;p}')
+        PLAYBACK_IP=$(cat /usr/local/bigbluebutton/core/scripts/slides.yml  | sed -n '/playback_host/{s/[^:]*:[ ]*//;s/;//;p}')
         if [ $PLAYBACK_IP != $IP ]; then
                         echo "# Warning: The value ($PLAYBACK_IP) for playback_host in"
 			echo "#"
@@ -1739,6 +1740,13 @@ if [ -n "$HOST" ]; then
 	sudo sed -i "s/server_name  .*/server_name  $HOST;/g" /etc/nginx/sites-available/bigbluebutton
 
 	#
+	# Use port for remaining substitutions
+	#
+	if [ $PORT ]; then
+		HOST="$HOST:$PORT"
+	fi
+
+	#
 	# Update configuration for BigBlueButton client
 	#
 	echo "Assigning $HOST for http:// in /var/www/bigbluebutton/client/conf/config.xml"
@@ -1758,6 +1766,15 @@ if [ -n "$HOST" ]; then
 	# change_var_ip /usr/share/red5/webapps/bigbluebutton/WEB-INF/bigbluebutton.properties esl.host $HOST
 
 	# cat ${SERVLET_DIR}/bigbluebutton/WEB-INF/classes/bigbluebutton.properties
+
+	#
+	# Update nginx
+	#
+
+	if [ $PORT ]; then
+		echo "Assigning $PORT for listen in /etc/nginx/sites-available/bigbluebutton"
+		sudo sed -i "s/listen  .*/listen  $PORT;/g" /etc/nginx/sites-available/bigbluebutton
+	fi
 
 	if ! grep -q server_names_hash_bucket_size /etc/nginx/nginx.conf; then
 		sudo sed -i "s/gzip  on;/gzip  on;\n    server_names_hash_bucket_size  64;/g" /etc/nginx/nginx.conf
