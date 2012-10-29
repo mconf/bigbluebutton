@@ -32,6 +32,7 @@
 	<property name="SETTINGS" value="SettingsModule" />
 	<property name="VIDEO_DOCK" value="VideodockModule" />
 	<property name="LAYOUT" value="LayoutModule" />
+	<property name="SHAREDNOTES" value="SharedNotesModule" />
 	
 	<xmlproperty file="${SRC_DIR}/conf/locales.xml" collapseAttributes="true"/>
 	
@@ -231,6 +232,16 @@
 	<target name="build-dyn" description="Compile Dynamic Info Module">
 		<build-module src="${SRC_DIR}" target="${DYN_INFO}" />
 	</target>
+
+	<target name="build-sharednotes" description="Compile SharedNotes Module">
+                <build-module src="${SRC_DIR}" target="${SHAREDNOTES}" />
+
+		<echo message="Copying assets for SharedNotesModule" />
+                <copy todir="${OUTPUT_DIR}/org/bigbluebutton/modules/sharednotes/images/" >
+                        <fileset dir="${BASE_DIR}/src/org/bigbluebutton/modules/sharednotes/images/" />
+                </copy>
+        </target>
+
 	
 	<target name="build-layout" description="Compile Layout Module">
 		<build-module src="${SRC_DIR}" target="${LAYOUT}" />
@@ -238,7 +249,7 @@
 	
 	<!-- just a grouping of modules to compile -->
 	<target name="build-main-chat-viewers-listeners-present" 
-			depends="build-bbb-main, build-bbb-main-test, build-chat, build-viewers, build-listeners, build-present, build-breakout, build-layout"
+			depends="build-bbb-main, build-bbb-main-test, build-chat, build-viewers, build-listeners, build-present, build-breakout, build-layout, build-sharednotes"
 			description="Compile main, chat, viewers, listeners, present, breakout modules">
 	</target>
 	

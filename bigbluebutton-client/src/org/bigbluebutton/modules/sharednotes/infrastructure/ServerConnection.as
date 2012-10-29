@@ -27,11 +27,13 @@ package org.bigbluebutton.modules.sharednotes.infrastructure
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
 
+	import org.bigbluebutton.common.LogUtil;
+
 	public class ServerConnection
 	{
 		public static const SYNCING_EVENT : String = "SN_SYNCING_EVENT";
 		public static const SYNCED_EVENT : String = "SN_SYNCED_EVENT";
-		
+
 		private var client:Client;
 		protected var dispatcher:IEventDispatcher;
 		
@@ -51,9 +53,9 @@ package org.bigbluebutton.modules.sharednotes.infrastructure
 		
 		protected function sendConnectRequest():void {
 			var request:Object = new Object();
-			request.documentName = Client.documentName;
+			request.documentName = client.documentName;
 			request.connectionType = ServerConnection.connectionType;
-			//send("c, " + JSON.encode(request));
+			send("c, " + JSON.encode(request));
 			connectionTimeout.start();
 		}
 		
@@ -61,23 +63,23 @@ package org.bigbluebutton.modules.sharednotes.infrastructure
 		
 		protected function receive(data:String):void { 
 			if (data.indexOf("c,") == 0) {
-				trace("Received connection data: " + data);
-				//var clientData:Object = JSON.decode(data.substring(2));
-				//client.initClient(clientData.id, this, clientData.initialDocument);
+				LogUtil.debug("Received connection data: " + data);
+				var clientData:Object = JSON.decode(data.substring(2));
+				client.initClient(clientData.id, this, clientData.initialDocument);
 				connectionTimeout.stop();
 				pendingResponse = false;
 			}
 			else if (data.indexOf("m,") == 0) {
-				//var message:Message = Message.deserialize(JSON.decode(data.substring(2)));
-				//client.receiveMessage(message);
+				var message:Message = Message.deserialize(JSON.decode(data.substring(2)));
+				client.receiveMessage(message);
 			}
 			else {
-				trace("unrecognized data: " + data);
+				LogUtil.debug("unrecognized data: " + data);
 			}
 		}
 		
 		public function get pendingResponse():Boolean { 
-			return _pendingResponse; 
+			return _pendingResponse;
 		}
 		
 		public function set pendingResponse(value : Boolean):void {

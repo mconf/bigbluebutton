@@ -31,7 +31,7 @@
 			uri="rtmp://HOST/bigbluebutton" 
 			recordingHost="http://HOST"
 			windowVisible="true"
-			position="bottom-left"
+			position="middle-left"
 		/>
 		
 		<module name="DeskShareModule" 
@@ -114,10 +114,16 @@
 			host="http://HOST"
 		/>-->
 		
-		<!--<module name="SharedNotesModule" url="SharedNotesModule.swf?v=VERSION" 
-			uri="http://192.168.0.225/bigbluebutton" 
+		<module name="SharedNotesModule" url="SharedNotesModule.swf?v=VERSION" 
+			uri="rtmp://HOST/bigbluebutton" 
+			host="http://HOST/demo/notes.jsp"
+			refreshDelay="500"
+			responseTimeout="3000"
+			enablePlayback="false"
+			autoStart="true"
 			dependsOn="ViewersModule"
-		/>-->
+			position="bottom-left"
+		/>
 		
 	</modules>
 </config>
