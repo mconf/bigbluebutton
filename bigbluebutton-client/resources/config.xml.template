@@ -2,7 +2,7 @@
 <config>
     <localeversion suppressWarning="false">0.8</localeversion>
     <version>VERSION</version>
-    <help url="http://HOST/help.html"/>
+    <help url="http://mconf.org/m/about"/>
     <porttest host="HOST" application="video"/>    
     <application uri="rtmp://HOST/bigbluebutton" host="http://HOST/bigbluebutton/api/enter" />
     <language userSelectionEnabled="true" />
