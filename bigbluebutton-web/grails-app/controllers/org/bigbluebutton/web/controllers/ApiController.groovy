@@ -195,6 +195,12 @@ class ApiController {
       errors.missingParamError("checksum");
     }
 
+    String guest;
+    if (!StringUtils.isEmpty(params.guest) && params.guest.equalsIgnoreCase("true"))
+      guest = "true";
+    else
+      guest = "false";
+
     // Do we have a name for the user joining? If none, complain.
     String fullName = params.fullName
     if (StringUtils.isEmpty(fullName)) {
@@ -312,6 +318,7 @@ class ApiController {
     us.mode = "LIVE"
     us.record = meeting.isRecord()
     us.welcome = meeting.getWelcomeMessage()
+    us.guest = guest
 	us.logoutUrl = meeting.getLogoutUrl();
     
 	// Store the following into a session so we can handle
@@ -734,6 +741,7 @@ class ApiController {
               externUserID(us.externUserID)
 			  internalUserID(us.internalUserId)
               role(us.role)
+              guest(us.guest)
               conference(us.conference)
               room(us.room)
               voicebridge(us.voicebridge)

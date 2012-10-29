@@ -16,20 +16,25 @@
 * with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 * 
 */
-package org.bigbluebutton.main.model.users.events
+package org.bigbluebutton.main.events
 {
 	import flash.events.Event;
-	import flash.net.NetConnection;
+	
+	import org.bigbluebutton.main.model.ConferenceParameters;
+	import org.bigbluebutton.main.model.users.BBBUser;
+	import org.bigbluebutton.main.model.users.UsersSOService;
+	import org.bigbluebutton.main.model.ConferenceParameters;
 
-	public class UsersConnectionEvent extends Event
+	public class ResponseModeratorEvent extends Event
 	{
-		public static const CONNECTION_SUCCESS:String = "usersConnectionSuccess";
+		public static const RESPONSE:String = "Response";
+		public static const RESPONSE_ALL:String	= "RESPONSE_ALL";
 		
-		public var connection:NetConnection;
+		
 		public var userid:Number;
-		public var guest:Boolean;
+		public var resp:Boolean;
 		
-		public function UsersConnectionEvent(type:String)
+		public function ResponseModeratorEvent(type:String)
 		{
 			super(type, true, false);
 		}

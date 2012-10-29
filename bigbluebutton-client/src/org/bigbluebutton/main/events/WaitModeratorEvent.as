@@ -16,20 +16,19 @@
 * with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 * 
 */
-package org.bigbluebutton.main.model.users.events
+package org.bigbluebutton.main.events
 {
 	import flash.events.Event;
-	import flash.net.NetConnection;
+	
+	import org.bigbluebutton.main.model.ConferenceParameters;
 
-	public class UsersConnectionEvent extends Event
+	public class WaitModeratorEvent extends Event
 	{
-		public static const CONNECTION_SUCCESS:String = "usersConnectionSuccess";
+		public static const USER_LOGGED_IN:String = "UserLoggedIn";
 		
-		public var connection:NetConnection;
-		public var userid:Number;
-		public var guest:Boolean;
+		public var conferenceParameters:ConferenceParameters;
 		
-		public function UsersConnectionEvent(type:String)
+		public function WaitModeratorEvent(type:String)
 		{
 			super(type, true, false);
 		}

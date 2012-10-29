@@ -37,6 +37,10 @@
 		<MethodInvoker generator="{ModulesProxy}" method="testRTMP" />
 	</EventHandlers>
 
+
+	
+
+
 	<EventHandlers type="{PortTestEvent.PORT_TEST_SUCCESS}" >
 		<MethodInvoker generator="{ModulesProxy}" method="portTestSuccess" arguments="{event.protocol}" />
 	</EventHandlers>
@@ -47,6 +51,11 @@
 	
 	<EventHandlers type="{LogoutEvent.USER_LOGGED_OUT}" >
 		<MethodInvoker generator="{UserService}" method="logoutUser" />
+		<MethodInvoker generator="{ModulesProxy}" method="handleLogout" />
+	</EventHandlers>
+
+	<EventHandlers type="{LogoutEvent.GUEST_KICKED_OUT}" >
+		<MethodInvoker generator="{UserService}" method="guestDisconnect" />
 		<MethodInvoker generator="{ModulesProxy}" method="handleLogout" />
 	</EventHandlers>
 	
@@ -64,8 +73,25 @@
 	
 	<EventHandlers type="{SuccessfulLoginEvent.USER_LOGGED_IN}" >
 		<MethodInvoker generator="{ModulesProxy}" method="loadAllModules" arguments="{event.conferenceParameters}" />
+		<MethodInvoker generator="{UserService}" method="getAllGuests" arguments="{event}" />
 	</EventHandlers>
 	
+	<EventHandlers type="{WaitModeratorEvent.USER_LOGGED_IN}" >
+		<MethodInvoker generator="{UserService}" method="askToEnter" arguments="{event}" />
+	</EventHandlers>
+
+	<EventHandlers type="{ResponseModeratorEvent.RESPONSE}" >
+		<MethodInvoker generator="{UserService}" method="responseToGuest" arguments="{event}" />
+	</EventHandlers>
+
+
+	<EventHandlers type="{ResponseModeratorEvent.RESPONSE_ALL}" >
+		<MethodInvoker generator="{UserService}" method="responseToAllGuests" arguments="{event}" />
+	</EventHandlers>
+
+	
+
+
 	<!-- Viewers Stuff -->
 	<EventHandlers type="{RaiseHandEvent.RAISE_HAND}" >
 		<MethodInvoker generator="{UserService}" method="raiseHand" arguments="{event}" />
@@ -123,7 +149,10 @@
 		import org.bigbluebutton.main.model.users.events.LowerHandEvent;
 		import org.bigbluebutton.main.model.users.events.RaiseHandEvent;
 		import org.bigbluebutton.main.model.users.events.RoleChangeEvent;
-		import org.bigbluebutton.main.model.users.events.UsersConnectionEvent;		
+		import org.bigbluebutton.main.model.users.events.UsersConnectionEvent;	
+		import org.bigbluebutton.main.events.WaitModeratorEvent;	
+		import org.bigbluebutton.main.events.ResponseModeratorEvent;
+
 	]]>
 	</mx:Script>
 	

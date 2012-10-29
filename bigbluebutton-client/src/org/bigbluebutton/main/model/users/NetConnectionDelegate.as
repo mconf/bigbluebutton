@@ -31,6 +31,7 @@ package org.bigbluebutton.main.model.users
 	import org.bigbluebutton.main.model.ConferenceParameters;
 	import org.bigbluebutton.main.model.users.events.ConnectionFailedEvent;
 	import org.bigbluebutton.main.model.users.events.UsersConnectionEvent;
+	import org.bigbluebutton.core.managers.UserManager;
 		
 	public class NetConnectionDelegate
 	{
@@ -58,6 +59,7 @@ package org.bigbluebutton.main.model.users
 		private var _room:String;
 		private var tried_tunneling:Boolean = false;
 		private var logoutOnUserCommand:Boolean = false;
+		private var guestKickedOutCommand:Boolean = false;
 		private var backoff:Number = 2000;
 		
 		private var dispatcher:Dispatcher;
@@ -102,7 +104,8 @@ package org.bigbluebutton.main.model.users
 				_netConnection.connect(uri, _conferenceParameters.username, _conferenceParameters.role, _conferenceParameters.conference, 
 											_conferenceParameters.room, _conferenceParameters.voicebridge, 
 											_conferenceParameters.record, _conferenceParameters.externUserID,
-											_conferenceParameters.internalUserID);			
+											_conferenceParameters.internalUserID,
+											_conferenceParameters.guest );			
 			} catch( e : ArgumentError ) {
 				// Invalid parameters.
 				switch ( e.errorID ) 
@@ -120,6 +123,12 @@ package org.bigbluebutton.main.model.users
 		public function disconnect(logoutOnUserCommand:Boolean) : void
 		{
 			this.logoutOnUserCommand = logoutOnUserCommand;
+			_netConnection.close();
+		}
+
+		public function guestDisconnect() : void
+		{
+			this.guestKickedOutCommand = true;
 			_netConnection.close();
 		}
 					
@@ -239,18 +248,21 @@ package org.bigbluebutton.main.model.users
 		private function sendConnectionSuccessEvent(userid:Object):void{
 			var useridString:String = userid as String;
 			var n:int = parseInt(useridString);
-			
 			var e:UsersConnectionEvent = new UsersConnectionEvent(UsersConnectionEvent.CONNECTION_SUCCESS);
 			e.connection = _netConnection;
 			e.userid = n;
 			dispatcher.dispatchEvent(e);
-			
 			backoff = 2000;
+			
 		}
 		
 		private function sendConnectionFailedEvent(reason:String):void{
 			if (this.logoutOnUserCommand){
 				sendUserLoggedOutEvent();
+				return;
+			}
+			if (this.guestKickedOutCommand) {
+				sendGuestUserKickedOutEvent();
 				return;
 			}
 			
@@ -262,6 +274,11 @@ package org.bigbluebutton.main.model.users
 		
 		private function sendUserLoggedOutEvent():void{
 			var e:ConnectionFailedEvent = new ConnectionFailedEvent(ConnectionFailedEvent.USER_LOGGED_OUT);
+			dispatcher.dispatchEvent(e);
+		}
+
+		private function sendGuestUserKickedOutEvent():void {
+			var e:ConnectionFailedEvent = new ConnectionFailedEvent(ConnectionFailedEvent.GUEST_KICKED_OUT);
 			dispatcher.dispatchEvent(e);
 		}
 		

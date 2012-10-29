@@ -61,6 +61,44 @@ public class ParticipantUpdatingRoomListener implements IRoomListener{
 			log.debug("Publishing a status change in: " + this.room.getName());
 		}
 	}
+
+	public void guestEntrance(Participant p) {
+		if (messagingService != null) {
+			HashMap<String,String> map= new HashMap<String, String>();
+			map.put("meetingId", this.room.getName());
+			map.put("messageId", MessagingConstants.GUEST_ASK_TO_ENTER_EVENT);
+			map.put("internalUserId", p.getInternalUserID().toString());
+			map.put("username", p.getName());
+			Gson gson= new Gson();
+			messagingService.send(MessagingConstants.PARTICIPANTS_CHANNEL, gson.toJson(map));
+			log.debug("Publishing a guest Entrance: " + this.room.getName());
+		}
+	}
+
+	public void guestWaitingForModerator(Long userid, String userId_userName) {
+		if (messagingService != null) {
+			HashMap<String,String> map= new HashMap<String, String>();
+			map.put("meetingId", this.room.getName());
+			map.put("messageId", MessagingConstants.GUEST_ASK_TO_ENTER_EVENT);
+			map.put("internalUserId", userid.toString());
+			map.put("userID_userName", userId_userName);
+			Gson gson= new Gson();
+			messagingService.send(MessagingConstants.GUESTS_WAITING_EVENT, gson.toJson(map));
+		}
+	}
+
+	public void guestResponse(Participant p, Boolean resp) {
+		if (messagingService != null) {
+			HashMap<String,String> map= new HashMap<String, String>();
+			map.put("meetingId", this.room.getName());
+			map.put("messageId", MessagingConstants.MODERATOR_RESPONSE_EVENT);
+			map.put("internalUserId", p.getInternalUserID().toString());
+			map.put("resp", resp.toString());
+			Gson gson= new Gson();
+			messagingService.send(MessagingConstants.PARTICIPANTS_CHANNEL, gson.toJson(map));
+			log.debug("Publishing a guest Response: " + this.room.getName());
+		}
+	}
 	
 	public void participantJoined(Participant p) {
 		if (messagingService != null) {
@@ -71,7 +109,7 @@ public class ParticipantUpdatingRoomListener implements IRoomListener{
 			map.put("externalUserId", p.getExternalUserID());
 			map.put("fullname", p.getName());
 			map.put("role", p.getRole());
-			
+			map.put("guest", p.isGuest().toString());
 			Gson gson= new Gson();
 			messagingService.send(MessagingConstants.PARTICIPANTS_CHANNEL, gson.toJson(map));
 			log.debug("Publishing message participant joined in " + this.room.getName());

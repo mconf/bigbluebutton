@@ -21,7 +21,8 @@ package org.bigbluebutton.conference;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.red5.server.api.Red5;import org.bigbluebutton.conference.service.participants.ParticipantsApplication;
+import org.red5.server.api.Red5;
+import org.bigbluebutton.conference.service.participants.ParticipantsApplication;
 import org.bigbluebutton.conference.service.recorder.RecorderApplication;
 import org.red5.logging.Red5LoggerFactory;
 import org.red5.server.adapter.IApplication;
@@ -109,13 +110,15 @@ public class BigBlueButtonApplication extends MultiThreadedApplicationAdapter {
 
     	String externalUserID = ((String) params[6]).toString();
     	String internalUserID = ((String) params[6]).toString();
+    	boolean guest = (Boolean)params[8];
+    	log.debug("guest value - [" + guest + "]"); 
     	
 		if (record == true) {
 			recorderApplication.createRecordSession(sessionName);
 		}
 			
     	BigBlueButtonSession bbbSession = new BigBlueButtonSession(sessionName, clientID, internalUserID,  username, role, 
-    			conference, room, voiceBridge, record, externalUserID);
+    			conference, room, voiceBridge, record, externalUserID, guest);
         connection.setAttribute(Constants.SESSION, bbbSession);        
         
         String debugInfo = "internalUserID=" + internalUserID + ",username=" + username + ",role=" +  role + ",conference=" + conference + "," + 

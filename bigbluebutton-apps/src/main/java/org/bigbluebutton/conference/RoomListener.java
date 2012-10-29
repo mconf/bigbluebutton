@@ -45,6 +45,23 @@ public class RoomListener implements IRoomListener{
 	}
 	
 	@SuppressWarnings("unchecked")
+	public void guestEntrance(Participant p) {
+		List list = new ArrayList();
+		list.add(p.getInternalUserID());
+		list.add(p.getName());
+		so.sendMessage("guestEntrance", list);
+		
+	}
+
+	@SuppressWarnings("unchecked")
+	public void guestWaitingForModerator(Long userid, String userId_userName) {
+		List list = new ArrayList();
+		list.add(userid);
+		list.add(userId_userName);
+		so.sendMessage("guestWaitingForModerator", list);
+	}
+
+	@SuppressWarnings("unchecked")
 	public void participantJoined(Participant p) {
 		List args = new ArrayList();
 		args.add(p.toMap());
@@ -60,6 +77,13 @@ public class RoomListener implements IRoomListener{
 
 	public void assignPresenter(ArrayList<String> presenter) {
 		so.sendMessage("assignPresenterCallback", presenter);
+	}
+	@SuppressWarnings("unchecked")
+	public void guestResponse(Participant p, Boolean resp) {
+		List list = new ArrayList();
+		list.add(p.getInternalUserID());
+		list.add(resp);
+		so.sendMessage("guestResponse", list);
 	}
 	
 	public void endAndKickAll() {

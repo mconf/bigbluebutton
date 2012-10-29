@@ -38,6 +38,7 @@ public class Room implements Serializable {
 	ArrayList<String> currentPresenter = null;
 	private String name;
 	private Map <Long, Participant> participants;
+	private Map <Long, String> guestsWaiting;
 
 	// these should stay transient so they're not serialized in ActiveMQ messages:	
 	//private transient Map <Long, Participant> unmodifiableMap;
@@ -46,6 +47,7 @@ public class Room implements Serializable {
 	public Room(String name) {
 		this.name = name;
 		participants = new ConcurrentHashMap<Long, Participant>();
+		guestsWaiting = new ConcurrentHashMap<Long, String>();
 		//unmodifiableMap = Collections.unmodifiableMap(participants);
 		listeners   = new ConcurrentHashMap<String, IRoomListener>();
 	}
@@ -84,6 +86,13 @@ public class Room implements Serializable {
 		boolean present = false;
 		Participant p = null;
 		synchronized (this) {
+			p = participants.get(userid);
+			if(p.isGuest()) {
+				if(guestsWaiting.containsKey(p.getInternalUserID())) {
+					guestsWaiting.remove(p.getInternalUserID());
+				}
+			}
+
 			present = participants.containsKey(userid);
 			if (present) {
 				log.debug("removing participant");
@@ -98,6 +107,82 @@ public class Room implements Serializable {
 			}
 		}
 	}
+
+	public void askModerator(Long userid) {
+		boolean present = false;
+		Participant p = null;
+		present = participants.containsKey(userid);
+		if (present) {
+			log.debug("asking moderators");
+			p = participants.get(userid);
+			synchronized (this) {
+				guestsWaiting.put(userid, p.getName());
+			}
+				
+			for (Iterator it = listeners.values().iterator(); it.hasNext();) {
+				IRoomListener listener = (IRoomListener) it.next();
+				log.debug("calling guestEntrance on listener " + listener.getName());
+				listener.guestEntrance(p);
+			}
+		}
+	}
+
+	public void guestWaiting(Long userid) {
+		synchronized (this) {
+			Iterator entries = guestsWaiting.entrySet().iterator();
+			String userId_userName = "";
+			while (entries.hasNext()) {
+				Map.Entry pairs = (Map.Entry) entries.next();
+				userId_userName = userId_userName + "!1" + pairs.getKey().toString() + "!2" + pairs.getValue();
+			}
+			for (Iterator it = listeners.values().iterator(); it.hasNext();) {
+				IRoomListener listener = (IRoomListener) it.next();
+				log.debug("calling guestEntrance on listener " + listener.getName());
+				listener.guestWaitingForModerator(userid, userId_userName);
+			}
+		}
+	}
+	
+	public void responseToGuest(Long userid, Boolean resp) {
+		boolean present = false;
+		Participant p = null;
+		present = participants.containsKey(userid);
+		if (present) {
+			Boolean send = false;
+			synchronized (this) {
+				if(guestsWaiting.containsKey(userid)) {
+					guestsWaiting.remove(userid);
+					send = true;
+				}
+			}
+			if(send) {
+				p = participants.get(userid);
+				for (Iterator it = listeners.values().iterator(); it.hasNext();) {
+					IRoomListener listener = (IRoomListener) it.next();
+					log.debug("calling guestEntrance on listener " + listener.getName());
+					listener.guestResponse(p, resp);
+				}
+			}
+		}
+	}
+
+	public void responseToAllGuests(Boolean resp) {
+		synchronized (this) {
+			Participant p = null;
+			for (Long userid : guestsWaiting.keySet()) {
+				if(participants.containsKey(userid)) {
+			    p = participants.get(userid);
+			    for (Iterator it = listeners.values().iterator(); it.hasNext();) {
+						IRoomListener listener = (IRoomListener) it.next();
+						log.debug("calling guestEntrance on listener " + listener.getName());
+						listener.guestResponse(p, resp);
+			    }
+				}
+			}
+			guestsWaiting.clear();
+		}
+	}
+
 
 	public void changeParticipantStatus(Long userid, String status, Object value) {
 		boolean present = false;
@@ -168,3 +253,4 @@ public class Room implements Serializable {
 		}	
 	}
 }
+
