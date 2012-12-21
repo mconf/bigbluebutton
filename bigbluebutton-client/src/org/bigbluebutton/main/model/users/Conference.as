@@ -101,6 +101,9 @@ package org.bigbluebutton.main.model.users {
 			return null;				
 		}
 
+		public function getMyStreamName():String {
+			return me.streamName;
+		}
 		public function isUserPresenter(userid:Number):Boolean {
 			var user:Object = getParticipantIndex(userid);
 			if (user == null) {

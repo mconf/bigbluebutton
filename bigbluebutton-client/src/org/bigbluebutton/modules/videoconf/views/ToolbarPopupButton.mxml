@@ -20,68 +20,139 @@
   $Id: $
 --> 
 
-<mx:Button xmlns:mx="http://www.adobe.com/2006/mxml" icon="{camIcon}" 
+<mx:PopUpButton xmlns:mx="http://www.adobe.com/2006/mxml" icon="{camIcon}" 
+		   click="openPublishWindow()" 	
 		   xmlns:mate="http://mate.asfusion.com/"
-		   click="openPublishWindow()" creationComplete="init()" 
+		   creationComplete="init()" 
 		   mouseOver = "mouseOverHandler(event)"
 		   mouseOut = "mouseOutHandler(event)"
 		   toolTip="{ResourceUtil.getInstance().getString('bbb.toolbar.video.toolTip.start')}"
 		   visible="{isPresenter}"
+		 
+		 
 		   implements="org.bigbluebutton.common.IBbbToolbarComponent">
 
 	<mx:Script>
 		<![CDATA[
+			import org.bigbluebutton.common.LogUtil;
 			import com.asfusion.mate.events.Dispatcher;
-			
 			import org.bigbluebutton.common.Images;
 			import org.bigbluebutton.main.views.MainToolbar;
 			import org.bigbluebutton.modules.videoconf.events.OpenPublishWindowEvent;
 			import org.bigbluebutton.modules.videoconf.events.ClosePublishWindowEvent;
+			import org.bigbluebutton.modules.videoconf.events.CloseAllPublishWindowEvent;
 			import org.bigbluebutton.util.i18n.ResourceUtil;
+			import mx.controls.Menu;
+			import mx.events.MenuEvent;
+			import mx.collections.ArrayList;
 			
 			[Bindable] public var isPresenter:Boolean;
 			
 			private var images:Images = new Images();
 			[Bindable] public var camIcon:Class = images.webcam;
-
+			
 
 			public const OFF_STATE:Number = 0;
 			public const ON_STATE:Number = 1;
 			
 			public const STOP_PUBLISHING:Number = 0;
 			public const START_PUBLISHING:Number = 1;
-			
+
+			private var dataMenu:Menu;
+			public var cameraIsOff:Object = new Object();
+			public var numberOfCamerasOff:int = 0;
 			
 			private var _currentState:Number = OFF_STATE;
 
-
+			private var itensProvider:ArrayList = new ArrayList();
+			private var dp:Object = [];
 			
 			private var dispatcher:Dispatcher;
 			
 			private function init():void{
+
+				numberOfCamerasOff = Camera.names.length;
+				var i:int;
+				for(i = 0; i < numberOfCamerasOff; i++) {
+					cameraIsOff[String(i)] = true;	
+					dp.push({label: Camera.names[i], icon: images.webcam, status: OFF_STATE});		
+				}
+	
+				dataMenu = new Menu();
+				dataMenu.dataProvider = dp;
+				dataMenu.addEventListener("itemClick", changeHandler);
+				this.popUp = dataMenu;
 				dispatcher = new Dispatcher();
 				this.toolTip = ResourceUtil.getInstance().getString('bbb.toolbar.video.toolTip.start');
 				camIcon = images.webcam;
 				this.enabled = true;
 				this.selected = false;
 				_currentState = OFF_STATE;
+				
 			}
+
 			
-			public function publishingStatus(status:Number):void {
+			
+
+			private function changeHandler(event:MenuEvent):void {
+					if(dp[event.index].status == OFF_STATE) {
+						var evt:OpenPublishWindowEvent = new OpenPublishWindowEvent();
+						evt.defaultCamera = String(event.index);
+						dispatchEvent(evt);
+						dp[event.index].icon = images.webcamOn;
+
+					} else {
+						var close_evt:ClosePublishWindowEvent = new ClosePublishWindowEvent();
+						close_evt.cameraId = String(event.index);
+						dispatchEvent(close_evt);
+						dp[event.index].icon = images.webcam;
+					}
+			}			
+			
+			public function publishingStatus(status:Number, cameraId:String):void {
 				if(status == START_PUBLISHING) {
 					_currentState = ON_STATE;
 					this.toolTip = ResourceUtil.getInstance().getString('bbb.toolbar.video.toolTip.stop');
 					camIcon = images.webcamOn;
 					this.enabled = true;
 					this.selected = true;
+					cameraIsOff[cameraId] = false;
+					dp[cameraId].icon = images.webcamOn;
+					dp[cameraId].status = ON_STATE;
+					numberOfCamerasOff = numberOfCamerasOff - 1;
 				}
 				else {
+					dp[cameraId].icon = images.webcam;
+					dp[cameraId].status = OFF_STATE;
+					this.enabled = true;
+					if(cameraIsOff[cameraId] == false) {
+						cameraIsOff[cameraId] = true;
+						numberOfCamerasOff = numberOfCamerasOff + 1;
+					}
+					
+					if(numberOfCamerasOff == Camera.names.length) {
+						_currentState = OFF_STATE;
+						this.toolTip = ResourceUtil.getInstance().getString('bbb.toolbar.video.toolTip.start');
+						camIcon = images.webcam;
+						this.selected = false;
+					}
+				}
+				dataMenu.dataProvider = dp;										
+			}
+
+			public function stopAllPublishing():void {
+				var i:int;
+				for(i = 0; i < Camera.names.length; i++) {
+					cameraIsOff[i.toString()] = true;
 					_currentState = OFF_STATE;
 					this.toolTip = ResourceUtil.getInstance().getString('bbb.toolbar.video.toolTip.start');
 					camIcon = images.webcam;
-					this.enabled = true;
 					this.selected = false;
+					dp[i.toString()].icon = images.webcam;
+					dp[i.toString()].status = OFF_STATE;
 				}
+				numberOfCamerasOff = Camera.names.length;
+				dataMenu.dataProvider = dp;
 			}
 
 
@@ -91,7 +162,8 @@
 					this.toolTip = ResourceUtil.getInstance().getString('bbb.toolbar.video.toolTip.start');
 					camIcon = images.webcam;
 					this.selected = false;
-					dispatchEvent(new ClosePublishWindowEvent());
+					LogUtil.debug("FECHA AS JANELAS");
+					dispatchEvent(new CloseAllPublishWindowEvent());
 					
 				}
 				else {
@@ -105,14 +177,16 @@
 			}
 			
 
-			private function mouseOverHandler(event:MouseEvent):void {
+			
+
+			private function mouseOverHandler(event:MouseEvent = null):void {
 				if(_currentState == ON_STATE)
 					camIcon = images.webcamClose;
 				else
 					camIcon = images.webcamOn;			
 			}
 
-			private function mouseOutHandler(event:MouseEvent):void {
+			private function mouseOutHandler(event:MouseEvent = null):void {
 				if(_currentState == ON_STATE)
 					camIcon = images.webcamOn;
 				else
@@ -127,4 +201,4 @@
 	</mx:Script>
 	
 	
-</mx:Button>
+</mx:PopUpButton>

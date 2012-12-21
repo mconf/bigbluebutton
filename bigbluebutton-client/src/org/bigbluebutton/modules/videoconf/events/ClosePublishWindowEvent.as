@@ -24,6 +24,8 @@ package org.bigbluebutton.modules.videoconf.events
 	{
 		public static const CLOSE_PUBLISH_WINDOW:String = "CLOSE_PUBLISH_WINDOW";
 		
+		public var cameraId:String;		
+		
 		public function ClosePublishWindowEvent(type:String = CLOSE_PUBLISH_WINDOW)
 		{
 			super(type, true, false);

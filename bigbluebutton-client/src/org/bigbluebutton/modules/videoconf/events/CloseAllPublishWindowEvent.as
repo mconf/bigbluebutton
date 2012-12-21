@@ -19,17 +19,12 @@
 package org.bigbluebutton.modules.videoconf.events
 {
 	import flash.events.Event;
-	import flash.media.Camera;
 	
-	public class StartBroadcastEvent extends Event
+	public class CloseAllPublishWindowEvent extends Event
 	{
-		public static const START_BROADCAST:String = "startBroadcastEvent";
+		public static const CLOSE_ALL_PUBLISH_WINDOW:String = "CLOSE_ALL_PUBLISH_WINDOW";
 		
-		public var stream:String;
-		public var camera:Camera;
-		public var cameraId:String;
-		
-		public function StartBroadcastEvent(type:String = START_BROADCAST)
+		public function CloseAllPublishWindowEvent(type:String = CLOSE_ALL_PUBLISH_WINDOW)
 		{
 			super(type, true, false);
 		}
