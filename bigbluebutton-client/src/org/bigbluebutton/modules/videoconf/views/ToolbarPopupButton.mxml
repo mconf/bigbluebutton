@@ -75,12 +75,17 @@
 				var i:int;
 				for(i = 0; i < numberOfCamerasOff; i++) {
 					cameraIsOff[String(i)] = true;	
-					dp.push({label: Camera.names[i], icon: images.webcam, status: OFF_STATE, waitingToStart: false});		
+					dp.push({label: Camera.names[i], icon: images.webcam, status: OFF_STATE, waitingToStart: false, tooltip: "EH O TOOL"});		
 				}
 	
 				dataMenu = new Menu();
 				dataMenu.dataProvider = dp;
 				dataMenu.addEventListener("itemClick", changeHandler);
+				dataMenu.addEventListener("mouseOver", mouseOverPopUp);
+				dataMenu.addEventListener("mouseOut", mouseOutPopUp);
+				//dataMenu.addEventListener("itemRollOver", itemRollOverHandler);
+				//dataMenu.addEventListener("itemRollOut", itemRollOutHandler);
+
 				this.popUp = dataMenu;
 				dispatcher = new Dispatcher();
 				this.toolTip = ResourceUtil.getInstance().getString('bbb.toolbar.video.toolTip.start');
@@ -93,6 +98,16 @@
 
 			
 			
+			private function mouseOverPopUp(event:MouseEvent = null):void {
+				mouseOverHandler();
+			}
+
+			private function mouseOutPopUp(event:MouseEvent = null):void {
+				mouseOutHandler();
+			}
+
+			
+
 
 			private function changeHandler(event:MenuEvent):void {
 					if(dp[event.index].status == OFF_STATE && dp[event.index].waitingToStart == false) {
@@ -182,8 +197,8 @@
 				
 			}
 			
-
-			
+		
+				
 
 			private function mouseOverHandler(event:MouseEvent = null):void {
 				if(_currentState == ON_STATE)
