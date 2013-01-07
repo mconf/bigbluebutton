@@ -24,11 +24,13 @@
 	icon="{phoneIcon}" click="startPhone()"
 	mouseOver = "mouseOverHandler(event)"
 	mouseOut = "mouseOutHandler(event)"
-	toolTip="{ResourceUtil.getInstance().getString('bbb.toolbar.phone.toolTip.stop')}"
+	toolTip="{ResourceUtil.getInstance().getString('bbb.toolbar.phone.toolTip.start')}"
 	implements="org.bigbluebutton.common.IBbbToolbarComponent">
 	
-	<mate:Listener type="{BBBEvent.JOIN_VOICE_CONFERENCE}" method="handleBBBJoinConferenceEvent"/>
-	<mate:Listener type="MIC_SETTINGS_CLOSED" method="handleMicSettingsClosedEvent"/>
+
+	<mate:Listener type="SPEAKING_AND_LISTENING" method="handleBBBSpeakingAndListening"/>
+	<mate:Listener type="LISTENING_ONLY" method="handleBBBListeningOnly"/>
+
 
 	<mx:Script>
 		<![CDATA[
@@ -51,6 +53,8 @@
 			public const DEFAULT_STATE:Number = 0;
 			public const ACTIVE_STATE:Number = 1;
 			private var _currentState:Number = DEFAULT_STATE;
+			private var _changeState:Boolean = false;
+		
 			
 			[Bindable] public var phoneIcon:Class = images.headsetDefaultIcon;
 			
@@ -58,34 +62,29 @@
 				// Disable the button right away to prevent the user from clicking
 				// multiple times.
 				this.enabled = false;
-			
-				if (this.selected) {	
-					var vxml:XML = BBB.getConfigForModule("PhoneModule");
-					var phoneOptions:PhoneOptions = new PhoneOptions();
-					if (vxml != null) {
-						phoneOptions.showButton = (vxml.@showButton.toString().toUpperCase() == "TRUE") ? true : false;
-						phoneOptions.autoJoin = (vxml.@autoJoin.toString().toUpperCase() == "TRUE") ? true : false;
-						phoneOptions.skipCheck = (vxml.@skipCheck.toString().toUpperCase() == "TRUE") ? true : false;
+				var vxml:XML = BBB.getConfigForModule("PhoneModule");
+				var phoneOptions:PhoneOptions = new PhoneOptions();
+				if (vxml != null) {
+				phoneOptions.showButton = (vxml.@showButton.toString().toUpperCase() == "TRUE") ? true : false;
+				phoneOptions.autoJoin = (vxml.@autoJoin.toString().toUpperCase() == "TRUE") ? true : false;
+				phoneOptions.skipCheck = (vxml.@skipCheck.toString().toUpperCase() == "TRUE") ? true : false;
+				phoneOptions.joinGlobal = (vxml.@joinGlobal.toString().toUpperCase() == "TRUE") ? true : false;
+				}
+				if (noMicrophone() == false) {
+					var askToChangeEvent:BBBEvent;
+					askToChangeEvent = new BBBEvent("ASK_TO_CHANGE_VOICE_CONFERENCE_EVENT");
+					if(_currentState == DEFAULT_STATE) {
+						if(phoneOptions.skipCheck) {
+							askToChangeEvent.payload["global"] = false;
+						}
+						else {
+							askToChangeEvent = new BBBEvent("SHOW_MIC_SETTINGS");
+						}
 					}
-					if (phoneOptions.skipCheck || noMicrophone()) {
-						
-						/*
-						 * If the user had no mic, let her join but she'll just be listening.	
-						 * We should indicate a warning that the user is joining without mic
-						 * so that he will know that others won't be able to hear him.
-						*/
-						var joinEvent:BBBEvent = new BBBEvent("JOIN_VOICE_CONFERENCE_EVENT");
-						joinEvent.payload['useMicrophone'] = true;
-						dispatcher.dispatchEvent(joinEvent);
-						
-					} else {
-						dispatcher.dispatchEvent(new BBBEvent("SHOW_MIC_SETTINGS"));
+					else {
+						askToChangeEvent.payload["global"] = true;
 					}
-				} else {
-					var leaveEvent:BBBEvent = new BBBEvent("LEAVE_VOICE_CONFERENCE_EVENT");
-					leaveEvent.payload["userRequested"] = true;
-					dispatcher.dispatchEvent(leaveEvent);
-					userJoinedConference(false);
+					dispatcher.dispatchEvent(askToChangeEvent);
 				}
 			}
 			
@@ -104,14 +103,13 @@
 			}
 
 			public function userJoinedConference(joined: Boolean):void {
-				
-
 				if (joined) {
 					this.selected = true;
 					this.enabled = true;
 					_currentState = ACTIVE_STATE;
 					phoneIcon = images.headsetActiveIcon;
 					this.toolTip = ResourceUtil.getInstance().getString('bbb.toolbar.phone.toolTip.stop');
+
 				} else {
 					this.selected = false;
 					this.enabled = true;
@@ -119,8 +117,6 @@
 					phoneIcon = images.headsetDefaultIcon;
 					this.toolTip = ResourceUtil.getInstance().getString('bbb.toolbar.phone.toolTip.start');
 				}
-
-				
 			}
 			
 			private function noMicrophone():Boolean {
@@ -136,19 +132,30 @@
 				this.toolTip = ResourceUtil.getInstance().getString('bbb.toolbar.phone.toolTip.start');
 			}
 			
-			private function handleMicSettingsClosedEvent(event:BBBEvent):void {
+			
+			private function handleBBBListeningOnly(event:BBBEvent):void {
 				userJoinedConference(false);
+			}
+			private function handleBBBSpeakingAndListening(event:BBBEvent):void {
+				userJoinedConference(true);
 			}
 			
 			private function handleBBBJoinConferenceEvent(event:BBBEvent):void {
-				var joinEvent:BBBEvent = new BBBEvent("JOIN_VOICE_CONFERENCE_EVENT");
-				joinEvent.payload['useMicrophone'] = false;
-				dispatcher.dispatchEvent(joinEvent);
+				//var joinEvent:BBBEvent = new BBBEvent("JOIN_VOICE_CONFERENCE_EVENT");
+				//joinEvent.payload['useMicrophone'] = false;
+				//dispatcher.dispatchEvent(joinEvent);
 			}
 			
 			//For whatever reason the tooltip does not update when localization is changed dynamically. Overrideing it here
 			override protected function resourcesChanged():void{
-				this.toolTip = ResourceUtil.getInstance().getString('bbb.toolbar.phone.toolTip.start');
+				if(_currentState == ACTIVE_STATE) {
+					phoneIcon = images.headsetActiveIcon;
+					this.toolTip = ResourceUtil.getInstance().getString('bbb.toolbar.phone.toolTip.stop');
+				} 
+				else {
+					phoneIcon = images.headsetDefaultIcon;
+					this.toolTip = ResourceUtil.getInstance().getString('bbb.toolbar.phone.toolTip.start');
+				}
 			}
 			
 			public function getAlignment():String{
