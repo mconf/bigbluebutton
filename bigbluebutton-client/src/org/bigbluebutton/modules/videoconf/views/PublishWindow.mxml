@@ -60,7 +60,6 @@
 			[Bindable] private var defaultHeight:Number = 240;
 			
 			[Bindable] private var camerasAvaiable:ArrayList = new ArrayList();
-			[Bindable] private var camerasAvaiableIndex:ArrayList = new ArrayList();
 			private var camWidth:Number = 320;
 			private var camHeight:Number = 240;
 			private var _userrole:String;
@@ -70,6 +69,7 @@
 			public var cameraIsOff:Object;
 			public var numberOfCamerasOff:int;
 			public var stopAll:Boolean = false;
+			public var indexOnArray:int;
 
 			public var useCam:String;
 						
@@ -89,7 +89,9 @@
 			
 			[Bindable]
 			public var videoOptions:VideoConfOptions;
+
 			
+
 			private function init():void{
 				_videoHolder = new UIComponent();
 				_videoHolder.width = camWidth;
@@ -100,10 +102,14 @@
 				for(i = 0; i < Camera.names.length; i++) {
 					LogUtil.debug("Camera " + Camera.names[i] + " is " + cameraIsOff[String(i)]);
 					if(cameraIsOff[String(i)] == true) {
-						camerasAvaiable.addItem(Camera.names[i]);
-						camerasAvaiableIndex.addItem(String(i));
+						var myObj:Object = {}
+						myObj.name = Camera.names[i];
+						myObj.index = String(i);
+						camerasAvaiable.addItem(myObj);
 					}
 				}
+
+				
 				checkIfMacCamera();
 				if (isPresenter()) showResControls(true);
 				if (camerasAvaiable.length > 1) showVideoControls(true);
@@ -141,7 +147,7 @@
 				//var webcam:String = sharedObject.data["webcam"] as String;
 				cmbCameraSelector.selectedIndex = int(defaultCamera);
 				//for (var i:Number = 0; i<camerasAvaiable.length; i++){
-				//	if (camerasAvaiable.getItemAt(i) == webcam) cmbCameraSelector.selectedIndex = i;
+				//	if (camerasAvaiable.getItemAt(i).name == webcam) cmbCameraSelector.selectedIndex = i;
 				//}
 			}
 			
@@ -155,7 +161,7 @@
 					return;
 				}
 				
-			_camera = Camera.getCamera(camerasAvaiableIndex.getItemAt(cmbCameraSelector.selectedIndex).toString());
+			_camera = Camera.getCamera(camerasAvaiable.getItemAt(cmbCameraSelector.selectedIndex).index.toString());
 				
 				
 				//_camera = Camera.getCamera(useCam);
@@ -265,7 +271,8 @@
 				var e:StartBroadcastEvent = new StartBroadcastEvent();
 				e.stream = this.streamName;
 				e.camera = _camera;
-				e.cameraId = camerasAvaiableIndex.getItemAt(cmbCameraSelector.selectedIndex).toString();
+				e.cameraId = camerasAvaiable.getItemAt(cmbCameraSelector.selectedIndex).index.toString();
+				e.publishWindowIndex = indexOnArray;
 				dispatchEvent(e);
 				
 				showVideoControls(false);
@@ -319,7 +326,7 @@
 				stopCamera();
 				var e:StopBroadcastEvent = new StopBroadcastEvent()
 				e.stream = streamName;
-				e.cameraId = camerasAvaiableIndex.getItemAt(cmbCameraSelector.selectedIndex).toString();
+				e.cameraId = camerasAvaiable.getItemAt(cmbCameraSelector.selectedIndex).index.toString();
 				dispatchEvent(e);
 			}
 			
@@ -381,7 +388,7 @@
 			
 			private function checkIfMacCamera():void{
 				for (var i:int = 0; i<camerasAvaiable.length; i++){
-					if (camerasAvaiable.getItemAt(i) == "USB Video Class Video") {
+					if (camerasAvaiable.getItemAt(i).name == "USB Video Class Video") {
 						/**
 						 * Set as default for Macs
 						 */
@@ -418,7 +425,7 @@
 			private function hideWarning(e:TimerEvent):void {
 				lblWarning.visible = false;
 			}
-			
+		
 		]]>
 	</mx:Script>
 
@@ -427,7 +434,9 @@
 	<mx:Text id="lblWarning" width="100%" textAlign="right" fontSize="14" fontWeight="bold" y="{this.height - (videoOptionsBar.visible? videoOptionsBar.height: 0) - lblWarning.height - 30}" visible="false" selectable="false" hideEffect="{dissolveOut}" showEffect="{dissolveIn}"/>
 	<mx:ControlBar id="videoOptionsBar" visible="true">
 		<mx:Button id="btnStartPublish" toolTip="{ResourceUtil.getInstance().getString('bbb.publishVideo.startPublishBtn.toolTip')}" icon="{camIcon}" click="startPublishing()" enabled="false"/>
-		<mx:ComboBox id="cmbCameraSelector" dataProvider="{camerasAvaiable}" width="150" visible="false" change="updateCamera()"/>
+		<mx:ComboBox id="cmbCameraSelector" dataProvider="{camerasAvaiable}" width="150" visible="false" change="updateCamera()"
+		labelField = "name"
+		/>
 		<mx:ComboBox id="cmbResolution" dataProvider="{resolutions}" width="20%" visible="false" change="updateCamera()"/>
 	</mx:ControlBar>
 	

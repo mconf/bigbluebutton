@@ -56,8 +56,8 @@
 			public var streamList:ArrayList = new ArrayList();
 			public var remoteOpenStreamList:ArrayList = new ArrayList();
 			public var remoteOpenState:Dictionary = new Dictionary();
-			public var publishWindowArray:Object = new Object();
-			
+			public var publishWindowArray:ArrayList = new ArrayList();
+			public var numberOfPublishWindow:int = 0;
 			// This variable is used to avoid dispatching the BroadcastStoppedEvent
 			// when the user just open the publish window and close it before start
 			// publishing
@@ -118,7 +118,7 @@
 				}
 			}
 			
-			private function openPublishWindow(defaultCamera:String = "0"):void{
+			private function openPublishWindow():void{
 				
 				var publishWindow:PublishWindow = new PublishWindow();
 				publishWindow.videoOptions = proxy.videoOptions;
@@ -128,8 +128,9 @@
 				publishWindow.resolutions = module.resolutions.split(",");
 				publishWindow.cameraIsOff = button.cameraIsOff;
 				publishWindow.numberOfCamerasOff = button.numberOfCamerasOff;
-				publishWindowArray[defaultCamera] = publishWindow;
-				publishWindow.defaultCamera = defaultCamera;
+				publishWindow.indexOnArray = publishWindowArray.length;
+				publishWindowArray.addItem(publishWindow);
+				publishWindow.defaultCamera = "0";
 				var windowEvent:OpenWindowEvent = new OpenWindowEvent(OpenWindowEvent.OPEN_WINDOW_EVENT);
 				windowEvent.window = publishWindow;
 				globalDispatcher.dispatchEvent(windowEvent);
@@ -137,21 +138,23 @@
 			
 
 
-			private function closePublishWindow(defaultCamera:String = "0"):void{
-				LogUtil.debug("FECHANDO UMA");
-				publishWindowArray[defaultCamera].close();
-				delete publishWindowArray[defaultCamera];
+			private function closePublishWindow(index:Number):void{
+				publishWindowArray.getItemAt(index).close();
+				publishWindowArray.removeItemAt(index);
+				
 			}
 
 
-			private function closeAllPublishWindow(defaultCamera:String = "0"):void{
-				for each (var publishWindow:PublishWindow in publishWindowArray)
-				{
-				    publishWindow.stopAll = true;
-				    publishWindow.close();
+			private function closeAllPublishWindow():void{
+				var i:int = 0;
+				for(i = 0; i < publishWindowArray.length; i++) {
+					var publishWindow:PublishWindow = PublishWindow(publishWindowArray.getItemAt(i));
+					publishWindow.stopAll = true;
+				   	publishWindow.close();
+
 				}
+				publishWindowArray.removeAll();
 				LogUtil.debug("CLOSE ALL");
-				publishWindowArray = new Object();
 				var myPattern:RegExp = /,/g; 
 				proxy.stopAllBroadcasting();
 				_publishing = false;
@@ -165,9 +168,10 @@
 
 
 			private function startPublishing(e:StartBroadcastEvent):void{
-			    LogUtil.debug("Publishing stream to: " + proxy.connection.uri + "/" + e.stream);
+			 LogUtil.debug("Publishing stream to: " + proxy.connection.uri + "/" + e.stream);
 				proxy.startPublishing(e);
-				var broadcastEvent:BroadcastStartedEvent = new BroadcastStartedEvent();
+			  
+				var broadcastEvent:BroadcastStartedEvent = new BroadcastStartedEvent();			
 				if(streamList.length == 0) {
 					streamList.addItem(e.stream);
 					broadcastEvent.stream = e.stream;
@@ -177,19 +181,17 @@
 					var myPattern:RegExp = /,/g; 
 					broadcastEvent.stream = streamList.toString().replace(myPattern, "|");
 				}
-				publishWindowArray[e.cameraId].title = module.username + " (you)";
+				publishWindowArray.getItemAt(e.publishWindowIndex).title = module.username + " (you)";
 				broadcastEvent.userid = module.userid;
 				globalDispatcher.dispatchEvent(broadcastEvent);
 				_publishing = true;
-				button.publishingStatus(button.START_PUBLISHING, e.cameraId);
+				button.publishingStatus(button.START_PUBLISHING, e.cameraId, e.publishWindowIndex);
 				
-
 			}
 			
 			private function stopPublishing(e:StopBroadcastEvent):void{
 				if (_publishing) {
 					proxy.stopBroadcasting(e.stream);
-					//Alterar isso aqui
 					if(streamList.length <= 1) {
 						streamList.removeItem(e.stream);
 						LogUtil.debug("ESTOU AQUI PARANDO A ULTIMA");
@@ -239,7 +241,7 @@
 			private function switchToViewer():void{
 				if (module.presenterShareOnly){
 					button.isPresenter = false;
-					closePublishWindow();
+					closeAllPublishWindow();
 				}
 			}
 			
@@ -256,11 +258,11 @@
 	</EventHandlers>
 
 	<EventHandlers type="{OpenPublishWindowEvent.OPEN_PUBLISH_WINDOW}">
-		<InlineInvoker method="openPublishWindow" arguments="{[event.defaultCamera]}"/>
+		<InlineInvoker method="openPublishWindow" />
 	</EventHandlers>
 
 	<EventHandlers type="{ClosePublishWindowEvent.CLOSE_PUBLISH_WINDOW}">
-		<InlineInvoker method="closePublishWindow" arguments="{[event.cameraId]}"/>
+		<InlineInvoker method="closePublishWindow" arguments="{[event.publishWindowIndex]}"/>
 	</EventHandlers>
 
 	<EventHandlers type="{CloseAllPublishWindowEvent.CLOSE_ALL_PUBLISH_WINDOW}">

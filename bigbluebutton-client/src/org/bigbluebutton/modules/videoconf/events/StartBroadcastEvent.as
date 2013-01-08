@@ -28,6 +28,7 @@ package org.bigbluebutton.modules.videoconf.events
 		public var stream:String;
 		public var camera:Camera;
 		public var cameraId:String;
+		public var publishWindowIndex:Number;
 		
 		public function StartBroadcastEvent(type:String = START_BROADCAST)
 		{
