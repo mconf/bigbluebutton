@@ -61,7 +61,8 @@
 			// This variable is used to avoid dispatching the BroadcastStoppedEvent
 			// when the user just open the publish window and close it before start
 			// publishing
-			private var _publishing:Boolean = false;		
+			private var _publishing:Boolean = false;
+			private var openedPublishingWindow:Boolean = false;
 			
 			private function viewCamera(userid:Number, stream:String, name:String, mock:Boolean = false):void{
 				if (userid == module.userid) return;
@@ -118,8 +119,8 @@
 				}
 			}
 			
-			private function openPublishWindow():void{
-				
+			private function openPublishWindow(evt:OpenPublishWindowEvent):void{
+				openedPublishingWindow = true;
 				var publishWindow:PublishWindow = new PublishWindow();
 				publishWindow.videoOptions = proxy.videoOptions;
 				publishWindow.userId = module.userid;
@@ -130,7 +131,7 @@
 				publishWindow.numberOfCamerasOff = button.numberOfCamerasOff;
 				publishWindow.indexOnArray = publishWindowArray.length;
 				publishWindowArray.addItem(publishWindow);
-				publishWindow.defaultCamera = "0";
+				publishWindow.defaultCamera = evt.defaultCamera;
 				var windowEvent:OpenWindowEvent = new OpenWindowEvent(OpenWindowEvent.OPEN_WINDOW_EVENT);
 				windowEvent.window = publishWindow;
 				globalDispatcher.dispatchEvent(windowEvent);
@@ -140,8 +141,6 @@
 
 			private function closePublishWindow(index:Number):void{
 				publishWindowArray.getItemAt(index).close();
-				publishWindowArray.removeItemAt(index);
-				
 			}
 
 
@@ -167,10 +166,15 @@
 			}
 
 
+
+			private function enableToolbarPopupButton():void {
+				if(openedPublishingWindow == false)
+					button.enabled = true;
+			}
 			private function startPublishing(e:StartBroadcastEvent):void{
 			 LogUtil.debug("Publishing stream to: " + proxy.connection.uri + "/" + e.stream);
 				proxy.startPublishing(e);
-			  
+			  	openedPublishingWindow = false;
 				var broadcastEvent:BroadcastStartedEvent = new BroadcastStartedEvent();			
 				if(streamList.length == 0) {
 					streamList.addItem(e.stream);
@@ -194,7 +198,6 @@
 					proxy.stopBroadcasting(e.stream);
 					if(streamList.length <= 1) {
 						streamList.removeItem(e.stream);
-						LogUtil.debug("ESTOU AQUI PARANDO A ULTIMA");
 						_publishing = false;
 						var broadcastEvent:BroadcastStoppedEvent = new BroadcastStoppedEvent();
 						broadcastEvent.stream = e.stream;
@@ -203,7 +206,6 @@
 					}
 					else {
 						streamList.removeItem(e.stream);
-						LogUtil.debug("ESTOU AQUI PARANDO ALGUMA");
 						var broadcastStartEvent:BroadcastStartedEvent = new BroadcastStartedEvent();
 						var myPattern:RegExp = /,/g; 
 						broadcastStartEvent.stream = streamList.toString().replace(myPattern, "|");
@@ -213,11 +215,11 @@
 					
 					
 				}
-				
-				//Make toolbar button enabled again
-
+				if(e.cameraId == null) {
+					openedPublishingWindow = false;
+					enableToolbarPopupButton();
+				}
 				button.publishingStatus(button.STOP_PUBLISHING, e.cameraId);
-				//button.show();
 			}
 			
 
@@ -253,12 +255,18 @@
 		]]>
 	</mx:Script>
 	
+
+	<EventHandlers type="EnableToolbarPopupButton">
+		<InlineInvoker method="enableToolbarPopupButton"/>
+	</EventHandlers>
+
+
 	<EventHandlers type="ViewVideoCloseEvent">
 		<InlineInvoker method="remoteChangeStatus" arguments="{event}"/>
 	</EventHandlers>
 
 	<EventHandlers type="{OpenPublishWindowEvent.OPEN_PUBLISH_WINDOW}">
-		<InlineInvoker method="openPublishWindow" />
+		<InlineInvoker method="openPublishWindow" arguments="{event}"/>
 	</EventHandlers>
 
 	<EventHandlers type="{ClosePublishWindowEvent.CLOSE_PUBLISH_WINDOW}">

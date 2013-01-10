@@ -89,7 +89,7 @@
 			
 			[Bindable]
 			public var videoOptions:VideoConfOptions;
-
+			public var cameraBeingPublished:String;
 			
 
 			private function init():void{
@@ -267,7 +267,7 @@
 				
 				defaultWidth = originalWidth;
 				defaultHeight = originalHeight;
-
+				cameraBeingPublished = camerasAvaiable.getItemAt(cmbCameraSelector.selectedIndex).index.toString();
 				var e:StartBroadcastEvent = new StartBroadcastEvent();
 				e.stream = this.streamName;
 				e.camera = _camera;
@@ -326,7 +326,7 @@
 				stopCamera();
 				var e:StopBroadcastEvent = new StopBroadcastEvent()
 				e.stream = streamName;
-				e.cameraId = camerasAvaiable.getItemAt(cmbCameraSelector.selectedIndex).index.toString();
+				e.cameraId = cameraBeingPublished;
 				dispatchEvent(e);
 			}
 			
