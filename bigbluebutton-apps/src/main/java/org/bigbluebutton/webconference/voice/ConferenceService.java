@@ -65,6 +65,11 @@ public class ConferenceService implements ConferenceEventListener {
 	public void recordSession(String room, String meetingid){
 		confProvider.record(room, meetingid);
 	}
+
+	public void changeGain(Integer participant, String room, Integer gain) {
+		if (roomMgr.hasRoom(room))
+			roomMgr.changeGain(room, participant, gain);
+	}
 	
 	public void mute(Integer participant, String room, Boolean mute) {
 		if (roomMgr.hasParticipant(room, participant))

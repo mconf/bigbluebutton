@@ -32,6 +32,7 @@ class ParticipantImp implements Participant {
 	private boolean muted = false;
 	private boolean talking = false;
 	private boolean locked = false;
+	private int gain = 60;
 	
 	ParticipantImp(int id, String name) {
 		this.id = id;
@@ -68,5 +69,13 @@ class ParticipantImp implements Participant {
 	
 	public String getName() {
 		return name;
+	}
+
+	public int getGain() {
+		return gain;
+	}
+	
+	public void setGain(int gain) {
+		this.gain = gain;
 	}
 }

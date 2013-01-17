@@ -20,12 +20,20 @@
 * ===License Header===
 */
 package org.bigbluebutton.conference.service.voice;
-import org.slf4j.Logger;import org.red5.server.api.Red5;import org.bigbluebutton.conference.BigBlueButtonSession;import org.bigbluebutton.conference.Constants;import org.red5.logging.Red5LoggerFactory;
-import org.bigbluebutton.webconference.voice.ConferenceService;import java.util.ArrayList;import java.util.HashMap;
+
+import org.slf4j.Logger;
+import org.red5.server.api.Red5;
+import org.bigbluebutton.conference.BigBlueButtonSession;
+import org.bigbluebutton.conference.Constants;
+import org.red5.logging.Red5LoggerFactory;
+import org.bigbluebutton.webconference.voice.ConferenceService;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.bigbluebutton.webconference.voice.Participant;
+import org.bigbluebutton.webconference.voice.Participant;
+
 public class VoiceService {
 	
 	private static Logger log = Red5LoggerFactory.getLogger( VoiceService.class, "bigbluebutton" );
@@ -63,6 +71,7 @@ public class VoiceService {
 			pmap.put("muted", p.isMuted());
 			pmap.put("talking", p.isTalking());
 			pmap.put("locked", p.isMuteLocked());
+			pmap.put("gain", p.getGain());
 			log.debug("[" + p.getId() + "," + p.getName() + "," + p.isMuted() + "," + p.isTalking() + "]");
 			result.put(p.getId(), pmap);
 		}
@@ -97,6 +106,11 @@ public class VoiceService {
 		String conference = getBbbSession().getVoiceBridge();		
     	log.debug("KickUser " + userid + " from " + conference);		
 		conferenceService.eject(userid, conference);
+	}
+
+	public void changeGain(Integer userid, Integer gain) {
+		String conference = getBbbSession().getVoiceBridge();
+		conferenceService.changeGain(userid, conference, gain);
 	}
 	
 	public void setConferenceService(ConferenceService s) {

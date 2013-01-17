@@ -108,7 +108,7 @@ package org.bigbluebutton.modules.listeners.business
 			_connectionListener = connectionListener;
 		}
 				
-		public function userJoin(userId:Number, cidName:String, cidNum:String, muted:Boolean, talking:Boolean, locked:Boolean):void {
+		public function userJoin(userId:Number, cidName:String, cidNum:String, muted:Boolean, talking:Boolean, locked:Boolean, gain:Number):void {
 			if (! _listeners.hasListener(userId)) {
 				var n:Listener = new Listener();
 				n.callerName = cidName != null ? cidName : "<Unknown Caller>";
@@ -117,6 +117,7 @@ package org.bigbluebutton.modules.listeners.business
 				n.userid = userId;
 				n.talking = talking;
 				n.locked = locked;
+				n.gain = gain;
 				n.moderator = _module.isModerator();
 			
 				/**
@@ -146,6 +147,7 @@ package org.bigbluebutton.modules.listeners.business
 		}
 
 		public function userMute(userId:Number, mute:Boolean):void {
+			LogUtil.debug("O USER ID EH " + userId);
 			var l:Listener = _listeners.getListener(userId);			
 			if (l != null) {
 				l.muted = mute;
@@ -178,6 +180,28 @@ package org.bigbluebutton.modules.listeners.business
 			if (l != null) {
 				l.talking = talk;
 			}	
+		}
+
+		public function changeGain(userid:Number, gain:Number) : void 
+		{
+			var nc:NetConnection = _module.connection;
+			nc.call(
+				"voice.changeGain",// Remote function name
+				null,
+				userid,
+				gain
+			); //_netConnection.call
+			_listenersSO.send("changeGainCallBack", userid, gain);
+		}
+
+		public function changeGainCallback(userid:Number, gain:Number):void{
+			var l:Listener = _listeners.getListener(userid);			
+			if (l != null) {
+				l.gain = gain;
+				LogUtil.debug(LOGNAME + 'Change gain of ' + userid + " to gain =" + gain);
+			}
+			//If I am the user change my gain on phone module
+
 		}
 
 		public function userLeft(userId:Number):void
@@ -312,7 +336,7 @@ package org.bigbluebutton.modules.listeners.business
 							for(var p:Object in result.participants) 
 							{
 								var u:Object = result.participants[p]
-								userJoin(u.participant, u.name, u.name, u.muted, u.talking, u.locked);
+								userJoin(u.participant, u.name, u.name, u.muted, u.talking, u.locked, u.gain);
 							}							
 						}	
 					},	

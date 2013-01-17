@@ -98,6 +98,20 @@ public class RoomManager {
 		return false;
 	}
 
+	public void changeGain(String room, Integer participant, Integer gain) {
+		RoomImp rm = rooms.get(room);
+		if (rm != null) {
+			Participant p = rm.getParticipant(participant);
+			if(gain > 100)
+				p.setGain(100);
+			else	if(gain < 0)
+					p.setGain(0);
+				else
+					p.setGain(gain);
+		}
+
+	}
+
 	private void lockParticipant(String room, Integer participant, Boolean lock) {
 		RoomImp rm = rooms.get(room);
 		if (rm != null) {

@@ -27,4 +27,6 @@ public interface Participant {
 	public int getId();
 	public String getName();
 	public boolean isMuteLocked();
+	public int getGain();
+	public void setGain(int gain);
 }
