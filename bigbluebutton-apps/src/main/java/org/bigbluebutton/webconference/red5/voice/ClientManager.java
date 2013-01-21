@@ -116,7 +116,19 @@ public class ClientManager implements ClientNotifier {
 			soi.getSharedObject().sendMessage("userTalk", list);
 		}
 	}	
-	
+
+	public void changeGain(String room, Integer participant, Integer gain) {
+		log.debug("Participant " + participant + " gain = " + gain);
+		RoomInfo soi = voiceRooms.get(room);
+		if (soi != null) {
+			List<Object> list = new ArrayList<Object>();
+			list.add(participant);
+			list.add(gain);
+			soi.getSharedObject().sendMessage("gainCallB", list);
+		}
+		
+	}	
+
 	public void handleConferenceEvent(ConferenceEvent event) {
 		if (event instanceof ParticipantJoinedEvent) {
 			ParticipantJoinedEvent pje = (ParticipantJoinedEvent) event;

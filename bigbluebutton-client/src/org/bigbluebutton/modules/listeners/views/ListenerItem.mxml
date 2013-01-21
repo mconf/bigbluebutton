@@ -26,6 +26,7 @@
 	
 	<mx:Script>
 		<![CDATA[
+			import org.bigbluebutton.common.LogUtil;
 			import flash.events.MouseEvent;			
 			import mx.controls.Image;
 			import mx.controls.Label;
@@ -33,7 +34,7 @@
 			import org.bigbluebutton.common.Images;
 			import org.bigbluebutton.modules.listeners.events.ListenersCommand;
 			import org.bigbluebutton.util.i18n.ResourceUtil; 
-			
+			import org.bigbluebutton.modules.listeners.events.ChangeGain;
 			private var images:Images = new Images();
 			
 			[Bindable] private var lockedIcon:Class = images.locked;
@@ -42,6 +43,7 @@
 			[Bindable] private var unmuteIcon:Class = images.sound_none;
 			[Bindable] private var talkIcon:Object = images.sound;   		
 			[Bindable] private var ejectIcon:Class = images.delete_icon;
+			[Bindable] private var forwardIcon:Class = images.forward;
 			[Bindable] private var statusTooltip : String = "";
 			[Bindable] private var ejectTooltip : String = ResourceUtil.getInstance().getString('bbb.listeners.ejectTooltip');
 			[Bindable] private var moderator:Boolean = false;
@@ -96,6 +98,14 @@
 				var ejectCommand:ListenersCommand = new ListenersCommand(ListenersCommand.EJECT_USER);
 				ejectCommand.userid = data.userid;
 				dispatchEvent(ejectCommand);
+			}
+
+			private function handleAddGainButtonClick():void {
+				var changeGainEvent:ChangeGain = new ChangeGain();
+				changeGainEvent.userid = data.userid;
+				changeGainEvent.gain = data.gain + 10;
+				dispatchEvent(changeGainEvent);
+				LogUtil.debug("DATA EH " + data.gain);
 			}	 
 		]]>
 	</mx:Script>
@@ -110,7 +120,12 @@
 			   icon="{data.locked ? lockedIcon : unlockedIcon}" click="lockMuteUser()"/>
 	<mx:Image id="talkImg" source="{talkIcon}" visible="{data.talking}" 
 			  toolTip="{ResourceUtil.getInstance().getString('bbb.listenerItem.talkImg.toolTip')}"/>
+	<mx:Button id="Add10Gain" icon="{forwardIcon}" width="20" height="20" visible="true"
+			   toolTip="{ResourceUtil.getInstance().getString('bbb.listeners.ejectTooltip')}"
+			   click="handleAddGainButtonClick()"/>
+
 	<mx:Button id="kickUserBtn" icon="{ejectIcon}" width="20" height="20" visible="false"
 			   toolTip="{ResourceUtil.getInstance().getString('bbb.listeners.ejectTooltip')}"
 			   click="handleEjectButtonClick()"/>
+	
 </mx:HBox>

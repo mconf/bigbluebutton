@@ -69,6 +69,10 @@
     <EventHandlers type="LEAVE_VOICE_CONFERENCE_EVENT">        
 		<MethodInvoker generator="{PhoneManager}" method="userRequestedHangup"/>
     </EventHandlers>
+
+    <EventHandlers type="CHANGE_MIC_GAIN_EVENT">
+		<MethodInvoker generator="{PhoneManager}" method="changeMyMicGain" arguments="{event.payload.gain}"/>
+    </EventHandlers>
     
 	<EventHandlers type="JOIN_VOICE_CONFERENCE_EVENT">        
 		<MethodInvoker generator="{PhoneManager}" method="joinVoice" arguments="{event.payload.useMicrophone}"/>

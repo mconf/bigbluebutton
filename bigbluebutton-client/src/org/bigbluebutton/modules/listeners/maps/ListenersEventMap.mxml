@@ -29,6 +29,7 @@
 			import org.bigbluebutton.modules.listeners.events.ListenersCommand;
 			import org.bigbluebutton.modules.listeners.events.StartListenersModuleEvent;
 			import org.bigbluebutton.modules.listeners.events.StopListenersModuleEvent;
+			import org.bigbluebutton.modules.listeners.events.ChangeGain;
 			import org.bigbluebutton.modules.listeners.managers.ListenersManager;
 		]]>
 	</mx:Script>
@@ -67,6 +68,10 @@
 	
 	<EventHandlers type="{ListenersCommand.UNMUTE_ALL}" >
 		<MethodInvoker generator="{ListenersProxy}" method="unmuteAllUsers" arguments="{event}" />
+	</EventHandlers>
+
+	<EventHandlers type="{ChangeGain.CHANGE_GAIN}" >
+		<MethodInvoker generator="{ListenersProxy}" method="changeGain" arguments="{event}" />
 	</EventHandlers>
 	
 </EventMap>

@@ -108,7 +108,7 @@ package org.bigbluebutton.modules.listeners.business
 			_connectionListener = connectionListener;
 		}
 				
-		public function userJoin(userId:Number, cidName:String, cidNum:String, muted:Boolean, talking:Boolean, locked:Boolean, gain:Number):void {
+		public function userJoin(userId:Number, cidName:String, cidNum:String, muted:Boolean, talking:Boolean, locked:Boolean, gain:Number = 60):void {
 			if (! _listeners.hasListener(userId)) {
 				var n:Listener = new Listener();
 				n.callerName = cidName != null ? cidName : "<Unknown Caller>";
@@ -119,7 +119,7 @@ package org.bigbluebutton.modules.listeners.business
 				n.locked = locked;
 				n.gain = gain;
 				n.moderator = _module.isModerator();
-			
+			        LogUtil.debug("O gain de " + userId + " eh de " + gain);
 				/**
 				 * Let's store the voice userid so we can do push to talk.
 				 */
@@ -184,24 +184,32 @@ package org.bigbluebutton.modules.listeners.business
 
 		public function changeGain(userid:Number, gain:Number) : void 
 		{
+
+			var _gain = gain;
+			if(_gain > 100)
+				_gain = 100;
+			else if(_gain < 0)
+				_gain = 0;			
 			var nc:NetConnection = _module.connection;
 			nc.call(
 				"voice.changeGain",// Remote function name
 				null,
 				userid,
-				gain
+				_gain
 			); //_netConnection.call
-			_listenersSO.send("changeGainCallBack", userid, gain);
 		}
 
-		public function changeGainCallback(userid:Number, gain:Number):void{
+		public function gainCallB(userid:Number, gain:Number):void{
 			var l:Listener = _listeners.getListener(userid);			
 			if (l != null) {
 				l.gain = gain;
-				LogUtil.debug(LOGNAME + 'Change gain of ' + userid + " to gain =" + gain);
+				LogUtil.debug(LOGNAME + "Change gain of " + userid + " to gain = " + gain);
 			}
-			//If I am the user change my gain on phone module
-
+			if (UserManager.getInstance().getConference().amIThisVoiceUser(userid)) {
+				var changeMyMicGain:BBBEvent = new BBBEvent("CHANGE_MIC_GAIN_EVENT");
+				changeMyMicGain.payload["gain"] = gain;
+				dispatcher.dispatchEvent(changeMyMicGain);
+			}
 		}
 
 		public function userLeft(userId:Number):void
@@ -335,7 +343,7 @@ package org.bigbluebutton.modules.listeners.business
 						if (result.count > 0) {
 							for(var p:Object in result.participants) 
 							{
-								var u:Object = result.participants[p]
+								var u:Object = result.participants[p];
 								userJoin(u.participant, u.name, u.name, u.muted, u.talking, u.locked, u.gain);
 							}							
 						}	

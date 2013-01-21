@@ -201,6 +201,11 @@ package org.bigbluebutton.modules.phone.managers {
 			LogUtil.debug("Stopped Stream(s)");
 		}
 
+		public function changeMyMicGain(gain:Number):void {
+			LogUtil.debug("Mudei o gain");
+			mic.gain = gain;
+		}
+
 		private function netStatus (evt:NetStatusEvent ):void {		 
 			var event:PlayStreamStatusEvent = new PlayStreamStatusEvent();
 			LogUtil.debug("******* evt.info.code  " + evt.info.code);

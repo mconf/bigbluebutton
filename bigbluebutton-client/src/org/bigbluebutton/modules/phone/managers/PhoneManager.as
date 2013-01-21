@@ -111,6 +111,10 @@ package org.bigbluebutton.modules.phone.managers {
 			connectionManager.doCall(attributes.webvoiceconf);
 		}
 		
+		public function changeMyMicGain(gain:Number):void {
+			streamManager.changeMyMicGain(gain);
+		}
+
 		public function callConnected(event:CallConnectedEvent):void {
 			setupConnection();
 			streamManager.callConnected(event.playStreamName, event.publishStreamName, event.codec);
