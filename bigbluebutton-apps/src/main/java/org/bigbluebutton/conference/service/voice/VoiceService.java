@@ -110,7 +110,13 @@ public class VoiceService {
 
 	public void changeGain(Integer userid, Integer gain) {
 		String conference = getBbbSession().getVoiceBridge();
-		conferenceService.changeGain(userid, conference, gain);
+		if(gain > 100)
+			conferenceService.changeGain(userid, conference, 100);
+		else if(gain < 0)
+			conferenceService.changeGain(userid, conference, 0);
+		     else
+			conferenceService.changeGain(userid, conference, gain);
+			
 	}
 	
 	public void setConferenceService(ConferenceService s) {
