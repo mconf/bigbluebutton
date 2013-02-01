@@ -103,7 +103,6 @@
 				publishWindow = new PublishWindow();
 				publishWindow.videoOptions = proxy.videoOptions;
 				publishWindow.userId = module.userid;
-				publishWindow.userrole = module.role;
 				publishWindow.quality = module.quality;
 				publishWindow.resolutions = module.resolutions.split(",");
 				

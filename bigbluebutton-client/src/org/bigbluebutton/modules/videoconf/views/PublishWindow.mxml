@@ -45,6 +45,7 @@
 			import org.bigbluebutton.common.Images;
 			import org.bigbluebutton.common.LogUtil;
 			import org.bigbluebutton.common.events.LocaleChangeEvent;
+			import org.bigbluebutton.core.managers.UserManager;
 			import org.bigbluebutton.main.views.MainCanvas;
 			import org.bigbluebutton.modules.videoconf.events.OpenVideoWindowEvent;
 			import org.bigbluebutton.modules.videoconf.events.CloseAllWindowsEvent;
@@ -60,7 +61,6 @@
 			
 			private var camWidth:Number = 320;
 			private var camHeight:Number = 240;
-			private var _userrole:String;
 			private var _camera:Camera = null;
 			public var quality:Number = 0;
 						
@@ -89,9 +89,14 @@
 				this.title = ResourceUtil.getInstance().getString('bbb.publishVideo.title');
 
 				checkIfMacCamera();
-				if (isPresenter()) showResControls(true);
+				
+				if (UserManager.getInstance().getConference().amIPresenter() || UserManager.getInstance().getConference().amIModerator()) {
+					showResControls(true);
+				} else {
+					if (Camera.names.length == 1)
+						startPublishing();
+				}  
 				if (Camera.names.length > 1) showVideoControls(true);
-				if (!isPresenter() && Camera.names.length == 1) startPublishing();
 
 				this.minWidth = _minWidth;
 				this.minHeight = _minHeight;
@@ -309,15 +314,6 @@
          		 */	 	
 				var curTime:Number = new Date().getTime();	 	
         		this.streamName = cmbResolution.selectedLabel.concat(this.userId) + "-" + curTime;
-			}
-			
-			public function set userrole(role:String):void{
-				this._userrole = role;
-			}
-			
-			private function isPresenter():Boolean{
-				if (this._userrole == "MODERATOR" || this._userrole == "PRESENTER") return true;
-				else return false;
 			}
 			
 			private function showVideoControls(show:Boolean):void{
