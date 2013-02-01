@@ -90,12 +90,14 @@
 
 				checkIfMacCamera();
 				
-				if (UserManager.getInstance().getConference().amIPresenter() || UserManager.getInstance().getConference().amIModerator()) {
-					showResControls(true);
-				} else {
-					if (Camera.names.length == 1)
-						startPublishing();
-				}  
+				// everyone can select the camera resolution
+				showResControls(true);
+//				if (UserManager.getInstance().getConference().amIPresenter() || UserManager.getInstance().getConference().amIModerator()) {
+//					showResControls(true);
+//				} else {
+//					if (Camera.names.length == 1)
+//						startPublishing();
+//				}  
 				if (Camera.names.length > 1) showVideoControls(true);
 
 				this.minWidth = _minWidth;
