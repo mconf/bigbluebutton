@@ -22,11 +22,14 @@
 
 <mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" 
 		 horizontalScrollPolicy="off" creationComplete="onCreationComplete()"
-		 horizontalAlign="left">
-	
+		 horizontalAlign="left"  xmlns:mate="http://mate.asfusion.com/">
+
+	<mate:Listener type="SYNC_MIC_GAIN_EVENT" method="syncMicGain" />
+
 	<mx:Script>
 		<![CDATA[
 			import org.bigbluebutton.common.LogUtil;
+			import org.bigbluebutton.main.events.BBBEvent;
 			import flash.events.MouseEvent;			
 			import mx.controls.Image;
 			import mx.controls.Label;
@@ -34,7 +37,9 @@
 			import org.bigbluebutton.common.Images;
 			import org.bigbluebutton.modules.listeners.events.ListenersCommand;
 			import org.bigbluebutton.util.i18n.ResourceUtil; 
-			import org.bigbluebutton.modules.listeners.events.ChangeGain;
+			import org.bigbluebutton.common.events.AddUIComponentToMainCanvas;
+			import org.bigbluebutton.modules.listeners.views.ListenersWindow;
+
 			private var images:Images = new Images();
 			
 			[Bindable] private var lockedIcon:Class = images.locked;
@@ -47,13 +52,49 @@
 			[Bindable] private var statusTooltip : String = "";
 			[Bindable] private var ejectTooltip : String = ResourceUtil.getInstance().getString('bbb.listeners.ejectTooltip');
 			[Bindable] private var moderator:Boolean = false;
-			
+			[Bindable] public var parentWindow:ListenersWindow= null;
+			[Bindable] public var gainSlider:GainSlider = null;
 			public function onRollOver():void{
 				if (moderator) kickUserBtn.visible = true;
+				if(gainSlider != null)
+					gainSlider.positionToolbar(parentWindow);
+			}
+
+			public function showVolumeControl():void {
+				if(gainSlider == null) {
+					var addUIEvent:AddUIComponentToMainCanvas = new AddUIComponentToMainCanvas(AddUIComponentToMainCanvas.ADD_COMPONENT);
+					gainSlider = new GainSlider();
+					gainSlider.visible = true;
+					addUIEvent.component = gainSlider;
+					dispatchEvent(addUIEvent);
+					gainSlider.positionToolbar(parentWindow);
+					gainSlider.labelName.text = data.callerName;
+					gainSlider.userid = data.userid;
+					gainSlider.sld.value = data.gain;
+				}
+				else {
+					gainSlider.visible = true;
+					gainSlider.positionToolbar(parentWindow);
+				}
+			}
+			
+			public function hideVolumeControl():void {
+				if (gainSlider != null) 
+					gainSlider.visible = false;
+			}
+
+			public function syncMicGain(event:BBBEvent):void {
+				if (gainSlider != null && (event.payload.userid == gainSlider.userid)) {
+					gainSlider.sld.value = event.payload.gain;
+				}
 			}
 			
 			public function onRollOut():void{
 				if (moderator) kickUserBtn.visible = false;
+			}
+
+			public function setParent(par:ListenersWindow):void {
+				this.parentWindow = par;
 			}
 			
 			public function muteUser():void {
@@ -95,18 +136,21 @@
 			
 			private function handleEjectButtonClick():void {
 				//proxy.ejectUser(listenersList.selectedItem.userid);
-				var ejectCommand:ListenersCommand = new ListenersCommand(ListenersCommand.EJECT_USER);
-				ejectCommand.userid = data.userid;
-				dispatchEvent(ejectCommand);
+				//var ejectCommand:ListenersCommand = new ListenersCommand(ListenersCommand.EJECT_USER);
+				//ejectCommand.userid = data.userid;
+				//dispatchEvent(ejectCommand);
 			}
+			private function handleVolumeButtonClick():void {
+				if(gainSlider == null || gainSlider.visible == false)
+					showVolumeControl();
+				else
+					hideVolumeControl();
+			}
+			
 
-			private function handleAddGainButtonClick():void {
-				var changeGainEvent:ChangeGain = new ChangeGain();
-				changeGainEvent.userid = data.userid;
-				changeGainEvent.gain = data.gain + 10;
-				dispatchEvent(changeGainEvent);
-				LogUtil.debug("DATA EH " + data.gain);
-			}	 
+			
+			
+			
 		]]>
 	</mx:Script>
 		
@@ -118,12 +162,11 @@
 	<mx:Button id="muteCB" width="20" height="20" visible="true" enabled="{data.moderator}" 
 			   toolTip="{ResourceUtil.getInstance().getString('bbb.listenerItem.lockImg.toolTip')}"
 			   icon="{data.locked ? lockedIcon : unlockedIcon}" click="lockMuteUser()"/>
+	<mx:Button id="volumeControl" icon="{ejectIcon}" width="20" height="20" enabled="{data.moderator}"
+			   toolTip="{ResourceUtil.getInstance().getString('bbb.listeners.ejectTooltip')}"
+			   click="handleVolumeButtonClick()" />
 	<mx:Image id="talkImg" source="{talkIcon}" visible="{data.talking}" 
 			  toolTip="{ResourceUtil.getInstance().getString('bbb.listenerItem.talkImg.toolTip')}"/>
-	<mx:Button id="Add10Gain" icon="{forwardIcon}" width="20" height="20" visible="true"
-			   toolTip="{ResourceUtil.getInstance().getString('bbb.listeners.ejectTooltip')}"
-			   click="handleAddGainButtonClick()"/>
-
 	<mx:Button id="kickUserBtn" icon="{ejectIcon}" width="20" height="20" visible="false"
 			   toolTip="{ResourceUtil.getInstance().getString('bbb.listeners.ejectTooltip')}"
 			   click="handleEjectButtonClick()"/>

@@ -204,12 +204,19 @@ package org.bigbluebutton.modules.listeners.business
 			if (l != null) {
 				l.gain = gain;
 				LogUtil.debug(LOGNAME + "Change gain of " + userid + " to gain = " + gain);
+				
 			}
 			if (UserManager.getInstance().getConference().amIThisVoiceUser(userid)) {
 				var changeMyMicGain:BBBEvent = new BBBEvent("CHANGE_MIC_GAIN_EVENT");
 				changeMyMicGain.payload["gain"] = gain;
+				changeMyMicGain.payload["userid"] = userid;
 				dispatcher.dispatchEvent(changeMyMicGain);
 			}
+			var syncMicGain:BBBEvent = new BBBEvent("SYNC_MIC_GAIN_EVENT");
+			syncMicGain.payload["gain"] = gain;
+			syncMicGain.payload["userid"] = userid;
+			dispatcher.dispatchEvent(syncMicGain);
+			
 		}
 
 		public function userLeft(userId:Number):void

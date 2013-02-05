@@ -180,6 +180,7 @@
 						
 			private function onItemRollOver(e:ListEvent):void{
 				var item:ListenerItem = e.itemRenderer as ListenerItem;
+				item.setParent(this);				
 				item.onRollOver();
 			}
 			
