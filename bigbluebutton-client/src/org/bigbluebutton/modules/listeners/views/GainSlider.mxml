@@ -1,0 +1,35 @@
+<mx:VBox xmlns="flexlib.containers.*" xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:mate="http://mate.asfusion.com/" visible="false" backgroundColor="0xCCCCCC" cornerRadius="5" borderStyle="solid" 
+	paddingBottom="3" paddingTop="3" paddingLeft="3" paddingRight="3" width="200" enabled = "true">
+	
+	
+	
+	<mx:Script>
+		<![CDATA[
+
+			import org.bigbluebutton.modules.listeners.views.ListenersWindow;
+			import org.bigbluebutton.modules.listeners.events.ChangeGain;
+			import org.bigbluebutton.util.i18n.ResourceUtil; 
+
+			public var userid:Number;
+
+			private function changeGain():void{
+				var changeGainEvent:ChangeGain = new ChangeGain();
+				changeGainEvent.userid = userid;
+				changeGainEvent.gain = sld.value;
+				dispatchEvent(changeGainEvent);
+			}
+
+			public function positionToolbar(window:ListenersWindow):void{
+				this.x = window.x + window.width + 3;
+				this.y = window.y + 30;
+				parent.setChildIndex(this, parent.numChildren-1);
+			}
+		]]>
+	</mx:Script>
+	<mx:Label id="labelName" textAlign="left" text="" />
+	<mx:HSlider height="30" id="sld" change="changeGain()" toolTip="{ResourceUtil.getInstance().getString('bbb.listeners.gainSliderTooltip')}" minimum="0" maximum="100" 
+				useHandCursor="true" value="60" showDataTip="true" snapInterval="1" dataTipOffset="0"
+				tickInterval="25" 
+            			labels="[0,25,50,75,100]" />
+</mx:VBox>

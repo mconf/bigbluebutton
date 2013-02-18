@@ -25,6 +25,7 @@
 		 horizontalAlign="left"  xmlns:mate="http://mate.asfusion.com/">
 
 	<mate:Listener type="SYNC_MIC_GAIN_EVENT" method="syncMicGain" />
+	<mate:Listener type="HIDE_GAIN_SLIDER" method="hideGainSlider" />
 
 	<mx:Script>
 		<![CDATA[
@@ -54,11 +55,19 @@
 			[Bindable] private var moderator:Boolean = false;
 			[Bindable] public var parentWindow:ListenersWindow= null;
 			[Bindable] public var gainSlider:GainSlider = null;
+
 			public function onRollOver():void{
 				if (moderator) kickUserBtn.visible = true;
+
 				if(gainSlider != null)
 					gainSlider.positionToolbar(parentWindow);
 			}
+
+			public function onClick(event:MouseEvent):void{
+				if(gainSlider != null)
+					gainSlider.positionToolbar(parentWindow);
+			}
+
 
 			public function showVolumeControl():void {
 				if(gainSlider == null) {
@@ -71,6 +80,7 @@
 					gainSlider.labelName.text = data.callerName;
 					gainSlider.userid = data.userid;
 					gainSlider.sld.value = data.gain;
+					gainSlider.addEventListener(MouseEvent.CLICK, onClick);
 				}
 				else {
 					gainSlider.visible = true;
@@ -81,6 +91,12 @@
 			public function hideVolumeControl():void {
 				if (gainSlider != null) 
 					gainSlider.visible = false;
+			}
+
+			public function hideGainSlider(event:BBBEvent):void {
+				if (gainSlider != null && event.payload.userid != data.userid) {
+					gainSlider.visible = false;
+				}	
 			}
 
 			public function syncMicGain(event:BBBEvent):void {
@@ -141,8 +157,12 @@
 				//dispatchEvent(ejectCommand);
 			}
 			private function handleVolumeButtonClick():void {
-				if(gainSlider == null || gainSlider.visible == false)
+				if(gainSlider == null || gainSlider.visible == false) {
 					showVolumeControl();
+					var hideOthersGainSliders:BBBEvent = new BBBEvent("HIDE_GAIN_SLIDER");
+					hideOthersGainSliders.payload["userid"] = data.userid;
+					dispatchEvent(hideOthersGainSliders);
+				}
 				else
 					hideVolumeControl();
 			}

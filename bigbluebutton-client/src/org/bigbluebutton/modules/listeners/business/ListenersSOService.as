@@ -185,7 +185,7 @@ package org.bigbluebutton.modules.listeners.business
 		public function changeGain(userid:Number, gain:Number) : void 
 		{
 
-			var _gain = gain;
+			var _gain:Number = gain;
 			if(_gain > 100)
 				_gain = 100;
 			else if(_gain < 0)
