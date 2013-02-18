@@ -20,14 +20,11 @@ package org.bigbluebutton.modules.videoconf.events
 {
 	import flash.events.Event;
 	
-	public class ClosePublishWindowEvent extends Event
+	public class CloseAllPublishWindowEvent extends Event
 	{
-		public static const CLOSE_PUBLISH_WINDOW:String = "CLOSE_PUBLISH_WINDOW";
+		public static const CLOSE_ALL_PUBLISH_WINDOW:String = "CLOSE_ALL_PUBLISH_WINDOW";
 		
-		public var cameraId:String;		
-		public var publishWindowIndex:Number;
-
-		public function ClosePublishWindowEvent(type:String = CLOSE_PUBLISH_WINDOW)
+		public function CloseAllPublishWindowEvent(type:String = CLOSE_ALL_PUBLISH_WINDOW)
 		{
 			super(type, true, false);
 		}

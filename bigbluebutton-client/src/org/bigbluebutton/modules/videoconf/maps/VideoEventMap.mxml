@@ -37,49 +37,68 @@
 			import org.bigbluebutton.modules.videoconf.events.CloseAllWindowsEvent;
 			import org.bigbluebutton.modules.videoconf.events.OpenPublishWindowEvent;
 			import org.bigbluebutton.modules.videoconf.events.ClosePublishWindowEvent;
+			import org.bigbluebutton.modules.videoconf.events.CloseAllPublishWindowEvent;
 			import org.bigbluebutton.modules.videoconf.events.OpenVideoWindowEvent;
 			import org.bigbluebutton.modules.videoconf.events.StartBroadcastEvent;
 			import org.bigbluebutton.modules.videoconf.events.StopBroadcastEvent;
 			import org.bigbluebutton.modules.videoconf.views.PublishWindow;
-			import org.bigbluebutton.modules.videoconf.views.ToolbarButton;
+			import org.bigbluebutton.modules.videoconf.views.ToolbarPopupButton;
 			import org.bigbluebutton.modules.videoconf.views.VideoWindow;
 			import org.bigbluebutton.modules.viewers.events.ViewCameraEvent;
 			import org.flexunit.runner.manipulation.filters.IncludeAllFilter;
-			
-			public var module:VideoconfModule;
-			private var button:ToolbarButton;
-			private var publishWindow:PublishWindow;
-			public var proxy:VideoProxy;
+			import org.bigbluebutton.core.managers.UserManager;
+			import mx.collections.ArrayList;
 
+
+			public var module:VideoconfModule;
+			private var button:ToolbarPopupButton;
+			public var proxy:VideoProxy;
+			public var streamList:ArrayList = new ArrayList();
+			public var remoteOpenStreamList:ArrayList = new ArrayList();
+			public var remoteOpenState:Dictionary = new Dictionary();
+			public var publishWindowArray:ArrayList = new ArrayList();
+			public var numberOfPublishWindow:int = 0;
 			// This variable is used to avoid dispatching the BroadcastStoppedEvent
 			// when the user just open the publish window and close it before start
 			// publishing
-			private var _publishing:Boolean = false;		
+			private var _publishing:Boolean = false;
+			private var openedPublishingWindow:Boolean = false;
 			
 			private function viewCamera(userid:Number, stream:String, name:String, mock:Boolean = false):void{
 				if (userid == module.userid) return;
 				
-				var window:VideoWindow = new VideoWindow();
-				window.userId = userid;
-				window.videoOptions = proxy.videoOptions;
+				var streamNames: Array = stream.split("|");
+				var i:int;
+				for (i = 0; i < streamNames.length; i++)
+				{
+					if((remoteOpenStreamList.getItemIndex(streamNames[i]) < 0) || (remoteOpenState[streamNames[i]] == false)) {
+						var window:VideoWindow = new VideoWindow();
+						window.userId = userid;
+						window.videoOptions = proxy.videoOptions;
+						window.resolutions = module.resolutions.split(",");
+																					
+					    	if (mock) {
+							window.startVideo(module.mockConnection, streamNames[i]);
+					    	}
+						else {
+							window.startVideo(module.connection, streamNames[i]);
+						}
+						remoteOpenState[streamNames[i]] = true;
+						window.title = name;
+						var windowEvent:OpenWindowEvent = new OpenWindowEvent(OpenWindowEvent.OPEN_WINDOW_EVENT);
+						windowEvent.window = window;
+						globalDispatcher.dispatchEvent(windowEvent);
 				
-				window.resolutions = module.resolutions.split(",");
-				
-				if (mock) {
-					window.startVideo(module.mockConnection, stream);
+						// this event will dock the window, if it's enabled
+						var openVideoEvent:OpenVideoWindowEvent = new OpenVideoWindowEvent();
+						openVideoEvent.window = window;
+						globalDispatcher.dispatchEvent(openVideoEvent);
+						remoteOpenStreamList.addItem(streamNames[i]);
+					}
 				}
-				else {
-					window.startVideo(module.connection, stream);
-				}
-				window.title = name;
-				var windowEvent:OpenWindowEvent = new OpenWindowEvent(OpenWindowEvent.OPEN_WINDOW_EVENT);
-				windowEvent.window = window;
-				globalDispatcher.dispatchEvent(windowEvent);
 				
-				// this event will dock the window, if it's enabled
-				var openVideoEvent:OpenVideoWindowEvent = new OpenVideoWindowEvent();
-				openVideoEvent.window = window;
-				globalDispatcher.dispatchEvent(openVideoEvent);
+				
+				
 			}
 
 			private function viewVideoFile(e:BBBEvent):void {
@@ -92,7 +111,7 @@
 			
 			public function addToolbarButton():void{
 				if (proxy.videoOptions.showButton) {
-					button = new ToolbarButton();	  
+					button = new ToolbarPopupButton();	  
 					button.isPresenter = !module.presenterShareOnly;
 					var event:ToolbarButtonEvent = new ToolbarButtonEvent(ToolbarButtonEvent.ADD);
 					event.button = button;
@@ -100,13 +119,18 @@
 				}
 			}
 			
-			private function openPublishWindow():void{
-				publishWindow = new PublishWindow();
+			private function openPublishWindow(evt:OpenPublishWindowEvent):void{
+				openedPublishingWindow = true;
+				var publishWindow:PublishWindow = new PublishWindow();
 				publishWindow.videoOptions = proxy.videoOptions;
 				publishWindow.userId = module.userid;
 				publishWindow.quality = module.quality;
 				publishWindow.resolutions = module.resolutions.split(",");
-				
+				publishWindow.cameraIsOff = button.cameraIsOff;
+				publishWindow.numberOfCamerasOff = button.numberOfCamerasOff;
+				publishWindow.indexOnArray = publishWindowArray.length;
+				publishWindowArray.addItem(publishWindow);
+				publishWindow.defaultCamera = evt.defaultCamera;
 				var windowEvent:OpenWindowEvent = new OpenWindowEvent(OpenWindowEvent.OPEN_WINDOW_EVENT);
 				windowEvent.window = publishWindow;
 				globalDispatcher.dispatchEvent(windowEvent);
@@ -114,40 +138,90 @@
 			
 
 
-			private function closePublishWindow():void{
-				publishWindow.close();
+			private function closePublishWindow(index:Number):void{
+				publishWindowArray.getItemAt(index).close();
 			}
 
 
-			private function startPublishing(e:StartBroadcastEvent):void{
-			    LogUtil.debug("Publishing stream to: " + proxy.connection.uri + "/" + e.stream);
-				proxy.startPublishing(e);
-				var broadcastEvent:BroadcastStartedEvent = new BroadcastStartedEvent();
-				broadcastEvent.stream = e.stream;
+			private function closeAllPublishWindow():void{
+				var i:int = 0;
+				for(i = 0; i < publishWindowArray.length; i++) {
+					var publishWindow:PublishWindow = PublishWindow(publishWindowArray.getItemAt(i));
+					publishWindow.stopAll = true;
+				   	publishWindow.close();
+
+				}
+				publishWindowArray.removeAll();
+				LogUtil.debug("CLOSE ALL");
+				var myPattern:RegExp = /,/g; 
+				proxy.stopAllBroadcasting();
+				_publishing = false;
+				var broadcastEvent:BroadcastStoppedEvent = new BroadcastStoppedEvent();
+				broadcastEvent.stream = streamList.toString().replace(myPattern, "|");
 				broadcastEvent.userid = module.userid;
 				globalDispatcher.dispatchEvent(broadcastEvent);
-				publishWindow.title = module.username + " (you)";
-				_publishing = true;
-				button.publishingStatus(button.START_PUBLISHING);
+				streamList.removeAll();
+				button.stopAllPublishing();
+			}
 
+
+
+			private function enableToolbarPopupButton():void {
+				if(openedPublishingWindow == false)
+					button.enabled = true;
+			}
+			private function startPublishing(e:StartBroadcastEvent):void{
+			 LogUtil.debug("Publishing stream to: " + proxy.connection.uri + "/" + e.stream);
+				proxy.startPublishing(e);
+			  	openedPublishingWindow = false;
+				var broadcastEvent:BroadcastStartedEvent = new BroadcastStartedEvent();			
+				if(streamList.length == 0) {
+					streamList.addItem(e.stream);
+					broadcastEvent.stream = e.stream;
+				}
+				else {
+					streamList.addItem(e.stream);
+					var myPattern:RegExp = /,/g; 
+					broadcastEvent.stream = streamList.toString().replace(myPattern, "|");
+				}
+				publishWindowArray.getItemAt(e.publishWindowIndex).title = module.username + " (you)";
+				broadcastEvent.userid = module.userid;
+				globalDispatcher.dispatchEvent(broadcastEvent);
+				_publishing = true;
+				button.publishingStatus(button.START_PUBLISHING, e.cameraId, e.publishWindowIndex);
+				
 			}
 			
 			private function stopPublishing(e:StopBroadcastEvent):void{
 				if (_publishing) {
-					proxy.stopBroadcasting();
+					proxy.stopBroadcasting(e.stream);
+					if(streamList.length <= 1) {
+						streamList.removeItem(e.stream);
+						_publishing = false;
+						var broadcastEvent:BroadcastStoppedEvent = new BroadcastStoppedEvent();
+						broadcastEvent.stream = e.stream;
+						broadcastEvent.userid = module.userid;
+						globalDispatcher.dispatchEvent(broadcastEvent);
+					}
+					else {
+						streamList.removeItem(e.stream);
+						var broadcastStartEvent:BroadcastStartedEvent = new BroadcastStartedEvent();
+						var myPattern:RegExp = /,/g; 
+						broadcastStartEvent.stream = streamList.toString().replace(myPattern, "|");
+						broadcastStartEvent.userid = module.userid;
+						globalDispatcher.dispatchEvent(broadcastStartEvent);
+					}
 					
-					var broadcastEvent:BroadcastStoppedEvent = new BroadcastStoppedEvent();
-					broadcastEvent.stream = publishWindow.streamName;
-					broadcastEvent.userid = module.userid;
-					globalDispatcher.dispatchEvent(broadcastEvent);
-					_publishing = false;
+					
 				}
-				
-				//Make toolbar button enabled again
-
-				button.publishingStatus(button.STOP_PUBLISHING);
-				//button.show();
+				if(e.cameraId == null) {
+					openedPublishingWindow = false;
+					enableToolbarPopupButton();
+				}
+				button.publishingStatus(button.STOP_PUBLISHING, e.cameraId);
 			}
+			
+
 			
 			public function stopModule():void {
 				closeAllWindows();
@@ -155,10 +229,7 @@
 			}
 			
 			public function closeAllWindows():void{
-				if (publishWindow != null) {
-					proxy.stopBroadcasting();
-					publishWindow.close();
-				}
+				closeAllPublishWindow();
 				globalDispatcher.dispatchEvent(new CloseAllWindowsEvent());
 			}
 			
@@ -171,20 +242,38 @@
 			private function switchToViewer():void{
 				if (module.presenterShareOnly){
 					button.isPresenter = false;
-					if (publishWindow != null) publishWindow.close();
+					closeAllPublishWindow();
 				}
+			}
+			
+			private function remoteChangeStatus(e:BBBEvent):void {
+				remoteOpenState[e.message] = false;
 			}
 			
 			
 		]]>
 	</mx:Script>
 	
+
+	<EventHandlers type="EnableToolbarPopupButton">
+		<InlineInvoker method="enableToolbarPopupButton"/>
+	</EventHandlers>
+
+
+	<EventHandlers type="ViewVideoCloseEvent">
+		<InlineInvoker method="remoteChangeStatus" arguments="{event}"/>
+	</EventHandlers>
+
 	<EventHandlers type="{OpenPublishWindowEvent.OPEN_PUBLISH_WINDOW}">
-		<InlineInvoker method="openPublishWindow" />
+		<InlineInvoker method="openPublishWindow" arguments="{event}"/>
 	</EventHandlers>
 
 	<EventHandlers type="{ClosePublishWindowEvent.CLOSE_PUBLISH_WINDOW}">
-		<InlineInvoker method="closePublishWindow" />
+		<InlineInvoker method="closePublishWindow" arguments="{[event.publishWindowIndex]}"/>
+	</EventHandlers>
+
+	<EventHandlers type="{CloseAllPublishWindowEvent.CLOSE_ALL_PUBLISH_WINDOW}">
+		<InlineInvoker method="closeAllPublishWindow"/>
 	</EventHandlers>
 	
 	<EventHandlers type="{StartBroadcastEvent.START_BROADCAST}" >

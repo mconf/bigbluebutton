@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  BigBlueButton open source conferencing system - http://www.bigbluebutton.org
+  
+  Copyright (c) 2010 BigBlueButton Inc. and by respective authors (see below).
+  
+  BigBlueButton is free software; you can redistribute it and/or modify it under the 
+  terms of the GNU Lesser General Public License as published by the Free Software 
+  Foundation; either version 2.1 of the License, or (at your option) any later 
+  version. 
+  
+  BigBlueButton is distributed in the hope that it will be useful, but WITHOUT ANY 
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+  PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+  
+  You should have received a copy of the GNU Lesser General Public License along 
+  with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
+ 
+  $Id: $
+--> 
+
+<mx:PopUpButton xmlns:mx="http://www.adobe.com/2006/mxml" icon="{camIcon}" 
+		   click="openPublishWindow()" 	
+		   xmlns:mate="http://mate.asfusion.com/"
+		   creationComplete="init()" 
+		   mouseOver = "mouseOverHandler(event)"
+		   mouseOut = "mouseOutHandler(event)"
+		   toolTip="{ResourceUtil.getInstance().getString('bbb.toolbar.video.toolTip.start')}"
+		   visible="{isPresenter}"
+		 
+		 
+		   implements="org.bigbluebutton.common.IBbbToolbarComponent">
+
+	<mx:Script>
+		<![CDATA[
+			import org.bigbluebutton.common.LogUtil;
+			import com.asfusion.mate.events.Dispatcher;
+			import org.bigbluebutton.common.Images;
+			import org.bigbluebutton.main.events.BBBEvent;
+			import org.bigbluebutton.main.views.MainToolbar;
+			import org.bigbluebutton.modules.videoconf.events.OpenPublishWindowEvent;
+			import org.bigbluebutton.modules.videoconf.events.ClosePublishWindowEvent;
+			import org.bigbluebutton.modules.videoconf.events.CloseAllPublishWindowEvent;
+			import org.bigbluebutton.util.i18n.ResourceUtil;
+			import mx.controls.Menu;
+			import mx.events.MenuEvent;
+			import mx.collections.ArrayList;
+			
+			[Bindable] public var isPresenter:Boolean;
+			
+			private var images:Images = new Images();
+			[Bindable] public var camIcon:Class = images.webcam;
+			
+
+			public const OFF_STATE:Number = 0;
+			public const ON_STATE:Number = 1;
+			
+			public const STOP_PUBLISHING:Number = 0;
+			public const START_PUBLISHING:Number = 1;
+
+			private var dataMenu:Menu;
+			public var cameraIsOff:Object = new Object();
+			public var numberOfCamerasOff:int = 0;
+			
+			private var _currentState:Number = OFF_STATE;
+
+			private var itensProvider:ArrayList = new ArrayList();
+			private var dp:Object = [];
+			
+			private var dispatcher:Dispatcher;
+			
+			private function init():void{
+
+				numberOfCamerasOff = Camera.names.length;
+				var i:int;
+				for(i = 0; i < numberOfCamerasOff; i++) {
+					cameraIsOff[String(i)] = true;	
+					dp.push({label: Camera.names[i], icon: images.webcam, status: OFF_STATE, waitingToStart: false, tooltip: "EH O TOOL"});		
+				}
+	
+				dataMenu = new Menu();
+				dataMenu.dataProvider = dp;
+				dataMenu.addEventListener("itemClick", changeHandler);
+				dataMenu.addEventListener("mouseOver", mouseOverPopUp);
+				dataMenu.addEventListener("mouseOut", mouseOutPopUp);
+				//dataMenu.addEventListener("itemRollOver", itemRollOverHandler);
+				//dataMenu.addEventListener("itemRollOut", itemRollOutHandler);
+
+				this.popUp = dataMenu;
+				dispatcher = new Dispatcher();
+				this.toolTip = ResourceUtil.getInstance().getString('bbb.toolbar.video.toolTip.start');
+				camIcon = images.webcam;
+				this.enabled = true;
+				this.selected = false;
+				_currentState = OFF_STATE;
+				
+			}
+
+			
+			
+			private function mouseOverPopUp(event:MouseEvent = null):void {
+				mouseOverHandler();
+			}
+
+			private function mouseOutPopUp(event:MouseEvent = null):void {
+				mouseOutHandler();
+			}
+
+			
+
+
+			private function changeHandler(event:MenuEvent):void {
+					if(dp[event.index].status == ON_STATE) {
+						var close_evt:ClosePublishWindowEvent = new ClosePublishWindowEvent();
+						close_evt.cameraId = String(event.index);
+						close_evt.publishWindowIndex = dp[event.index].publishWindowIndex;
+						dispatchEvent(close_evt);
+						dp[event.index].icon = images.webcam;
+						dp[event.index].waitingToStart = false;
+					}
+					else {
+						var evt:OpenPublishWindowEvent = new OpenPublishWindowEvent();
+						evt.defaultCamera = String(event.index);
+						dispatchEvent(evt);
+						this.enabled = false;
+					}
+					
+			}			
+			
+			public function publishingStatus(status:Number, cameraId:String, publishWindowIndex:Number = 0):void {
+				if(status == START_PUBLISHING) {
+					_currentState = ON_STATE;
+					this.toolTip = ResourceUtil.getInstance().getString('bbb.toolbar.video.toolTip.stop');
+					camIcon = images.webcamOn;
+					this.selected = true;
+					cameraIsOff[cameraId] = false;
+					dp[cameraId].icon = images.webcamOn;
+					dp[cameraId].status = ON_STATE;
+					dp[cameraId].publishWindowIndex = publishWindowIndex;
+					numberOfCamerasOff = numberOfCamerasOff - 1;
+				}
+				else {
+					if(cameraId != null) {
+						dp[cameraId].icon = images.webcam;
+						dp[cameraId].status = OFF_STATE;
+						if(cameraIsOff[cameraId] == false) {
+							cameraIsOff[cameraId] = true;
+							numberOfCamerasOff = numberOfCamerasOff + 1;
+						}
+					}
+					if(numberOfCamerasOff == Camera.names.length) {
+						_currentState = OFF_STATE;
+						this.toolTip = ResourceUtil.getInstance().getString('bbb.toolbar.video.toolTip.start');
+						camIcon = images.webcam;
+						this.selected = false;
+					}
+				}
+				var evt:BBBEvent = new BBBEvent("EnableToolbarPopupButton");
+				dispatchEvent(evt);
+						
+				dataMenu.dataProvider = dp;
+														
+			}
+
+			public function stopAllPublishing():void {
+				var i:int;
+				for(i = 0; i < Camera.names.length; i++) {
+					cameraIsOff[i.toString()] = true;
+					_currentState = OFF_STATE;
+					this.toolTip = ResourceUtil.getInstance().getString('bbb.toolbar.video.toolTip.start');
+					camIcon = images.webcam;
+					this.selected = false;
+					dp[i.toString()].icon = images.webcam;
+					dp[i.toString()].status = OFF_STATE;
+				}
+				numberOfCamerasOff = Camera.names.length;
+				dataMenu.dataProvider = dp;
+			}
+
+
+			private function openPublishWindow():void{
+				if(_currentState == ON_STATE) {
+					_currentState = OFF_STATE;
+					this.toolTip = ResourceUtil.getInstance().getString('bbb.toolbar.video.toolTip.start');
+					camIcon = images.webcam;
+					this.selected = false;
+					dispatchEvent(new CloseAllPublishWindowEvent());
+					
+				}
+				else {
+					_currentState = ON_STATE;
+					this.toolTip = ResourceUtil.getInstance().getString('bbb.toolbar.video.toolTip.stop');
+					camIcon = images.webcamOn;
+					this.selected = true;
+					dispatchEvent(new OpenPublishWindowEvent());
+				}			
+				
+			}
+			
+		
+				
+
+			private function mouseOverHandler(event:MouseEvent = null):void {
+				if(_currentState == ON_STATE)
+					camIcon = images.webcamClose;
+				else
+					camIcon = images.webcamOn;			
+			}
+
+			private function mouseOutHandler(event:MouseEvent = null):void {
+				if(_currentState == ON_STATE)
+					camIcon = images.webcamOn;
+				else
+					camIcon = images.webcam;			
+			}
+
+
+			public function getAlignment():String{
+				return MainToolbar.ALIGN_LEFT;
+			}
+		]]>
+	</mx:Script>
+	
+	
+</mx:PopUpButton>
