@@ -879,11 +879,22 @@ class ApiController {
 						 }
 					 }
 				  }
-				  playback() {
+		  playback() {
 					  r.getPlaybacks().each { item ->
 						  format{
 							  type(item.getFormat())
 							  url(item.getUrl())
+							  length(item.getLength())
+						  }
+					  }
+                  }
+		  download() {
+					  r.getDownloads().each { item ->
+						  format{
+							  type(item.getFormat())
+							  url(item.getUrl())
+							  md5(item.getMd5())
+							  key(item.getKey())
 							  length(item.getLength())
 						  }
 					  }
