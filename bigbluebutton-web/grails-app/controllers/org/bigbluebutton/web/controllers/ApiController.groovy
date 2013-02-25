@@ -839,6 +839,7 @@ class ApiController {
     // Everything is good so far. Translate the external meeting ids to an internal meeting ids.             
     ArrayList<String> internalMeetingIds = paramsProcessorUtil.convertToInternalMeetingId(externalMeetingIds);        
 	HashMap<String,Recording> recs = meetingService.getRecordings(internalMeetingIds);
+	recs = meetingService.filterRecordingsByMetadata(recs, paramsProcessorUtil.getMetadataFromParams(params));
 	
     if (recs.isEmpty()) {
       response.addHeader("Cache-Control", "no-cache")
