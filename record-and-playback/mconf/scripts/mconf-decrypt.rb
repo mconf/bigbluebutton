@@ -47,15 +47,14 @@ if not get_recordings_url.nil? and not get_recordings_url.empty?
   end
 
   doc.xpath("//recording").each do |recording|
-    record_id = recording.xpath("recordID").text
-    recording.xpath("//download/format").each do |format|
-      type = format.xpath("type").text
-      BigBlueButton.logger.info("type = #{type}")
+    record_id = recording.xpath(".//recordID").text
+    recording.xpath(".//download/format").each do |format|
+      type = format.xpath(".//type").text
       if type == "encrypted"
         meeting_id = record_id
-        file_url = format.xpath("url").text
-        key_file_url = format.xpath("key").text
-        md5_value = format.xpath("md5").text
+        file_url = format.xpath(".//url").text
+        key_file_url = format.xpath(".//key").text
+        md5_value = format.xpath(".//md5").text
 
         encrypted_file = file_url.split("/").last
         decrypted_file = File.basename(encrypted_file, '.*') + ".zip"
@@ -86,6 +85,9 @@ if not get_recordings_url.nil? and not get_recordings_url.empty?
               writeOut.close
 
               if key_file != decrypted_key_file
+                if not File.exists("#{private_key}")
+                  raise "Couldn't find the private key on #{private_key}"
+                end
                 command = "openssl rsautl -decrypt -inkey #{private_key} < #{key_file} > #{decrypted_key_file}"
                 status = BigBlueButton.execute(command)
                 if not status.success?
