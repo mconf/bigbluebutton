@@ -33,8 +33,9 @@
 	<mate:Listener type="{LayoutEvent.REMOTE_LOCK_LAYOUT_EVENT}" receive="{enabled=false || UserManager.getInstance().getConference().amIModerator()}" />
 	<mate:Listener type="{LayoutEvent.REMOTE_UNLOCK_LAYOUT_EVENT}" receive="{enabled=true}" />
 	<mate:Listener type="{LayoutEvent.INVALIDATE_LAYOUT_EVENT}" method="invalidadeLayout" />
-	<mate:Listener type="{LayoutsLoadedEvent.LAYOUTS_LOADED_EVENT}" method="populateLayoutsList" />
 	<mate:Listener type="{RedefineLayoutEvent.REDEFINE_LAYOUT_EVENT}" method="onRedefineLayout" />
+	<mate:Listener type="{LayoutsLoadedEvent.SEND_LAYOUTS_LOADED_EVENT}" method="populateLayoutsList"/>
+	
 	
 	<mx:Script>
 		<![CDATA[
@@ -62,6 +63,7 @@
 			import org.bigbluebutton.main.views.MainToolbar;
 			import org.bigbluebutton.util.i18n.ResourceUtil;
 			import org.bigbluebutton.modules.layout.events.LayoutEvent;
+			import org.bigbluebutton.modules.layout.events.ComboBoxCreatedEvent;
 			import org.bigbluebutton.modules.layout.events.LayoutsLoadedEvent;
 			import org.bigbluebutton.modules.layout.events.RedefineLayoutEvent;
 			import org.bigbluebutton.modules.layout.events.ViewInitializedEvent;
@@ -70,12 +72,21 @@
 			import org.bigbluebutton.modules.layout.model.WindowLayout;
 			import org.bigbluebutton.modules.layout.views.LayoutButton;
 			
+			
+			
+			private var populated:Boolean = false;
+			
+			
 			private var _dispatcher:Dispatcher = new Dispatcher();
 			
 			private var _defaultLayout:Object = null;
+			private var shouldSelectedItemGoToDefaultBecauseTheEventWasLost:Boolean = false;
+			
 			
 			private function init():void {
 				LogUtil.debug("LayoutsCombo: view initialized");
+				var comboBoxCreated:ComboBoxCreatedEvent = new ComboBoxCreatedEvent();
+				_dispatcher.dispatchEvent(comboBoxCreated);
 			}
 			
 			private function populateLayoutsList(e:LayoutsLoadedEvent):void {
@@ -91,11 +102,20 @@
 					idx++;
 				}
 				invalidateDisplayList();
+				
+				if(shouldSelectedItemGoToDefaultBecauseTheEventWasLost) {
+					onApplyDefaultLayout();
+				}
+				else {
+					shouldSelectedItemGoToDefaultBecauseTheEventWasLost = false;
+				}
 			}
 			
-			private function onApplyDefaultLayout(e:Event):void {
+			private function onApplyDefaultLayout(e:Event = null):void {
 				if (_defaultLayout != null)
 					selectedItem = _defaultLayout; 
+				else
+					shouldSelectedItemGoToDefaultBecauseTheEventWasLost = true;
 			}
 			
 			private function onRedefineLayout(e:RedefineLayoutEvent):void {

@@ -20,17 +20,12 @@
 package org.bigbluebutton.modules.layout.events
 {
 	import flash.events.Event;
-	import org.bigbluebutton.modules.layout.model.LayoutDefinitionFile;
 	
-	public class LayoutsLoadedEvent extends Event
+	public class ComboBoxCreatedEvent extends Event
 	{
-		public static const LAYOUTS_LOADED_EVENT:String = "LAYOUTS_LOADED_EVENT";
-		public static const SEND_LAYOUTS_LOADED_EVENT:String = "SEND_LAYOUTS_LOADED_EVENT";
-		public var layouts:LayoutDefinitionFile = null;
-		public var success:Boolean = false;
-		public var error:TypeError = null;
+		public static const COMBOBOX_CREATED_EVENT:String = "COMBOBOX_CREATED_EVENT";
 		
-		public function LayoutsLoadedEvent(type:String = LAYOUTS_LOADED_EVENT)
+		public function ComboBoxCreatedEvent(type:String = COMBOBOX_CREATED_EVENT)
 		{
 			super(type, true, false);
 		}
