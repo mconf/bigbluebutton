@@ -126,6 +126,9 @@ package org.bigbluebutton.common
 		[Embed(source="assets/images/cancel.png")]
 		public var delete_icon:Class; 
 
+	[Embed(source="assets/images/control_equalizer.png")]
+	public var remote_audio_icon:Class; 
+
         [Embed(source="assets/images/arrow_right.png")]
         public var forward:Class;
 

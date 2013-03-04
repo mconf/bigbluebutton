@@ -25,6 +25,8 @@
 			xmlns:flc="flexlib.controls.*"
 			implements="org.bigbluebutton.common.IBbbModuleWindow"
 			title="{windowTitle}"
+			click="onClick()"
+			rollOver="onRollOver()"
 			creationComplete="onCreationComplete()" xmlns:mate="http://mate.asfusion.com/" xmlns:controls="flexlib.controls.*">
 	
 	<mate:Listener type="{ListenersEvent.ROOM_MUTE_STATE}" method="roomMuteStateChange" />
@@ -36,7 +38,7 @@
 		<![CDATA[
 			import flash.events.MouseEvent;
 			import flash.sampler.getInvocationCount;
-			
+			import org.bigbluebutton.common.LogUtil;
 			import flexlib.mdi.events.MDIWindowEvent;
 			
 			import mx.binding.utils.BindingUtils;
@@ -55,7 +57,8 @@
 			import org.bigbluebutton.modules.listeners.events.ListenersEvent;
 			import org.bigbluebutton.modules.listeners.model.ListenerOptions;
 			import org.bigbluebutton.util.i18n.ResourceUtil;
-			
+			import org.bigbluebutton.main.events.BBBEvent;
+
 			private var images:Images= new Images();			
 			private var _xPosition:int;
 			private var _yPosition:int;
@@ -81,6 +84,14 @@
 				showPushToTalkBtn = UserManager.getInstance().getConference().voiceJoined &&
 									(UserManager.getInstance().getConference().amIModerator() || 
 										!UserManager.getInstance().getConference().voiceLocked);
+			}
+
+			private function onRollOver(e:Event = null):void {
+				dispatchEvent(new BBBEvent("BRING_GAIN_SLIDER_TO_FRONT"));
+			}
+
+			private function onClick(e:Event = null):void {
+				dispatchEvent(new BBBEvent("BRING_GAIN_SLIDER_TO_FRONT"));
 			}
 			
 			private function updateNumberOfListeners(numListeners:int):void {

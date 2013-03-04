@@ -1,6 +1,9 @@
-<mx:VBox xmlns="flexlib.containers.*" xmlns:mx="http://www.adobe.com/2006/mxml" 
-	xmlns:mate="http://mate.asfusion.com/" visible="false" backgroundColor="0xCCCCCC" cornerRadius="5" borderStyle="solid" 
-	paddingBottom="3" paddingTop="3" paddingLeft="3" paddingRight="3" width="200" enabled = "true">
+<mx:TitleWindow xmlns="flexlib.containers.*" xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:mate="http://mate.asfusion.com/" visible="false" backgroundColor="0xFFFFFF" cornerRadius="5"  
+	paddingBottom="5" paddingTop="5" paddingLeft="5" paddingRight="5" width="190" enabled = "true"
+	height = "130"
+	title="{ResourceUtil.getInstance().getString('bbb.listeners.gainSlider.title')}"
+	>
 	
 	
 	
@@ -12,6 +15,8 @@
 			import org.bigbluebutton.util.i18n.ResourceUtil; 
 
 			public var userid:Number;
+			[Bindable] private var userText:String = ResourceUtil.getInstance().getString('bbb.listeners.gainSlider.tooltip', [""]);
+
 
 			private function changeGain():void{
 				var changeGainEvent:ChangeGain = new ChangeGain();
@@ -25,11 +30,19 @@
 				this.y = window.y + 30;
 				parent.setChildIndex(this, parent.numChildren-1);
 			}
+
+			public function setUsername(name:String):void {
+				labelName.text = name;
+				userText = ResourceUtil.getInstance().getString('bbb.listeners.gainSlider.tooltip', [name]);
+			}
 		]]>
 	</mx:Script>
+	<mx:VBox>
 	<mx:Label id="labelName" textAlign="left" text="" />
-	<mx:HSlider height="30" id="sld" change="changeGain()" toolTip="{ResourceUtil.getInstance().getString('bbb.listeners.gainSliderTooltip')}" minimum="0" maximum="100" 
+	<mx:Spacer height = "10" />
+	<mx:HSlider height="30" id="sld" change="changeGain()" toolTip="{userText}" minimum="0" maximum="100" 
 				useHandCursor="true" value="60" showDataTip="true" snapInterval="1" dataTipOffset="0"
 				tickInterval="25" 
             			labels="[0,25,50,75,100]" />
-</mx:VBox>
+	</mx:VBox>
+</mx:TitleWindow>

@@ -27,6 +27,7 @@
 	<mate:Listener type="SYNC_MIC_GAIN_EVENT" method="syncMicGain" />
 	<mate:Listener type="HIDE_GAIN_SLIDER" method="hideGainSlider" />
 	<mate:Listener type="HIDE_GAIN_WINDOW_USER_LEFT" method="removeMyGainSlider" />
+	<mate:Listener type="BRING_GAIN_SLIDER_TO_FRONT" method="positionGainSlider" />
 
 	<mx:Script>
 		<![CDATA[
@@ -51,24 +52,27 @@
 			[Bindable] private var talkIcon:Object = images.sound;   		
 			[Bindable] private var ejectIcon:Class = images.delete_icon;
 			[Bindable] private var forwardIcon:Class = images.forward;
+			[Bindable] private var remoteAudioControlIcon:Class = images.remote_audio_icon;
 			[Bindable] private var statusTooltip : String = "";
 			[Bindable] private var ejectTooltip : String = ResourceUtil.getInstance().getString('bbb.listeners.ejectTooltip');
 			[Bindable] private var moderator:Boolean = false;
 			[Bindable] public var parentWindow:ListenersWindow= null;
 			[Bindable] public var gainSlider:GainSlider = null;
 
-			public function onRollOver():void{
+			public function onRollOver():void {
 				if (moderator) kickUserBtn.visible = true;
 
-				if(gainSlider != null)
-					gainSlider.positionToolbar(parentWindow);
+				positionGainSlider();
 			}
 
-			public function onClick(event:MouseEvent):void{
-				if(gainSlider != null)
-					gainSlider.positionToolbar(parentWindow);
+			public function onClick(event:MouseEvent = null):void {
+				positionGainSlider();
 			}
 
+			public function positionGainSlider(event:Event = null):void {
+				if(gainSlider != null && gainSlider.visible)
+					gainSlider.positionToolbar(parentWindow);
+			}
 
 			public function showVolumeControl():void {
 				if(gainSlider == null) {
@@ -78,7 +82,7 @@
 					addUIEvent.component = gainSlider;
 					dispatchEvent(addUIEvent);
 					gainSlider.positionToolbar(parentWindow);
-					gainSlider.labelName.text = data.callerName;
+					gainSlider.setUsername(data.callerName);
 					gainSlider.userid = data.userid;
 					gainSlider.sld.value = data.gain;
 					gainSlider.addEventListener(MouseEvent.CLICK, onClick);
@@ -190,8 +194,8 @@
 	<mx:Button id="muteCB" width="20" height="20" visible="true" enabled="{data.moderator}" 
 			   toolTip="{ResourceUtil.getInstance().getString('bbb.listenerItem.lockImg.toolTip')}"
 			   icon="{data.locked ? lockedIcon : unlockedIcon}" click="lockMuteUser()"/>
-	<mx:Button id="volumeControl" icon="{ejectIcon}" width="20" height="20" enabled="{data.moderator}"
-			   toolTip="{ResourceUtil.getInstance().getString('bbb.listeners.ejectTooltip')}"
+	<mx:Button id="volumeControl" icon="{remoteAudioControlIcon}" width="20" height="20" visible="{data.moderator}"
+			   toolTip="{ResourceUtil.getInstance().getString('bbb.listeners.gainSlider.tooltip', [data.callerName])}"
 			   click="handleVolumeButtonClick()" />
 	<mx:Image id="talkImg" source="{talkIcon}" visible="{data.talking}" 
 			  toolTip="{ResourceUtil.getInstance().getString('bbb.listenerItem.talkImg.toolTip')}"/>
