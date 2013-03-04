@@ -26,6 +26,7 @@
 
 	<mate:Listener type="SYNC_MIC_GAIN_EVENT" method="syncMicGain" />
 	<mate:Listener type="HIDE_GAIN_SLIDER" method="hideGainSlider" />
+	<mate:Listener type="HIDE_GAIN_WINDOW_USER_LEFT" method="removeMyGainSlider" />
 
 	<mx:Script>
 		<![CDATA[
@@ -96,6 +97,13 @@
 			public function hideGainSlider(event:BBBEvent):void {
 				if (gainSlider != null && event.payload.userid != data.userid) {
 					gainSlider.visible = false;
+				}	
+			}
+
+			public function removeMyGainSlider(event:BBBEvent):void {
+				if (gainSlider != null && event.payload.userid == data.userid) {
+					gainSlider.visible = false;
+					gainSlider = null;
 				}	
 			}
 

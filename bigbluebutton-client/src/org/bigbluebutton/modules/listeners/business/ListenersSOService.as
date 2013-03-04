@@ -221,6 +221,9 @@ package org.bigbluebutton.modules.listeners.business
 
 		public function userLeft(userId:Number):void
 		{
+			var hideGainWindow:BBBEvent = new BBBEvent("HIDE_GAIN_WINDOW_USER_LEFT");
+			hideGainWindow.payload["userid"] = userId;
+			dispatcher.dispatchEvent(hideGainWindow);
 			_listeners.removeListener(userId);	
 			/**
 			 * Let's store the voice userid so we can do push to talk.
