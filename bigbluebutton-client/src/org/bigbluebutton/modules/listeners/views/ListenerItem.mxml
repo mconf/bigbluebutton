@@ -91,24 +91,30 @@
 					gainSlider.visible = true;
 					gainSlider.positionToolbar(parentWindow);
 				}
+				
 			}
 			
 			public function hideVolumeControl():void {
 				if (gainSlider != null) 
 					gainSlider.visible = false;
+				volumeControl.selected = false;
 			}
 
 			public function hideGainSlider(event:BBBEvent):void {
 				if (gainSlider != null && event.payload.userid != data.userid) {
 					gainSlider.visible = false;
-				}	
+					volumeControl.selected = false;
+				}
+				
 			}
 
 			public function removeMyGainSlider(event:BBBEvent):void {
 				if (gainSlider != null && event.payload.userid == data.userid) {
 					gainSlider.visible = false;
 					gainSlider = null;
+					volumeControl.selected = false;
 				}	
+				
 			}
 
 			public function syncMicGain(event:BBBEvent):void {
@@ -164,12 +170,13 @@
 			
 			private function handleEjectButtonClick():void {
 				//proxy.ejectUser(listenersList.selectedItem.userid);
-				//var ejectCommand:ListenersCommand = new ListenersCommand(ListenersCommand.EJECT_USER);
-				//ejectCommand.userid = data.userid;
-				//dispatchEvent(ejectCommand);
+				var ejectCommand:ListenersCommand = new ListenersCommand(ListenersCommand.EJECT_USER);
+				ejectCommand.userid = data.userid;
+				dispatchEvent(ejectCommand);
 			}
 			private function handleVolumeButtonClick():void {
 				if(gainSlider == null || gainSlider.visible == false) {
+					volumeControl.selected = true;
 					showVolumeControl();
 					var hideOthersGainSliders:BBBEvent = new BBBEvent("HIDE_GAIN_SLIDER");
 					hideOthersGainSliders.payload["userid"] = data.userid;
@@ -191,10 +198,11 @@
 			   icon="{data.muted ? muteIcon : unmuteIcon}" click="muteUser()"/>
 	<mx:Label id="nameLabel" textAlign="left" text="{data.callerName}" minWidth="120"
 			  toolTip="{ResourceUtil.getInstance().getString('bbb.listenerItem.nameLbl.toolTip')}"/>
-	<mx:Button id="muteCB" width="20" height="20" visible="true" enabled="{data.moderator}" 
+	<mx:Button id="muteCB" width="20" height="20" visible="true" enabled="{data.moderator}"
 			   toolTip="{ResourceUtil.getInstance().getString('bbb.listenerItem.lockImg.toolTip')}"
 			   icon="{data.locked ? lockedIcon : unlockedIcon}" click="lockMuteUser()"/>
 	<mx:Button id="volumeControl" icon="{remoteAudioControlIcon}" width="20" height="20" visible="{data.moderator}"
+			   includeInLayout="{data.moderator}"
 			   toolTip="{ResourceUtil.getInstance().getString('bbb.listeners.gainSlider.tooltip', [data.callerName])}"
 			   click="handleVolumeButtonClick()" />
 	<mx:Image id="talkImg" source="{talkIcon}" visible="{data.talking}" 
