@@ -20,6 +20,8 @@ package org.bigbluebutton.main.events
 {
 	import flash.events.Event;
 	
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 	import org.bigbluebutton.main.model.ConferenceParameters;
 	import org.bigbluebutton.main.model.users.BBBUser;
 
@@ -32,6 +34,8 @@ package org.bigbluebutton.main.events
 		public function SuccessfulLoginEvent(type:String)
 		{
 			super(type, true, false);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 	}
 }

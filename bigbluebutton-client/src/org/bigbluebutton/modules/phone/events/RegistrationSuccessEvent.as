@@ -20,6 +20,8 @@
 package org.bigbluebutton.modules.phone.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 
 	public class RegistrationSuccessEvent extends Event
 	{
@@ -28,6 +30,8 @@ package org.bigbluebutton.modules.phone.events
 		public function RegistrationSuccessEvent(bubbles:Boolean=false, cancelable:Boolean=false)
 		{
 			super(REGISTRATION_SUCCESS_EVENT, bubbles, cancelable);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 		
 	}

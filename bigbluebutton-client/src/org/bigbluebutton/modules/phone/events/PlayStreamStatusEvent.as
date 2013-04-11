@@ -20,6 +20,8 @@
 package org.bigbluebutton.modules.phone.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 
 	public class PlayStreamStatusEvent extends Event
 	{
@@ -37,6 +39,8 @@ package org.bigbluebutton.modules.phone.events
 		public function PlayStreamStatusEvent(bubbles:Boolean=false, cancelable:Boolean=false)
 		{
 			super(PLAY_STREAM_STATUS_EVENT, bubbles, cancelable);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 		
 	}

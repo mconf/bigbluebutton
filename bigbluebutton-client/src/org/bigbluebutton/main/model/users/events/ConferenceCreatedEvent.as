@@ -19,6 +19,8 @@
 package org.bigbluebutton.main.model.users.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 	
 	import org.bigbluebutton.main.model.users.Conference;
 
@@ -31,6 +33,8 @@ package org.bigbluebutton.main.model.users.events
 		public function ConferenceCreatedEvent(type:String)
 		{
 			super(type, true, false);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 	}
 }

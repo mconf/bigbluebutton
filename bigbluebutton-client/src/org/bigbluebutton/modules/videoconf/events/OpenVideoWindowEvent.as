@@ -19,6 +19,8 @@
 package org.bigbluebutton.modules.videoconf.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 	
 	import org.bigbluebutton.common.IBbbModuleWindow;
 	
@@ -38,6 +40,8 @@ package org.bigbluebutton.modules.videoconf.events
 		public function OpenVideoWindowEvent(type:String=OPEN_VIDEO_WINDOW_EVENT, bubbles:Boolean=true, cancelable:Boolean=false)
 		{
 			super(type, bubbles, cancelable);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 		
 	}

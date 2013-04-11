@@ -19,6 +19,8 @@
 package org.bigbluebutton.modules.viewers.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 	
 	import mx.collections.ArrayCollection;
 
@@ -32,6 +34,8 @@ package org.bigbluebutton.modules.viewers.events
 		{
 			super(CHANGE_STATUS_EVENT);
 			this.status = status;
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 		
 	}

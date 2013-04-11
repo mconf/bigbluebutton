@@ -1,6 +1,8 @@
 package org.bigbluebutton.common.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 	
 	public class LocaleChangeEvent extends Event
 	{
@@ -9,6 +11,8 @@ package org.bigbluebutton.common.events
 		public function LocaleChangeEvent(type:String)
 		{
 			super(type, true, false);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 	}
 }

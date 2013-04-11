@@ -21,6 +21,8 @@ package org.bigbluebutton.modules.chat.events
 {
 	import flash.events.Event;
 	import flash.utils.Dictionary;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 
 	public class ChatEvent extends Event
 	{
@@ -31,6 +33,8 @@ package org.bigbluebutton.modules.chat.events
 		public function ChatEvent(type:String, bubbles:Boolean=true, cancelable:Boolean=false)
 		{
 			super(type, bubbles, cancelable);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 		
 	}

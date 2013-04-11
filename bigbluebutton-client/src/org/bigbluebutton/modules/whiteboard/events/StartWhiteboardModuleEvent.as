@@ -19,6 +19,8 @@
 package org.bigbluebutton.modules.whiteboard.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 
 	public class StartWhiteboardModuleEvent extends Event
 	{
@@ -29,6 +31,8 @@ package org.bigbluebutton.modules.whiteboard.events
 		public function StartWhiteboardModuleEvent(bubbles:Boolean=true, cancelable:Boolean=false)
 		{
 			super(START_HIGHLIGHTER_MODULE_EVENT, bubbles, cancelable);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 		
 	}

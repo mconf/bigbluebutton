@@ -20,6 +20,8 @@
 package org.bigbluebutton.modules.phone.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 
 	public class StopPhoneModuleEvent extends Event
 	{
@@ -28,6 +30,8 @@ package org.bigbluebutton.modules.phone.events
 		public function StopPhoneModuleEvent(type:String, bubbles:Boolean=true, cancelable:Boolean=false)
 		{
 			super(type, bubbles, cancelable);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 		
 	}

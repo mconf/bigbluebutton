@@ -19,6 +19,8 @@
 package org.bigbluebutton.modules.whiteboard.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 	
 	import org.bigbluebutton.modules.whiteboard.business.shapes.DrawObject;
 	
@@ -33,6 +35,8 @@ package org.bigbluebutton.modules.whiteboard.events
 		public function WhiteboardDrawEvent(type:String, bubbles:Boolean = true, cancelable:Boolean = false)
 		{
 			super(type, bubbles, cancelable);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 
 	}

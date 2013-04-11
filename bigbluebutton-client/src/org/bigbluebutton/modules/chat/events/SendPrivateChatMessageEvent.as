@@ -19,6 +19,8 @@
 package org.bigbluebutton.modules.chat.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 
 	public class SendPrivateChatMessageEvent extends Event
 	{
@@ -32,6 +34,8 @@ package org.bigbluebutton.modules.chat.events
 		public function SendPrivateChatMessageEvent(type:String, bubbles:Boolean=false, cancelable:Boolean=false)
 		{
 			super(type, bubbles, cancelable);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 		
 	}

@@ -19,6 +19,8 @@
  */
 package org.bigbluebutton.main.events {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 
 	public class BBBEvent extends Event {
 		public static const END_MEETING_EVENT:String = 'END_MEETING_EVENT';
@@ -39,6 +41,8 @@ package org.bigbluebutton.main.events {
 		
 		public function BBBEvent(type:String, message:String = "", bubbles:Boolean=true, cancelable:Boolean=false) {
 			super(type, bubbles, cancelable);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 			this.message = message;
 		}		
 	}

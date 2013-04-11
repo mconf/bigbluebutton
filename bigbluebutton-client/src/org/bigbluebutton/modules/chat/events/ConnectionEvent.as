@@ -19,6 +19,8 @@
 package org.bigbluebutton.modules.chat.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 
 	public class ConnectionEvent extends Event
 	{
@@ -29,6 +31,8 @@ package org.bigbluebutton.modules.chat.events
 		public function ConnectionEvent(type:String, bubbles:Boolean=false, cancelable:Boolean=false)
 		{
 			super(type, bubbles, cancelable);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 		
 	}

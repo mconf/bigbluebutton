@@ -20,6 +20,8 @@ package org.bigbluebutton.modules.videoconf.events
 {
 	import flash.events.Event;
 	import flash.media.Camera;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 	
 	public class StartBroadcastEvent extends Event
 	{
@@ -31,6 +33,8 @@ package org.bigbluebutton.modules.videoconf.events
 		public function StartBroadcastEvent(type:String = START_BROADCAST)
 		{
 			super(type, true, false);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 
 	}

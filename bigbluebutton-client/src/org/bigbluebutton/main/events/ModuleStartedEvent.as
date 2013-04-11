@@ -19,6 +19,8 @@
 package org.bigbluebutton.main.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 
 	public class ModuleStartedEvent extends Event
 	{
@@ -30,6 +32,8 @@ package org.bigbluebutton.main.events
 		public function ModuleStartedEvent(bubbles:Boolean=false, cancelable:Boolean=false)
 		{
 			super(MODULE_STARTED_EVENT, bubbles, cancelable);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 		
 	}

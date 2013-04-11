@@ -22,7 +22,9 @@ package org.bigbluebutton.common.events
 	import flash.events.Event;
 	
 	import org.bigbluebutton.common.IBbbModuleWindow;
-
+	
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 	/**
 	 * Allows you to remove an MDIWindow from the main canvas. You must pass in a reference to the window you'd like removed.
 	 * 
@@ -39,6 +41,8 @@ package org.bigbluebutton.common.events
 		public function CloseWindowEvent(type:String=CLOSE_WINDOW_EVENT, bubbles:Boolean=true, cancelable:Boolean=false)
 		{
 			super(type, bubbles, cancelable);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 		
 	}

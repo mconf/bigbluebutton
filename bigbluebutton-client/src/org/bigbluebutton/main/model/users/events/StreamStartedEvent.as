@@ -19,6 +19,8 @@
 package org.bigbluebutton.main.model.users.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 	
 	public class StreamStartedEvent extends Event
 	{
@@ -34,6 +36,8 @@ package org.bigbluebutton.main.model.users.events
 			this.user = user;
 			this.stream = stream;
 			super(STREAM_STARTED, true, false);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 
 	}

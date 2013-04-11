@@ -19,6 +19,8 @@
 package org.bigbluebutton.modules.videoconf.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 	
 	public class StopBroadcastEvent extends Event
 	{
@@ -29,6 +31,8 @@ package org.bigbluebutton.modules.videoconf.events
 		public function StopBroadcastEvent(type:String = STOP_BROADCASTING)
 		{
 			super(type, true, false);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 
 	}

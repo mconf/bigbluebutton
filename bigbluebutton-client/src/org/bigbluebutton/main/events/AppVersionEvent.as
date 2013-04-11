@@ -1,6 +1,8 @@
 package org.bigbluebutton.main.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 
 	public class AppVersionEvent extends Event {		
 		public static const APP_VERSION_EVENT:String = "APP VERSION EVENT";
@@ -13,6 +15,8 @@ package org.bigbluebutton.main.events
 		public function AppVersionEvent()
 		{
 			super(APP_VERSION_EVENT, true, false);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 		
 	}

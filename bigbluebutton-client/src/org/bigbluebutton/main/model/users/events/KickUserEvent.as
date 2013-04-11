@@ -19,6 +19,8 @@
 package org.bigbluebutton.main.model.users.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 
 	public class KickUserEvent extends Event
 	{
@@ -30,6 +32,8 @@ package org.bigbluebutton.main.model.users.events
 		{
 			this.userid = userid;
 			super(KICK_USER, true, false);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 	}
 }

@@ -19,7 +19,8 @@
 package org.bigbluebutton.common.events
 {
 	import flash.events.Event;
-	
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 	import org.bigbluebutton.common.IBbbModuleWindow;
 	
 	/**
@@ -38,6 +39,8 @@ package org.bigbluebutton.common.events
 		public function OpenWindowEvent(type:String, bubbles:Boolean=true, cancelable:Boolean=false)
 		{
 			super(type, bubbles, cancelable);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 		
 	}

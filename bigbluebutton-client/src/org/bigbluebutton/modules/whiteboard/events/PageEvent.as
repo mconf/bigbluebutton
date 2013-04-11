@@ -19,6 +19,8 @@
 package org.bigbluebutton.modules.whiteboard.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 	
 	import mx.collections.ArrayCollection;
 	
@@ -33,6 +35,8 @@ package org.bigbluebutton.modules.whiteboard.events
 		public function PageEvent(type:String)
 		{
 			super(type, true, false);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 
 	}

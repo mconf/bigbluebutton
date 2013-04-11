@@ -19,6 +19,8 @@
 package org.bigbluebutton.main.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 	
 	import org.bigbluebutton.main.model.User;
 
@@ -31,6 +33,8 @@ package org.bigbluebutton.main.events
 		public function ParticipantJoinEvent(type:String, bubbles:Boolean=true, cancelable:Boolean=false)
 		{
 			super(type, bubbles, cancelable);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 		
 	}

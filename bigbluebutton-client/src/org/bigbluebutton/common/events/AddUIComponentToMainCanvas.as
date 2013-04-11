@@ -3,6 +3,8 @@ package org.bigbluebutton.common.events
 	import flash.events.Event;
 	
 	import mx.core.UIComponent;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 	
 	/**
 	 * Allows you to add any UIComponent to the main canvas. Simply instantiate the method, add a reference to 
@@ -21,6 +23,8 @@ package org.bigbluebutton.common.events
 		public function AddUIComponentToMainCanvas(type:String)
 		{
 			super(type, true, false);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 
 	}

@@ -20,6 +20,8 @@
 package org.bigbluebutton.modules.phone.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 
 	public class CallDisconnectedEvent extends Event
 	{
@@ -28,6 +30,8 @@ package org.bigbluebutton.modules.phone.events
 		public function CallDisconnectedEvent(bubbles:Boolean=true, cancelable:Boolean=false)
 		{
 			super(CALL_DISCONNECTED_EVENT, bubbles, cancelable);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 		
 	}

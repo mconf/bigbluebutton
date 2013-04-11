@@ -19,6 +19,8 @@
 package org.bigbluebutton.modules.videoconf.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 	
 	public class CloseAllWindowsEvent extends Event
 	{
@@ -27,6 +29,8 @@ package org.bigbluebutton.modules.videoconf.events
 		public function CloseAllWindowsEvent(type:String = CLOSE_ALL_WINDOWS)
 		{
 			super(type, true, false);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 
 	}

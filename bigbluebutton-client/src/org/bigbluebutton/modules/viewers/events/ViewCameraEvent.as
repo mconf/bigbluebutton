@@ -19,6 +19,8 @@
 package org.bigbluebutton.modules.viewers.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 
 	public class ViewCameraEvent extends Event
 	{
@@ -34,6 +36,8 @@ package org.bigbluebutton.modules.viewers.events
 			this.userid = userid;
 			this.stream = stream;
 			this.viewedName = viewedName;
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 		
 	}

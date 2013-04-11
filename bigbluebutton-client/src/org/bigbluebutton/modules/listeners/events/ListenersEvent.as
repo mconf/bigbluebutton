@@ -21,6 +21,8 @@ package org.bigbluebutton.modules.listeners.events
 	import flash.events.Event;
 	
 	import mx.collections.ArrayCollection;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 	
 	import org.bigbluebutton.modules.listeners.business.vo.Listeners;
 
@@ -38,6 +40,8 @@ package org.bigbluebutton.modules.listeners.events
 		public function ListenersEvent(type:String)
 		{
 			super(type, true, false);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 	}
 }

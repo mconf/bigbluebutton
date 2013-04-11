@@ -21,6 +21,8 @@ package org.bigbluebutton.common.events
 	import flash.events.Event;
 	import flash.geom.Point;
 	import mx.core.UIComponent;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 	import flexlib.mdi.containers.*;
 	
 	public class DragWindowEvent extends Event
@@ -38,6 +40,8 @@ package org.bigbluebutton.common.events
 		{
 			super(type, true, false);
 			this.mode = mode;
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 		
 	}

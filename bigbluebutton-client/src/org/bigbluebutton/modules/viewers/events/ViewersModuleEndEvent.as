@@ -19,6 +19,8 @@
 package org.bigbluebutton.modules.viewers.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 
 	public class ViewersModuleEndEvent extends Event
 	{
@@ -27,6 +29,8 @@ package org.bigbluebutton.modules.viewers.events
 		public function ViewersModuleEndEvent(type:String)
 		{
 			super(type, true, false);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 	}
 }

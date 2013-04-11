@@ -19,6 +19,8 @@
 package org.bigbluebutton.main.model.users.events
 {
 	import flash.events.Event;
+	import org.bigbluebutton.common.LogUtil;
+	import org.bigbluebutton.common.events.EventCounter;
 
 	public class ConnectionFailedEvent extends Event
 	{
@@ -34,6 +36,8 @@ package org.bigbluebutton.main.model.users.events
 		public function ConnectionFailedEvent(type:String)
 		{
 			super(type, true, false);
+			LogUtil.debug("EVENTO GERADO - " + type);
+			EventCounter.numberOfEvents++;
 		}
 	}
 }
