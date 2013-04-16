@@ -46,7 +46,7 @@ package org.bigbluebutton.main.model.users
 		private var _netConnection:NetConnection;	
 		private var connectionId:Number;
 		private var connected:Boolean = false;
-		
+		private var tryToReconnect:Boolean = false;
 		private var _userid:Number = -1;
 		private var _role:String = "unknown";
 		private var _applicationURI:String;
@@ -59,11 +59,13 @@ package org.bigbluebutton.main.model.users
 		private var tried_tunneling:Boolean = false;
 		private var logoutOnUserCommand:Boolean = false;
 		private var backoff:Number = 2000;
+		private var rtmptRetryTimer:Timer = new Timer(1000, 1);
 		
 		private var dispatcher:Dispatcher;
 				
 		public function NetConnectionDelegate(uri:String) : void
 		{
+			rtmptRetryTimer.addEventListener("timer", rtmptRetryTimerHandler2);
 			_applicationURI = uri;
 			dispatcher = new Dispatcher();
 			
@@ -136,42 +138,71 @@ package org.bigbluebutton.main.model.users
 			{
 				case CONNECT_SUCCESS :
 					LogUtil.debug(NAME + ":Connection to viewers application succeeded.");
-					_netConnection.call(
-							"getMyUserId",// Remote function name
-							new Responder(
-	        					// result - On successful result
-								function(result:Object):void { 
-									LogUtil.debug("Successful result: " + result); 
-									sendConnectionSuccessEvent(result);
-								},	
-								// status - On error occurred
-								function(status:Object):void { 
-									LogUtil.error("Error occurred:"); 
-									for (var x:Object in status) { 
-										LogUtil.error(x + " : " + status[x]); 
-									} 
-								}
-							)//new Responder
-					); //_netConnection.call
+					if(tryToReconnect == false) {
+						_netConnection.call(
+								"getMyUserId",// Remote function name
+								new Responder(
+								// result - On successful result
+									function(result:Object):void { 
+										LogUtil.debug("Successful result: " + result); 
+										sendConnectionSuccessEvent(result);
+									},	
+									// status - On error occurred
+									function(status:Object):void { 
+										LogUtil.error("Error occurred:"); 
+										for (var x:Object in status) { 
+											LogUtil.error(x + " : " + status[x]); 
+										} 
+									}
+								)//new Responder
+						); //_netConnection.call
+						tryToReconnect = true;
+					}
+					else {
+						_netConnection.call(
+								"getMyUserId",// Remote function name
+								new Responder(
+								// result - On successful result
+									function(result:Object):void { 
+										LogUtil.debug("Successful result: " + result); 
+										sendConnectionSuccessEvent(result);
+									},	
+									// status - On error occurred
+									function(status:Object):void { 
+										LogUtil.error("Error occurred:"); 
+										for (var x:Object in status) { 
+											LogUtil.error(x + " : " + status[x]); 
+										} 
+									}
+								)//new Responder
+						); //_netConnection.call
+					}
 			
 					break;
 			
-				case CONNECT_FAILED :					
-					if (tried_tunneling) {
-						LogUtil.debug(NAME + ":Connection to viewers application failed...even when tunneling");
-						sendConnectionFailedEvent(ConnectionFailedEvent.CONNECTION_FAILED);
-					} else {
-						disconnect(false);
-						LogUtil.debug(NAME + ":Connection to viewers application failed...try tunneling");
-						var rtmptRetryTimer:Timer = new Timer(1000, 1);
-            			rtmptRetryTimer.addEventListener("timer", rtmptRetryTimerHandler);
-            			rtmptRetryTimer.start();						
-					}									
+				case CONNECT_FAILED :	
+					LogUtil.debug("FALHOU");
+					rtmptRetryTimer.reset();
+            				rtmptRetryTimer.start();
+				
+					//if (tried_tunneling) {
+					//	LogUtil.debug(NAME + ":Connection to viewers application failed...even when tunneling");
+					//	sendConnectionFailedEvent(ConnectionFailedEvent.CONNECTION_FAILED);
+					//} else {
+					//	disconnect(false);
+					//	LogUtil.debug(NAME + ":Connection to viewers application failed...try tunneling");
+					//	var rtmptRetryTimer:Timer = new Timer(1000, 1);
+            				//rtmptRetryTimer.addEventListener("timer", rtmptRetryTimerHandler);
+	            			//rtmptRetryTimer.start();						
+					//}									
 					break;
 					
 				case CONNECT_CLOSED :	
-					LogUtil.debug(NAME + ":Connection to viewers application closed");					
-					sendConnectionFailedEvent(ConnectionFailedEvent.CONNECTION_CLOSED);								
+					LogUtil.debug("FALHOU");
+					//LogUtil.debug(NAME + ":Connection to viewers application closed");					
+					sendConnectionFailedEvent(ConnectionFailedEvent.CONNECTION_CLOSED);
+					rtmptRetryTimer.reset();
+            				rtmptRetryTimer.start();								
 					break;
 					
 				case INVALID_APP :	
@@ -200,10 +231,15 @@ package org.bigbluebutton.main.model.users
 			}
 		}
 		
-		private function rtmptRetryTimerHandler(event:TimerEvent):void {
-            LogUtil.debug(NAME + "rtmptRetryTimerHandler: " + event);
-            connect(_conferenceParameters, true);
-        }
+	//	private function rtmptRetryTimerHandler(event:TimerEvent):void {
+        //    LogUtil.debug(NAME + "rtmptRetryTimerHandler: " + event);
+        //    connect(_conferenceParameters, true);
+        //}
+
+		private function rtmptRetryTimerHandler2(event:TimerEvent):void {
+		    LogUtil.debug("Tentando Reconectar");
+		    connect(_conferenceParameters, false);
+		}
 			
 		protected function netSecurityError( event : SecurityErrorEvent ) : void 
 		{
@@ -247,6 +283,19 @@ package org.bigbluebutton.main.model.users
 			
 			backoff = 2000;
 		}
+
+
+		private function sendReconnectionSuccessEvent(userid:Object):void{
+			var useridString:String = userid as String;
+			var n:int = parseInt(useridString);
+			
+			var e:UsersConnectionEvent = new UsersConnectionEvent(UsersConnectionEvent.RECONNECTION_SUCCESS);
+			e.connection = _netConnection;
+			e.userid = n;
+			dispatcher.dispatchEvent(e);
+			
+			backoff = 2000;
+		}
 		
 		private function sendConnectionFailedEvent(reason:String):void{
 			if (this.logoutOnUserCommand){
@@ -266,12 +315,12 @@ package org.bigbluebutton.main.model.users
 		}
 		
 		private function attemptReconnect(backoff:Number):void{
-			var retryTimer:Timer = new Timer(backoff, 1);
-			retryTimer.addEventListener(TimerEvent.TIMER, function():void{
-				connect(_conferenceParameters, tried_tunneling);
-			});
-			retryTimer.start();
-			if (this.backoff < 16000) this.backoff = backoff *2;
+			//var retryTimer:Timer = new Timer(backoff, 1);
+			//retryTimer.addEventListener(TimerEvent.TIMER, function():void{
+			//	connect(_conferenceParameters, tried_tunneling);
+			//});
+			//retryTimer.start();
+			//if (this.backoff < 16000) this.backoff = backoff *2;
 		}
 		
 		public function onBWCheck(... rest):Number { 

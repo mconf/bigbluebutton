@@ -291,7 +291,7 @@
 				connectionLostWindow.y = mdiCanvas.height/2 - connectionLostWindow.height/2;*/
 				
 				//Temporary fix
-				handleLogout(e);
+				//handleLogout(e);
 			}
 			
 			private function handleRecordStatusEvent(evt:RecordStatusEvent):void {

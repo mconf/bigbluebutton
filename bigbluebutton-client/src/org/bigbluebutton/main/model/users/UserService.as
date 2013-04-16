@@ -38,6 +38,7 @@ package org.bigbluebutton.main.model.users
 	import org.bigbluebutton.main.model.users.events.RaiseHandEvent;
 	import org.bigbluebutton.main.model.users.events.RoleChangeEvent;
 	import org.bigbluebutton.main.model.users.events.UsersConnectionEvent;
+	import org.bigbluebutton.common.LogUtil;
 
 	public class UserService {
 		private var joinService:JoinService;
@@ -108,7 +109,19 @@ package org.bigbluebutton.main.model.users
 			UserManager.getInstance().getConference().setMyUserid(e.userid);
 			_conferenceParameters.connection = e.connection;
 			_conferenceParameters.userid = e.userid;
+			_userSOService.join(e.userid, _conferenceParameters.room);
 			
+			var loadCommand:SuccessfulLoginEvent = new SuccessfulLoginEvent(SuccessfulLoginEvent.USER_LOGGED_IN);
+			loadCommand.conferenceParameters = _conferenceParameters;
+			dispatcher.dispatchEvent(loadCommand);		
+		}
+
+
+		public function userReLoggedIn(e:UsersConnectionEvent):void{
+			UserManager.getInstance().getConference().setMyUserid(e.userid);
+			_conferenceParameters.connection = e.connection;
+			_conferenceParameters.userid = e.userid;
+			LogUtil.debug("TESTE USER LOGGED IN");
 			_userSOService.join(e.userid, _conferenceParameters.room);
 			
 			var loadCommand:SuccessfulLoginEvent = new SuccessfulLoginEvent(SuccessfulLoginEvent.USER_LOGGED_IN);

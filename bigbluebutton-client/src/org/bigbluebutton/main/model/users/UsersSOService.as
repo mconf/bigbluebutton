@@ -87,6 +87,7 @@ package org.bigbluebutton.main.model.users {
 						LogUtil.debug("Successfully queried participants: " + result.count); 
 						if (result.count > 0) {
 							for(var p:Object in result.participants) {
+								LogUtil.debug("ADD PARTICIPANT " + result.participants[p].name );
 								participantJoined(result.participants[p]);
 							}
 						}	

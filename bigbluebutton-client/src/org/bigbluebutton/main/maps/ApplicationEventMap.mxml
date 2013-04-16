@@ -61,6 +61,10 @@
 	<EventHandlers type="{UsersConnectionEvent.CONNECTION_SUCCESS}" >
 		<MethodInvoker generator="{UserService}" method="userLoggedIn" arguments="{event}" />
 	</EventHandlers>
+
+	<EventHandlers type="{UsersConnectionEvent.RECONNECTION_SUCCESS}" >
+		<MethodInvoker generator="{UserService}" method="userReLoggedIn" arguments="{event}" />
+	</EventHandlers>
 	
 	<EventHandlers type="{SuccessfulLoginEvent.USER_LOGGED_IN}" >
 		<MethodInvoker generator="{ModulesProxy}" method="loadAllModules" arguments="{event.conferenceParameters}" />
