@@ -69,6 +69,10 @@ package org.bigbluebutton.core.managers {
 		public function getConference():Conference{
 			return this.conference;
 		}
+
+		public function removeAllUsers():void {
+			users.removeAll();
+		}
 				
 		public function participantJoined(participant:User):void{
 			users.addItem(participant);

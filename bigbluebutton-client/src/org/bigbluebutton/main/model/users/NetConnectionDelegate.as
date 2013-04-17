@@ -165,7 +165,7 @@ package org.bigbluebutton.main.model.users
 								// result - On successful result
 									function(result:Object):void { 
 										LogUtil.debug("Successful result: " + result); 
-										sendConnectionSuccessEvent(result);
+										sendReconnectionSuccessEvent(result);
 									},	
 									// status - On error occurred
 									function(status:Object):void { 
@@ -181,7 +181,7 @@ package org.bigbluebutton.main.model.users
 					break;
 			
 				case CONNECT_FAILED :	
-					LogUtil.debug("FALHOU");
+					LogUtil.debug("FALHOU CONNECT_FAILED");
 					rtmptRetryTimer.reset();
             				rtmptRetryTimer.start();
 				
@@ -198,7 +198,7 @@ package org.bigbluebutton.main.model.users
 					break;
 					
 				case CONNECT_CLOSED :	
-					LogUtil.debug("FALHOU");
+					LogUtil.debug("FALHOU CONNECT_CLOSED");
 					//LogUtil.debug(NAME + ":Connection to viewers application closed");					
 					sendConnectionFailedEvent(ConnectionFailedEvent.CONNECTION_CLOSED);
 					rtmptRetryTimer.reset();

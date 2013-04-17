@@ -68,11 +68,15 @@ package org.bigbluebutton.main.model.users {
 		}
 		
 	    public function join(userid:Number, room:String):void {
+			if(_participantsSO != null)
+				_participantsSO.close();
 			_participantsSO = SharedObject.getRemote(SO_NAME, _applicationURI + "/" + room, false);
 			_participantsSO.addEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
 			_participantsSO.addEventListener(AsyncErrorEvent.ASYNC_ERROR, asyncErrorHandler);
 			_participantsSO.client = this;
 			_participantsSO.connect(netConnectionDelegate.connection);
+			UserManager.getInstance().getConference().removeAllParticipants();
+			UserManager.getInstance().removeAllUsers();
 			queryForParticipants();					
 			UserManager.getInstance().getConference().setMyUserid(userid);
 		}
@@ -220,11 +224,11 @@ package org.bigbluebutton.main.model.users {
 			participant.role = user.role;
 			UserManager.getInstance().participantJoined(participant);
 			
-			var dispatcher:Dispatcher = new Dispatcher();
-			var joinEvent:ParticipantJoinEvent = new ParticipantJoinEvent(ParticipantJoinEvent.PARTICIPANT_JOINED_EVENT);
-			joinEvent.participant = participant;
-			joinEvent.join = true;
-			dispatcher.dispatchEvent(joinEvent);	
+			//var dispatcher:Dispatcher = new Dispatcher();
+			//var joinEvent:ParticipantJoinEvent = new ParticipantJoinEvent(ParticipantJoinEvent.PARTICIPANT_JOINED_EVENT);
+			//joinEvent.participant = participant;
+			//joinEvent.join = true;
+			//dispatcher.dispatchEvent(joinEvent);	
 			
 		}
 		

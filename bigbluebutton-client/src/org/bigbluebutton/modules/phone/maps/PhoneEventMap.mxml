@@ -60,6 +60,8 @@
 		<MethodInvoker generator="{PhoneManager}" method="setModuleAttributes" arguments="{event.attributes}" />
 		<MethodInvoker generator="{PhoneEventMapDelegate}" method="addToolbarButton"/>
     </EventHandlers>
+
+
     
     <EventHandlers type="{StopPhoneModuleEvent.STOP_PHONE_MODULE_EVENT}">       
     	<MethodInvoker generator="{PhoneEventMapDelegate}" method="removeToolbarButton"/> 

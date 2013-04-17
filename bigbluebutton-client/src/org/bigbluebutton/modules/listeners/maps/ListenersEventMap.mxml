@@ -30,6 +30,7 @@
 			import org.bigbluebutton.modules.listeners.events.StartListenersModuleEvent;
 			import org.bigbluebutton.modules.listeners.events.StopListenersModuleEvent;
 			import org.bigbluebutton.modules.listeners.managers.ListenersManager;
+			import org.bigbluebutton.main.model.users.events.UsersConnectionEvent;	
 		]]>
 	</mx:Script>
 	
@@ -43,6 +44,13 @@
 		<MethodInvoker generator="{ListenersManager}" method="moduleStarted" arguments="{event}" />
 		<MethodInvoker generator="{ListenersProxy}" method="connect" arguments="{event}" />
 	</EventHandlers>
+
+
+	<EventHandlers type="{UsersConnectionEvent.RECONNECTION_SUCCESS}" >
+		<MethodInvoker generator="{ListenersProxy}" method="reconnect" arguments="{event.connection}" />
+	</EventHandlers>
+
+
 	
 	<EventHandlers type="{StopListenersModuleEvent.STOP_LISTENERS_MODULE}" >
 		<MethodInvoker generator="{ListenersProxy}" method="disconnect" />

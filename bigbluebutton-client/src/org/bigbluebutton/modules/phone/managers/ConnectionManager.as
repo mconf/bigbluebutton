@@ -33,6 +33,8 @@ package org.bigbluebutton.modules.phone.managers {
 	import org.bigbluebutton.modules.phone.events.ConnectionStatusEvent;
 	import org.bigbluebutton.modules.phone.events.RegistrationFailedEvent;
 	import org.bigbluebutton.modules.phone.events.RegistrationSuccessEvent;
+	import flash.events.TimerEvent;
+	import flash.utils.Timer;
 	
 	public class ConnectionManager {
 			
@@ -43,6 +45,10 @@ package org.bigbluebutton.modules.phone.managers {
 		private var uri:String;
 		private var uid:String;
 		private var room:String;
+		private var externUID:String;
+		private var rtmptRetryTimer:Timer = new Timer(1000, 1);
+		public var onCall:Boolean = false;
+		private var lastDialStr:String;
 		
 		private var isConnected:Boolean = false;
 		private var registered:Boolean = false;
@@ -51,6 +57,7 @@ package org.bigbluebutton.modules.phone.managers {
 		
 		public function ConnectionManager():void {
 			dispatcher = new Dispatcher();
+			rtmptRetryTimer.addEventListener("timer", rtmptRetryTimerHandler2);
 		}
 		
 		public function getConnection():NetConnection {
@@ -65,6 +72,7 @@ package org.bigbluebutton.modules.phone.managers {
 			this.username  = username;
 			this.room = room;
 			this.uri   = uri;
+			this.externUID = externUID;
 			connectToServer(externUID, username);
 		}
 		
@@ -80,8 +88,14 @@ package org.bigbluebutton.modules.phone.managers {
 		public function disconnect():void {
 			netConnection.close();
 		}
+
+		private function rtmptRetryTimerHandler2(event:TimerEvent):void {
+		    	LogUtil.debug("Tentando Reconectar Phone");
+			connectToServer(externUID, username);
+		}
 		
-		private function netStatus (evt:NetStatusEvent ):void {		 
+		private function netStatus (evt:NetStatusEvent ):void {	
+			LogUtil.debug("ESTOU AQUI");
 			if (evt.info.code == "NetConnection.Connect.Success") {
 				var event:ConnectionStatusEvent = new ConnectionStatusEvent();
 				LogUtil.debug("Successfully connected to voice application.");
@@ -91,8 +105,15 @@ package org.bigbluebutton.modules.phone.managers {
 			} else if (evt.info.code == "NetConnection.Connect.NetworkChange") {
 				LogUtil.info("Detected network change. User might be on a wireless and temporarily dropped connection. Doing nothing. Just making a note.");
 			} else {
+				
 				LogUtil.info("Connection event info [" + evt.info.code + "]. Disconnecting.");
 				disconnect();
+				if(onCall) {
+					rtmptRetryTimer.reset();
+	            			rtmptRetryTimer.start();
+				} else
+					isConnected = false;
+				
 			}
 		} 
 		
@@ -144,6 +165,7 @@ package org.bigbluebutton.modules.phone.managers {
 		//
 		//********************************************************************************************		
 		public function doCall(dialStr:String):void {
+			lastDialStr = dialStr;
 			LogUtil.debug("in doCall - Calling " + dialStr);
 			netConnection.call("voiceconf.call", null, "default", username, dialStr);
 		}

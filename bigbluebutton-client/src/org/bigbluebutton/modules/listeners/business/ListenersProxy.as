@@ -28,6 +28,8 @@ package org.bigbluebutton.modules.listeners.business
 	import org.bigbluebutton.modules.listeners.events.ListenersEvent;
 	import org.bigbluebutton.modules.listeners.events.StartListenersModuleEvent;
 	import org.bigbluebutton.modules.listeners.events.StopListenersModuleEvent;
+	import org.bigbluebutton.common.LogUtil;
+	import flash.net.NetConnection;
 
 	public class ListenersProxy
 	{		
@@ -60,6 +62,10 @@ package org.bigbluebutton.modules.listeners.business
 			var moderatorEvent:ListenersEvent = new ListenersEvent(ListenersEvent.SET_LOCAL_MODERATOR_STATUS);
 			moderatorEvent.moderator = event.module.isModerator();
 			dispatcher.dispatchEvent(moderatorEvent);
+		}
+
+		public function reconnect(con:NetConnection):void {
+			_listenersService.reconnect(con);
 		}
 		
 		public function disconnect():void {
@@ -99,6 +105,7 @@ package org.bigbluebutton.modules.listeners.business
 
 		public function lockMuteUser(command:ListenersCommand):void
 		{
+			LogUtil.debug("MUTE UM USER");
 			_listenersService.lockMuteUser(command.userid, command.lock);		
 		}
 		

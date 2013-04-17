@@ -124,9 +124,9 @@ package org.bigbluebutton.main.model.users
 			LogUtil.debug("TESTE USER LOGGED IN");
 			_userSOService.join(e.userid, _conferenceParameters.room);
 			
-			var loadCommand:SuccessfulLoginEvent = new SuccessfulLoginEvent(SuccessfulLoginEvent.USER_LOGGED_IN);
-			loadCommand.conferenceParameters = _conferenceParameters;
-			dispatcher.dispatchEvent(loadCommand);		
+			//var loadCommand:SuccessfulLoginEvent = new SuccessfulLoginEvent(SuccessfulLoginEvent.USER_LOGGED_IN);
+			//loadCommand.conferenceParameters = _conferenceParameters;
+			//dispatcher.dispatchEvent(loadCommand);		
 		}
 		
 		public function logoutUser():void {

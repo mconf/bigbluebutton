@@ -28,6 +28,7 @@ package org.bigbluebutton.modules.phone.managers {
 	import org.bigbluebutton.main.events.BBBEvent;
 	import org.bigbluebutton.modules.phone.PhoneOptions;
 	import org.bigbluebutton.modules.phone.events.CallConnectedEvent;
+	import org.bigbluebutton.main.model.users.events.UsersConnectionEvent;
 	
 	public class PhoneManager {		
 		private var connectionManager:ConnectionManager;
@@ -41,6 +42,7 @@ package org.bigbluebutton.modules.phone.managers {
 		private var rejoining:Boolean = false;
 		// User has requested to leave the voice conference.
 		private var userHangup:Boolean = false;
+		private var lastAutoJoin:Boolean = false;
 		
 		
 		public function PhoneManager() {
@@ -88,10 +90,11 @@ package org.bigbluebutton.modules.phone.managers {
 		private function setupConnection():void {
 			streamManager.setConnection(connectionManager.getConnection());
 		}
-				
+
 		public function joinVoice(autoJoin:Boolean):void {
 			userHangup = false;
 			setupMic(autoJoin);
+			lastAutoJoin = autoJoin;
 			var uid:String = String(Math.floor(new Date().getTime()));
 			var uname:String = encodeURIComponent(UserManager.getInstance().getConference().getMyUserId() + "-" + attributes.username);
 			connectionManager.connect(uid, attributes.externUserID, uname , attributes.room, attributes.uri);
@@ -115,6 +118,7 @@ package org.bigbluebutton.modules.phone.managers {
 			setupConnection();
 			streamManager.callConnected(event.playStreamName, event.publishStreamName, event.codec);
 			onCall = true;
+			connectionManager.onCall = onCall;
 			// We have joined the conference. Reset so that if and when we get disconnected, we
 			// can rejoin automatically.
 			rejoining = false;
@@ -131,6 +135,7 @@ package org.bigbluebutton.modules.phone.managers {
 				streamManager.stopStreams();
 				connectionManager.doHangUp();
 				onCall = false;
+				connectionManager.onCall = onCall;
 			}			
 		}
 	}

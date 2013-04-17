@@ -22,6 +22,7 @@ package org.bigbluebutton.modules.listeners.business
 	import flash.net.NetConnection;
 	import flash.net.Responder;
 	import org.bigbluebutton.common.LogUtil;
+	import flash.utils.Timer;
 		
 	public class NetConnectionDelegate
 	{
@@ -34,14 +35,24 @@ package org.bigbluebutton.modules.listeners.business
 		private var connected:Boolean = false;
 		private var _connectionListener:Function;
 		private var _connectionError:Array;
+		private var backoff:int = 300;
+		private var retryTimer:Timer = new Timer(backoff, 1);
+		private var retryed:Boolean = false;
 				
 		public function NetConnectionDelegate(uri:String, connectionListener:Function) : void
 		{
 			_netConnection = new NetConnection();
 			_uri = uri;
 			_connectionListener = connectionListener;
+			
+			retryTimer.addEventListener(TimerEvent.TIMER, function():void{
+				LogUtil.debug("TENTANDO RECONECTAR");
+				connect();
+			});
+			
 		}
-		
+
+
 		public function get connection():NetConnection {
 			return _netConnection;
 		}
@@ -92,6 +103,7 @@ package org.bigbluebutton.modules.listeners.business
 
 		public function ejectUser(userid:Number) : void
 		{
+			LogUtil.debug("EJETANDO USUARIAO");
 			LogUtil.info(LOGNAME + "Ejecting listener [" + userid + "]");
 			_netConnection.call("meetmeService.ejectUser", null, userid);
 		}		
@@ -109,10 +121,11 @@ package org.bigbluebutton.modules.listeners.business
 		public function handleResult(  event : Object  ) : void {
 			var info:Object = event.info;
 			var statusCode:String = info.code;
-			
+			LogUtil.debug("Listener: " + statusCode);
 			switch ( statusCode ) 
 			{
 				case "NetConnection.Connect.Success" :
+					LogUtil.debug("CONECTADO");
 					LogUtil.info(LOGNAME + "Connection to voice application succeeded.");
 					_connectionListener(true);					
 					break;
@@ -126,6 +139,9 @@ package org.bigbluebutton.modules.listeners.business
 					LogUtil.error(LOGNAME + "Connection to application closed.");					
 					addError("Connection to application closed.");			
 					_connectionListener(false, _connectionError);
+					LogUtil.debug("ERRO");
+					//retryTimer.reset();
+					//retryTimer.start();
 					break;
 					
 				case "NetConnection.Connect.InvalidApp" :

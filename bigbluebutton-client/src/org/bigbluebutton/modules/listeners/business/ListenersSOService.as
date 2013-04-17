@@ -50,6 +50,7 @@ package org.bigbluebutton.modules.listeners.business
 		private var pingCount:int = 0;
 		private var _module:ListenersModule;
 		private var dispatcher:Dispatcher;
+		private var netConnection:NetConnection;
 		
 		private static var globalDispatcher:Dispatcher = new Dispatcher();
 							
@@ -67,6 +68,27 @@ package org.bigbluebutton.modules.listeners.business
 		
 		public function disconnect():void {
 			leave();
+		}
+
+		public function reconnect(con:NetConnection):void {
+			trace("ListenertsSOService " + _module.uri);
+			if(_listenersSO != null)
+				_listenersSO.close();
+
+			_listenersSO = SharedObject.getRemote(SHARED_OBJECT, _module.uri, false);
+			_listenersSO.addEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
+			_listenersSO.addEventListener(AsyncErrorEvent.ASYNC_ERROR, asyncErrorHandler);
+			_listenersSO.client = this;
+			netConnection = con;
+			_listenersSO.connect(netConnection);
+			LogUtil.debug(LOGNAME + ":Voice is connected to Shared object");
+			notifyConnectionStatusListener(true);		
+				
+			// Query the server if there are already listeners in the conference.
+
+			_listeners.removeAllListeners();
+			getCurrentUsers();
+			getRoomMuteState();
 		}
 		
 		private function connectionListener(connected:Boolean, errors:Array=null):void {
@@ -87,7 +109,8 @@ package org.bigbluebutton.modules.listeners.business
 			_listenersSO.addEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
 			_listenersSO.addEventListener(AsyncErrorEvent.ASYNC_ERROR, asyncErrorHandler);
 			_listenersSO.client = this;
-			_listenersSO.connect(_module.connection);
+			netConnection = _module.connection;
+			_listenersSO.connect(netConnection);
 			LogUtil.debug(LOGNAME + ":Voice is connected to Shared object");
 			notifyConnectionStatusListener(true);		
 				
@@ -109,6 +132,7 @@ package org.bigbluebutton.modules.listeners.business
 		}
 				
 		public function userJoin(userId:Number, cidName:String, cidNum:String, muted:Boolean, talking:Boolean, locked:Boolean):void {
+			LogUtil.debug(userId + " ESTA " + muted);
 			if (! _listeners.hasListener(userId)) {
 				var n:Listener = new Listener();
 				n.callerName = cidName != null ? cidName : "<Unknown Caller>";
@@ -205,7 +229,7 @@ package org.bigbluebutton.modules.listeners.business
 		}
 		
 		public function lockMuteUser(userid:Number, lock:Boolean):void {
-			var nc:NetConnection = _module.connection;
+			var nc:NetConnection = netConnection;
 			nc.call(
 				"voice.lockMuteUser",// Remote function name
 				new Responder(
@@ -228,7 +252,7 @@ package org.bigbluebutton.modules.listeners.business
 		
 		public function muteUnmuteUser(userid:Number, mute:Boolean):void
 		{
-			var nc:NetConnection = _module.connection;
+			var nc:NetConnection = netConnection;
 			nc.call(
 				"voice.muteUnmuteUser",// Remote function name
 				new Responder(
@@ -251,7 +275,7 @@ package org.bigbluebutton.modules.listeners.business
 
 		public function muteAllUsers(mute:Boolean):void
 		{	
-			var nc:NetConnection = _module.connection;
+			var nc:NetConnection = netConnection;
 			nc.call(
 				"voice.muteAllUsers",// Remote function name
 				new Responder(
@@ -280,7 +304,7 @@ package org.bigbluebutton.modules.listeners.business
 		
 		public function ejectUser(userId:Number):void
 		{
-			var nc:NetConnection = _module.connection;
+			var nc:NetConnection = netConnection;
 			nc.call(
 				"voice.kickUSer",// Remote function name
 				new Responder(
@@ -301,7 +325,7 @@ package org.bigbluebutton.modules.listeners.business
 		}
 		
 		private function getCurrentUsers():void {
-			var nc:NetConnection = _module.connection;
+			var nc:NetConnection = netConnection;
 			nc.call(
 				"voice.getMeetMeUsers",// Remote function name
 				new Responder(
@@ -312,6 +336,7 @@ package org.bigbluebutton.modules.listeners.business
 							for(var p:Object in result.participants) 
 							{
 								var u:Object = result.participants[p]
+								LogUtil.debug("ADICIONADO O USUARIO " + u.name + " NA VOZ");
 								userJoin(u.participant, u.name, u.name, u.muted, u.talking, u.locked);
 							}							
 						}	
@@ -328,7 +353,7 @@ package org.bigbluebutton.modules.listeners.business
 		}
 		
 		public function getRoomMuteState():void{
-			var nc:NetConnection = _module.connection;
+			var nc:NetConnection = netConnection;
 			nc.call(
 				"voice.isRoomMuted",// Remote function name
 				new Responder(
@@ -373,7 +398,7 @@ package org.bigbluebutton.modules.listeners.business
 					addError("ChatSO connection failed");
 					break;
 					
-				case "NetConnection.Connect.Closed":			
+				case "NetConnection.Connect.Closed":		
 					LogUtil.error(LOGNAME + "Connection to VoiceSO was closed.");						
 					addError("Connection to VoiceSO was closed.");									
 					notifyConnectionStatusListener(false, _soErrors);
