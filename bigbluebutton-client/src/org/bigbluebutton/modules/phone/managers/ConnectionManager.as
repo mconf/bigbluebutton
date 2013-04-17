@@ -33,6 +33,7 @@ package org.bigbluebutton.modules.phone.managers {
 	import org.bigbluebutton.modules.phone.events.ConnectionStatusEvent;
 	import org.bigbluebutton.modules.phone.events.RegistrationFailedEvent;
 	import org.bigbluebutton.modules.phone.events.RegistrationSuccessEvent;
+	import org.bigbluebutton.core.managers.UserManager;
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
 	
@@ -49,6 +50,7 @@ package org.bigbluebutton.modules.phone.managers {
 		private var rtmptRetryTimer:Timer = new Timer(1000, 1);
 		public var onCall:Boolean = false;
 		private var lastDialStr:String;
+		public var user:String;
 		
 		private var isConnected:Boolean = false;
 		private var registered:Boolean = false;
@@ -91,6 +93,7 @@ package org.bigbluebutton.modules.phone.managers {
 
 		private function rtmptRetryTimerHandler2(event:TimerEvent):void {
 		    	LogUtil.debug("Tentando Reconectar Phone");
+			var uname:String = encodeURIComponent(UserManager.getInstance().getConference().getMyUserId() + "-" + user);
 			connectToServer(externUID, username);
 		}
 		

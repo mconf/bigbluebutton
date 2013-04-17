@@ -119,6 +119,7 @@ package org.bigbluebutton.main.model.users
 
 		public function userReLoggedIn(e:UsersConnectionEvent):void{
 			UserManager.getInstance().getConference().setMyUserid(e.userid);
+			LogUtil.debug("SETANDO MEU USER PARA " + e.userid);
 			_conferenceParameters.connection = e.connection;
 			_conferenceParameters.userid = e.userid;
 			LogUtil.debug("TESTE USER LOGGED IN");

@@ -152,7 +152,9 @@ package org.bigbluebutton.modules.listeners.business
 					/**
 					 * The first item is the userid and the second is the username.
 					 */
+					LogUtil.debug(" O result eh " + result[1]);
 					if (UserManager.getInstance().getConference().amIThisUser(result[1])) {
+						LogUtil.debug("EU SOU ESSE USUARIO");
 						UserManager.getInstance().getConference().setMyVoiceUserId(n.userid);						
 						UserManager.getInstance().getConference().muteMyVoice(n.muted);
 						UserManager.getInstance().getConference().setMyVoiceJoined(true);

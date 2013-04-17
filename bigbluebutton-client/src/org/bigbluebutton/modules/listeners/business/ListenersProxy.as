@@ -66,6 +66,15 @@ package org.bigbluebutton.modules.listeners.business
 
 		public function reconnect(con:NetConnection):void {
 			_listenersService.reconnect(con);
+
+			/*var listenersEvent:ListenersEvent = new ListenersEvent(ListenersEvent.REGISTER_LISTENERS);
+			listenersEvent.listeners = _listeners;
+			dispatcher.dispatchEvent(listenersEvent);
+			
+			var moderatorEvent:ListenersEvent = new ListenersEvent(ListenersEvent.SET_LOCAL_MODERATOR_STATUS);
+			moderatorEvent.moderator = event.module.isModerator();
+			dispatcher.dispatchEvent(moderatorEvent);*/
+
 		}
 		
 		public function disconnect():void {

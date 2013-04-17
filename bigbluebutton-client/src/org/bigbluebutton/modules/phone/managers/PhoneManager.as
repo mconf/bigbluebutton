@@ -97,6 +97,7 @@ package org.bigbluebutton.modules.phone.managers {
 			lastAutoJoin = autoJoin;
 			var uid:String = String(Math.floor(new Date().getTime()));
 			var uname:String = encodeURIComponent(UserManager.getInstance().getConference().getMyUserId() + "-" + attributes.username);
+			connectionManager.user = attributes.username;
 			connectionManager.connect(uid, attributes.externUserID, uname , attributes.room, attributes.uri);
 		}		
 		
