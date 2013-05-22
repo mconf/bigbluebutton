@@ -25,12 +25,13 @@
 	xmlns:pubVid="org.bigbluebutton.modules.videoconf.business.*"
 	implements="org.bigbluebutton.common.IBbbModuleWindow"
 	creationComplete="init()"
-	width="{defaultWidth + 6}" height="{defaultHeight + 75}" 
+	width="{defaultWidth + 6}" height="{defaultHeight + 25 + videoOptionsBar.height}" 
 	xmlns:mate="http://mate.asfusion.com/"
 	resize="onResize()"
 	horizontalScrollPolicy="off"
 	verticalScrollPolicy="off"
-	layout="absolute">
+	layout="absolute"
+	preinitialize="onPreInitialize()">
 	
 	<mx:Script>
 		<![CDATA[
@@ -60,7 +61,7 @@
 			[Bindable] private var defaultWidth:Number = 320;
 			[Bindable] private var defaultHeight:Number = 240;
 			
-			[Bindable] private var camerasAvaiable:ArrayList = new ArrayList();
+			[Bindable] private var camerasAvailable:ArrayList = new ArrayList();
 			private var camWidth:Number = 320;
 			private var camHeight:Number = 240;
 			private var _userrole:String;
@@ -91,13 +92,10 @@
 			[Bindable]
 			public var videoOptions:VideoConfOptions;
 			public var cameraBeingPublished:String;
-			
-			private function init():void{
-				_videoHolder = new UIComponent();
-				_videoHolder.width = camWidth;
-				_videoHolder.height = camHeight;
-				this.addChild(_videoHolder);				
-				this.title = ResourceUtil.getInstance().getString('bbb.publishVideo.title');
+			[Bindable]
+			private var _showCameraSelector:Boolean = true;
+
+			private function onPreInitialize():void {
 				var i:int;
 				for(i = 0; i < Camera.names.length; i++) {
 					LogUtil.debug("Camera " + Camera.names[i] + " is " + cameraIsOff[String(i)]);
@@ -105,9 +103,19 @@
 						var myObj:Object = {}
 						myObj.name = Camera.names[i];
 						myObj.index = String(i);
-						camerasAvaiable.addItem(myObj);
+						camerasAvailable.addItem(myObj);
 					}
 				}
+				showCameraSelector(camerasAvailable.length > 1);
+			}
+
+			private function init():void{
+				_videoHolder = new UIComponent();
+				_videoHolder.width = camWidth;
+				_videoHolder.height = camHeight;
+				_videoHolder.x = _videoHolder.y = 0;
+				this.addChild(_videoHolder);
+				this.title = ResourceUtil.getInstance().getString('bbb.publishVideo.title');
 
 				checkIfMacCamera();
 				
@@ -116,10 +124,9 @@
 //				if (UserManager.getInstance().getConference().amIPresenter() || UserManager.getInstance().getConference().amIModerator()) {
 //					showResControls(true);
 //				} else {
-//					if (camerasAvaiable.length == 1)
+//					if (camerasAvailable.length == 1)
 //						startPublishing();
-//				}  
-				if (camerasAvaiable.length > 1) showVideoControls(true);
+//				}
 
 				this.minWidth = _minWidth;
 				this.minHeight = _minHeight;
@@ -152,8 +159,8 @@
 				//var sharedObject:SharedObject = SharedObject.getLocal("bbbUserProperties", "/");
 				//var webcam:String = sharedObject.data["webcam"] as String;
 				cmbCameraSelector.selectedIndex = int(defaultCamera);
-				//for (var i:Number = 0; i<camerasAvaiable.length; i++){
-				//	if (camerasAvaiable.getItemAt(i).name == webcam) cmbCameraSelector.selectedIndex = i;
+				//for (var i:Number = 0; i<camerasAvailable.length; i++){
+				//	if (camerasAvailable.getItemAt(i).name == webcam) cmbCameraSelector.selectedIndex = i;
 				//}
 			}
 			
@@ -162,12 +169,12 @@
 			
 				btnStartPublish.enabled = false;
 				
-				if (camerasAvaiable.length == 0) {
+				if (camerasAvailable.length == 0) {
 					showWarning('bbb.video.publish.hint.noCamera');
 					return;
 				}
 				
-				_camera = Camera.getCamera(camerasAvaiable.getItemAt(cmbCameraSelector.selectedIndex).index.toString());
+				_camera = Camera.getCamera(camerasAvailable.getItemAt(cmbCameraSelector.selectedIndex).index.toString());
 				//_camera = Camera.getCamera(useCam);
 				if (_camera == null) {
 					showWarning('bbb.video.publish.hint.cantOpenCamera');
@@ -271,11 +278,11 @@
 				
 				defaultWidth = originalWidth;
 				defaultHeight = originalHeight;
-				cameraBeingPublished = camerasAvaiable.getItemAt(cmbCameraSelector.selectedIndex).index.toString();
+				cameraBeingPublished = camerasAvailable.getItemAt(cmbCameraSelector.selectedIndex).index.toString();
 				var e:StartBroadcastEvent = new StartBroadcastEvent();
 				e.stream = this.streamName;
 				e.camera = _camera;
-				e.cameraId = camerasAvaiable.getItemAt(cmbCameraSelector.selectedIndex).index.toString();
+				e.cameraId = camerasAvailable.getItemAt(cmbCameraSelector.selectedIndex).index.toString();
 				e.publishWindowIndex = indexOnArray;
 				dispatchEvent(e);
 				
@@ -353,23 +360,15 @@
 			}
 			
 			private function showVideoControls(show:Boolean):void{
-				if (show){
-					videoOptionsBar.visible = true;
-					btnStartPublish.visible = true;
-					cmbCameraSelector.visible = true;
-				} else{					
-					videoOptionsBar.visible = false;
-					videoOptionsBar.width = 0;
-					videoOptionsBar.height = 0;
-					btnStartPublish.visible = false;
-					cmbCameraSelector.visible = false;
-					videoOptionsBar.visible = false;
-				}
+				videoOptionsBar.visible = videoOptionsBar.includeInLayout = show;
+			}
+
+			private function showCameraSelector(show:Boolean): void {
+				_showCameraSelector = show;
 			}
 			
 			private function showResControls(show:Boolean):void{
-				if (show) cmbResolution.visible = true;
-				else cmbResolution.visible = false;
+				cmbResolution.visible = cmbResolution.includeInLayout = show;
 			}
 			
 			private function closeWindow(e:CloseAllWindowsEvent):void{
@@ -382,8 +381,8 @@
 			}
 			
 			private function checkIfMacCamera():void{
-				for (var i:int = 0; i<camerasAvaiable.length; i++){
-					if (camerasAvaiable.getItemAt(i).name == "USB Video Class Video") {
+				for (var i:int = 0; i<camerasAvailable.length; i++){
+					if (camerasAvailable.getItemAt(i).name == "USB Video Class Video") {
 						/**
 						 * Set as default for Macs
 						 */
@@ -394,8 +393,7 @@
 			
 			override protected function resourcesChanged():void{
 				super.resourcesChanged();
-			}		
-			
+			}
 			
 			private var hideWarningTimer:Timer = null;
 			
@@ -428,11 +426,12 @@
 	<mx:Fade id="dissolveIn" duration="1000" alphaFrom="0.0" alphaTo="1.0"/>
 	<mx:Text id="lblWarning" width="100%" textAlign="right" fontSize="14" fontWeight="bold" y="{this.height - (videoOptionsBar.visible? videoOptionsBar.height: 0) - lblWarning.height - 30}" visible="false" selectable="false" hideEffect="{dissolveOut}" showEffect="{dissolveIn}"/>
 	<mx:ControlBar id="videoOptionsBar" visible="true">
-		<mx:Button id="btnStartPublish" toolTip="{ResourceUtil.getInstance().getString('bbb.publishVideo.startPublishBtn.toolTip')}" icon="{camIcon}" click="startPublishing()" enabled="false"/>
-		<mx:ComboBox id="cmbCameraSelector" dataProvider="{camerasAvaiable}" width="150" visible="false" change="updateCamera()"
-		labelField = "name"
-		/>
-		<mx:ComboBox id="cmbResolution" dataProvider="{resolutions}" width="20%" visible="false" change="updateCamera()"/>
+		<mx:Button id="btnStartPublish" toolTip="{ResourceUtil.getInstance().getString('bbb.publishVideo.startPublishBtn.toolTip')}" click="startPublishing()" enabled="false" label="{ResourceUtil.getInstance().getString('bbb.publishVideo.startPublishBtn.label')}"/>
+		<mx:Spacer width="100%"/>
+		<mx:VBox horizontalAlign="right">
+			<mx:ComboBox id="cmbCameraSelector" dataProvider="{camerasAvailable}" width="150" visible="{_showCameraSelector}" includeInLayout="{_showCameraSelector}" change="updateCamera()" labelField = "name"/>
+			<mx:ComboBox id="cmbResolution" dataProvider="{resolutions}" width="20%" visible="true" change="updateCamera()"/>
+		</mx:VBox>
 	</mx:ControlBar>
 	
 	<mate:Listener type="{CloseAllWindowsEvent.CLOSE_ALL_WINDOWS}" method="closeWindow" />
