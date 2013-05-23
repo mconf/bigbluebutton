@@ -303,12 +303,6 @@
 				var micSettings:MicSettings = MicSettings(PopUpManager.createPopUp(mdiCanvas, MicSettings, true));				
 				if(DEFAULT_HELP_URL != "")
 					micSettings.setHelpUrl(DEFAULT_HELP_URL);
-				var point1:Point = new Point();
-				// Calculate position of TitleWindow in Application's coordinates. 
-				point1.x = width/2;
-				point1.y = height/2;                
-				micSettings.x = point1.x - (micSettings.width/2);
-				micSettings.y = point1.y - (micSettings.height/2);	
 			}
 			
 	   		private function wrongLocaleVersion():void {
