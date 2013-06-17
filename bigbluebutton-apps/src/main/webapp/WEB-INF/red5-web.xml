@@ -34,6 +34,7 @@
 				<ref bean="chatHandler" />
 				<ref bean="layoutHandler" />
 				<ref bean="presentationHandler" />
+				<ref bean="sharedNotesHandler" />
 				<ref bean="voiceHandler" />
 				<ref bean="whiteboardApplication" />
 				<ref bean="RTMPAdapter" />
