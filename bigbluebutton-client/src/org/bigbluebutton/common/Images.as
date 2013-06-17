@@ -195,5 +195,9 @@ package org.bigbluebutton.common
 
 		[Embed(source="assets/images/folder.png")]
 		public var folder:Class;		
+		
+		[Embed(source="assets/images/wrench.png")]
+		public var wrench:Class;
+		
 	}
 }

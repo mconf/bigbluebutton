@@ -349,6 +349,58 @@ package org.bigbluebutton.main.model.users {
 			); //_netConnection.call
 		}
 
+
+		public function newGuestPolicy(guestPolicy:String):void {
+			
+		 	var nc:NetConnection = netConnectionDelegate.connection;			
+			nc.call(
+				"participants.newGuestPolicy",
+				responder,
+				guestPolicy
+			); //_netConnection.call
+			
+			
+		}
+
+		public function guestPolicyChanged(guestPolicy:String):void {
+		    var policy:BBBEvent = new BBBEvent("GET_GUEST_POLICY");
+		    policy.payload['guestPolicy'] = guestPolicy;
+		    dispatcher.dispatchEvent(policy);
+		    
+		    LogUtil.debug("Received from server: " + guestPolicy);
+			
+		}
+
+
+		public function getGuestPolicy():void {
+			var nc:NetConnection = netConnectionDelegate.connection;			
+			nc.call(
+				"participants.getGuestPolicy",// Remote function name
+				new Responder(
+	        			function(result:Object):void { 
+							var policy:BBBEvent = new BBBEvent("GET_GUEST_POLICY");
+							policy.payload['guestPolicy'] = result;
+							if(UserManager.getInstance().getConference().isGuest()) {
+								if(result == "ALWAYS_DENY")
+									dispatcher.dispatchEvent(new BBBEvent("DENY_GUEST"));
+								else if(result == "ALWAYS_ACCEPT")
+									dispatcher.dispatchEvent(new BBBEvent("ACCEPT_GUEST"));
+								else
+								     dispatcher.dispatchEvent(new BBBEvent("ASK_TO_ACCEPT_GUEST"));
+							}
+							dispatcher.dispatchEvent(policy);
+					},	
+					// status - On error occurred
+					function(status:Object):void { 
+						LogUtil.error("Error occurred:"); 
+						for (var x:Object in status) { 
+							LogUtil.error(x + " : " + status[x]); 
+						} 
+					}
+				)//new Responder
+			); //_netConnection.call
+		}
+
 		public function guestWaitingForModerator(userid:Number, userId_userName:String):void {
 			if(UserManager.getInstance().getConference().getMyUserId() == userid && UserManager.getInstance().getConference().amIModerator()) {
 				if(userId_userName != "") {

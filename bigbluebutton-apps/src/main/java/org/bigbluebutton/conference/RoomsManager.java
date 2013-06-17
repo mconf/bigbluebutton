@@ -206,6 +206,21 @@ public class RoomsManager {
 			return;
 		}
 	}
+
+	public String getGuestPolicy(String roomName) {
+		Room r = getRoom(roomName);
+		if (r != null) {
+			return r.getGuestPolicy();
+		}
+		return "";
+	}
+
+	public void newGuestPolicy(String roomName, String guestPolicy) {
+		Room r = getRoom(roomName);
+		if (r != null) {
+			r.newGuestPolicy(guestPolicy);
+		}
+	}
 	
 	public void responseToAllGuests(String roomName, Boolean resp) {
 		Room r = getRoom(roomName);

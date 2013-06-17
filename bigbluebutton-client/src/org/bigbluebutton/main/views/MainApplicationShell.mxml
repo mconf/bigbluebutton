@@ -47,8 +47,10 @@
 	<mate:Listener type="SHOW_MIC_SETTINGS" method="showMicSettings"  />
 	<mate:Listener type="{ToolbarButtonEvent.ADD}" method="handleAddToolbarComponent" />	
 	<mate:Listener type="{ToolbarButtonEvent.REMOVE}" method="handleRemoveToolbarComponent"/>
+	<mate:Listener type="SHOW_BBB_SETTINGS" method="showBBBSettings"  />
 	<mate:Listener type="{NewGuestEvent.NEW_GUEST_EVENT}" method="newGuestWindow" />
 	<mate:Listener type="{ModeratorRespEvent.GUEST_ALLOWED}" method="guestAllowed" />
+	<mate:Listener type="GET_GUEST_POLICY" method="setGuestPolicy"/>
 
 	
 	<mx:Script>
@@ -68,6 +70,7 @@
 			import mx.events.CloseEvent;
 			import mx.managers.PopUpManager;
 			import mx.core.IFlexDisplayObject;
+			import org.bigbluebutton.common.IBbbToolbarComponent;
 			import org.bigbluebutton.common.IBbbModuleWindow;
 			import org.bigbluebutton.common.Images;
 			import org.bigbluebutton.common.LogUtil;
@@ -93,6 +96,7 @@
 			import org.bigbluebutton.main.model.users.events.ConnectionFailedEvent;
 			import org.bigbluebutton.util.i18n.ResourceUtil;
 			import org.bigbluebutton.util.logging.Logger;
+			import org.bigbluebutton.common.events.SettingsComponentEvent;
 			
 	
 			private var globalDispatcher:Dispatcher;			
@@ -103,6 +107,7 @@
 			private var logWindow:LogWindow;
 			private var waitWindow:WaitingWindow = null;	
 			private var guestWindow:GuestWindow = null;
+			private var bbbSettings:BBBSettings = null;
 	
 			private var logoutWindow:LoggedOutWindow;
 			private var connectionLostWindow:ConnectionLostWindow;
@@ -120,6 +125,9 @@
 
 			private var receivedConfigLocaleVer:Boolean = false;
 			private var receivedResourceLocaleVer:Boolean = false;
+			private var guestManagement:GuestManagement = null;
+
+			private var guestPolicy:String = "ASK_MODERATOR";
 			
 			public function get mode():String {
 				return _mode;
@@ -142,9 +150,24 @@
 				showToolbarOpt = layoutOptions.showToolbar;
 				LogUtil.debug("*** show toolbar = " + layoutOptions.showToolbar);
 				toolbar.displayToolbar();
+				
+				bbbSettings = BBBSettings(PopUpManager.createPopUp(mdiCanvas, BBBSettings, true));	
 
 				_updateBandwidthTimer.addEventListener(TimerEvent.TIMER, updateBandwidthTimerHandler);
 				_updateBandwidthTimer.start();
+			}
+
+			private function setGuestPolicy(event:BBBEvent):void {
+				LogUtil.debug("INICIALIZANDO GUEST_POLICY " + event.payload.guestPolicy);
+				guestPolicy = event.payload.guestPolicy;
+				if(guestManagement == null) {
+					LogUtil.debug("ADD Guest Event");
+					guestManagement = new GuestManagement();
+					guestManagement.setGuestPolicy(guestPolicy);
+					guestManagement.addToSettings();
+					//Add event to init bbbsettings
+					
+				}
 			}
 			
 			protected function initializeShell():void {	
@@ -303,6 +326,16 @@
 				var micSettings:MicSettings = MicSettings(PopUpManager.createPopUp(mdiCanvas, MicSettings, true));				
 				if(DEFAULT_HELP_URL != "")
 					micSettings.setHelpUrl(DEFAULT_HELP_URL);
+			}
+			
+			private function showBBBSettings(event:BBBEvent):void {
+				bbbSettings.visible = true;
+				var point1:Point = new Point();
+				// Calculate position of TitleWindow in Application's coordinates. 
+				point1.x = width/2;
+				point1.y = height/2;                
+				bbbSettings.x = point1.x - (bbbSettings.width/2);
+				bbbSettings.y = point1.y - (bbbSettings.height/2);
 			}
 			
 	   		private function wrongLocaleVersion():void {

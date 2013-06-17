@@ -15,21 +15,26 @@
 * You should have received a copy of the GNU Lesser General Public License along
 * with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 * 
+*
 */
 
-package org.bigbluebutton.conference;
-
-import java.util.ArrayList;
-
-public interface IRoomListener {
-	public String getName();
-	public void participantStatusChange(Participant p, String status, Object value);
-	public void participantJoined(Participant participant);
-	public void participantLeft(Participant participant);
-	public void assignPresenter(ArrayList<String> presenter);
-	public void guestEntrance(Participant p);
-	public void endAndKickAll();
-	public void guestResponse(Participant p, Boolean resp);
-	public void guestWaitingForModerator(Long userid, String userId_userName); 
-	public void guestPolicyChanged(String guestPolicy);
+package org.bigbluebutton.common.events
+{
+	import flash.events.Event;
+	
+	import mx.core.UIComponent;
+			
+	public class SettingsComponentEvent extends Event
+	{
+		public static const ADD:String = "Add Component Event";
+		public static const REMOVE:String = "Remove Component Event";
+		
+		public var component:UIComponent;
+		
+		public function SettingsComponentEvent(type:String, bubbles:Boolean=false, cancelable:Boolean=false)
+		{
+			super(type, bubbles, cancelable);
+		}
+		
+	}
 }

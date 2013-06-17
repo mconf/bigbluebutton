@@ -32,6 +32,8 @@ package org.bigbluebutton.main.model.users
 	import org.bigbluebutton.main.events.WaitModeratorEvent;
 	import org.bigbluebutton.main.events.UserServicesEvent;
 	import org.bigbluebutton.main.events.ResponseModeratorEvent;
+	import org.bigbluebutton.main.events.BBBEvent;
+	import org.bigbluebutton.main.events.LogoutEvent;
 	import org.bigbluebutton.main.model.ConferenceParameters;
 	import org.bigbluebutton.main.model.users.events.BroadcastStartedEvent;
 	import org.bigbluebutton.main.model.users.events.BroadcastStoppedEvent;
@@ -119,20 +121,44 @@ package org.bigbluebutton.main.model.users
 			
 			_userSOService.join(e.userid, _conferenceParameters.room);
 			
-			
-			if(UserManager.getInstance().getConference().isGuest()) {
-				UserManager.getInstance().getConference().setWaitForModerator(true);
-				var guestCommand:WaitModeratorEvent = new WaitModeratorEvent(WaitModeratorEvent.USER_LOGGED_IN);
-				guestCommand.conferenceParameters = _conferenceParameters;
-				dispatcher.dispatchEvent(guestCommand);  
-			}
-			else {
+			_userSOService.getGuestPolicy();
+			if(UserManager.getInstance().getConference().isGuest() == false) {	
 				var loadCommand:SuccessfulLoginEvent = new SuccessfulLoginEvent(SuccessfulLoginEvent.USER_LOGGED_IN);
 				loadCommand.conferenceParameters = _conferenceParameters;
 				dispatcher.dispatchEvent(loadCommand);
 			}
 			
+				if(UserManager.getInstance().getConference().amIModerator()) {
+					dispatcher.dispatchEvent(new BBBEvent("SET_BBB_SETTINGS_BUTTON_VISIBLE"));
+				}
 				
+		}
+
+		public function askToAccept():void {
+			UserManager.getInstance().getConference().setWaitForModerator(true);
+			var guestCommand:WaitModeratorEvent = new WaitModeratorEvent(WaitModeratorEvent.USER_LOGGED_IN);
+			guestCommand.conferenceParameters = _conferenceParameters;
+			dispatcher.dispatchEvent(guestCommand);  
+			
+		}
+
+
+		public function getGuestPolicy():void {
+			_userSOService.getGuestPolicy();
+		}
+
+		public function acceptGuest():void {
+			var loadCommand:SuccessfulLoginEvent = new SuccessfulLoginEvent(SuccessfulLoginEvent.USER_LOGGED_IN);
+			loadCommand.conferenceParameters = _conferenceParameters;
+			dispatcher.dispatchEvent(loadCommand);
+		}
+
+		public function denyGuest():void {
+			dispatcher.dispatchEvent(new LogoutEvent(LogoutEvent.GUEST_KICKED_OUT));
+		}
+
+		public function newGuestPolicy(event:BBBEvent):void {
+			_userSOService.newGuestPolicy(event.payload['guestPolicy']);
 		}
 
 		public function getAllGuests(e:SuccessfulLoginEvent):void {
@@ -145,7 +171,8 @@ package org.bigbluebutton.main.model.users
 		public function guestDisconnect():void {
 			_userSOService.guestDisconnect();
 		}
-		
+
+
 		public function logoutUser():void {
 			_userSOService.disconnect(true);
 			
