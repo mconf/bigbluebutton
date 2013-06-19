@@ -91,7 +91,7 @@ module BigBlueButton
     FileTest.directory?(dir)
   end
     
-  def self.execute(command)
+  def self.execute(command, fail_on_error=true)
     status = ExecutionStatus.new
     status.detailedStatus = Open4::popen4(command) do | pid, stdin, stdout, stderr|
         BigBlueButton.logger.info("Executing: #{command}")
@@ -102,12 +102,14 @@ module BigBlueButton
         status.errors = stderr.readlines
         unless status.errors.empty?
           BigBlueButton.logger.error( "Error: stderr: #{Array(status.errors).join()}")
-#          raise errors.to_s
         end
     end
     BigBlueButton.logger.info("Success?: #{status.success?}")
     BigBlueButton.logger.info("Process exited? #{status.exited?}")
     BigBlueButton.logger.info("Exit status: #{status.exitstatus}")
+    if status.success? == false and fail_on_error
+      raise "Execution failed"
+    end
     status
   end
 end
