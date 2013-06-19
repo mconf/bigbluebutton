@@ -63,6 +63,7 @@ package org.bigbluebutton.modules.layout.managers
 		private var _applyCurrentLayoutTimer:Timer = new Timer(150,1);
 		private var _customLayoutsCount:int = 0;
 		private var _serverLayoutsLoaded:Boolean = false;
+		private var _comboLayoutCreated:Boolean = false;
 		private var _eventsToDelay:Array = new Array(MDIManagerEvent.WINDOW_RESTORE,
 				MDIManagerEvent.WINDOW_MINIMIZE,
 				MDIManagerEvent.WINDOW_MAXIMIZE);
@@ -85,6 +86,7 @@ package org.bigbluebutton.modules.layout.managers
 					_layouts = e.layouts;
 					_serverLayoutsLoaded = true;
 					LogUtil.debug("LayoutManager: layouts loaded successfully");
+					broadcastLoadedLayouts();
 
 				} else {
 					LogUtil.error("LayoutManager: layouts not loaded (" + e.error.message + ")");
@@ -94,7 +96,14 @@ package org.bigbluebutton.modules.layout.managers
 		}
 
 		public function onComboLayoutCreated():void {
-			if (_serverLayoutsLoaded) {
+			LogUtil.debug("LayoutManager::onComboLayoutCreated");
+			_comboLayoutCreated = true;
+			broadcastLoadedLayouts();
+		}
+
+		private function broadcastLoadedLayouts():void {
+			// it will dispatch the event using the global dispatcher, only after the layouts get loaded and the combo get started
+			if (_comboLayoutCreated && _serverLayoutsLoaded) {
 				var layoutsLoaded:LayoutsLoadedEvent = new LayoutsLoadedEvent();
 				layoutsLoaded.layouts = _layouts;
 				_globalDispatcher.dispatchEvent(layoutsLoaded);
