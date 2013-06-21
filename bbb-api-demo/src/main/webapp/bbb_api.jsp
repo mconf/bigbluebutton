@@ -36,21 +36,9 @@
 
 <%@ include file="bbb_api_conf.jsp"%> 
 
-<%!//
-// Create a meeting with specific 
-//    - meetingID
-//    - welcome message
-//    - moderator password
-//    - viewer password  
-//    - voiceBridge
-//    - logoutURL
-//
-// Added for 0.8
-//
-//    - metadata
-//    - xml (for pre-upload of slides)
-//
-public String createMeeting(String meetingID, String welcome, String moderatorPassword, String viewerPassword, Integer voiceBridge, String logoutURL) {
+<%!
+
+public String createMeeting(String meetingID, String welcome, String moderatorPassword, String viewerPassword, Integer voiceBridge, String logoutURL, String record, Map<String, String> metadata, String xml) {
 	String base_url_create = BigBlueButtonURL + "api/create?";
 
 	String welcome_param = "";
@@ -60,6 +48,7 @@ public String createMeeting(String meetingID, String welcome, String moderatorPa
 	String moderator_password_param = "&moderatorPW=mp";
 	String voice_bridge_param = "";
 	String logoutURL_param = "";
+	String xml_param = "";
 
 	if ((welcome != null) && !welcome.equals("")) {
 		welcome_param = "&welcome=" + urlEncode(welcome);
@@ -86,6 +75,10 @@ public String createMeeting(String meetingID, String welcome, String moderatorPa
 		logoutURL_param = "&logoutURL=" + urlEncode(logoutURL);
 	}
 
+	if ((xml != null) && !xml.equals("")) {
+		xml_param = xml;
+	}
+
 	//
 	// Now create the URL
 	//
@@ -93,16 +86,19 @@ public String createMeeting(String meetingID, String welcome, String moderatorPa
 	String create_parameters = "name=" + urlEncode(meetingID)
 		+ "&meetingID=" + urlEncode(meetingID) + welcome_param
 		+ attendee_password_param + moderator_password_param
-		+ voice_bridge_param + logoutURL_param;
+		+ voice_bridge_param + logoutURL_param
+		+ "&record=" + record + getMetaData( metadata );
+
 
 	Document doc = null;
 
 	try {
 		// Attempt to create a meeting using meetingID
-		String xml = getURL(base_url_create + create_parameters
+		String url = getURL(base_url_create + create_parameters
 			+ "&checksum="
 			+ checksum("create" + create_parameters + salt));
-		doc = parseXml(xml);
+		//doc = parseXml( postURL( url, xml_param ) );
+		doc = parseXml(url);
 	} catch (Exception e) {
 		e.printStackTrace();
 	}
@@ -116,6 +112,24 @@ public String createMeeting(String meetingID, String welcome, String moderatorPa
 		+ ": "
 		+ doc.getElementsByTagName("message").item(0).getTextContent()
 	.trim();
+}
+
+//
+// Create a meeting with specific 
+//    - meetingID
+//    - welcome message
+//    - moderator password
+//    - viewer password  
+//    - voiceBridge
+//    - logoutURL
+//
+// Added for 0.8
+//
+//    - metadata
+//    - xml (for pre-upload of slides)
+//
+public String createMeeting(String meetingID, String welcome, String moderatorPassword, String viewerPassword, Integer voiceBridge, String logoutURL) {
+	return createMeeting(meetingID, welcome, moderatorPassword, viewerPassword, voiceBridge, logoutURL, "false", null, null);
 }
 
 //

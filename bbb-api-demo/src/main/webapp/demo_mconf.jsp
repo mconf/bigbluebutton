@@ -36,7 +36,6 @@ Author: Fred Dixon <ffdixon@bigbluebutton.org>
 	<link rel="icon" type="image/png" href="/client/mconf.png">
 </head>
 <body>
-
 <%@ include file="bbb_api.jsp"%>
 
 <% 
@@ -95,9 +94,13 @@ if (request.getParameterMap().isEmpty()) {
 		//
 	%> 
 
-<div style="width: 400px; margin: 0px auto; margin-top: 100px; ">
-	<div style="text-align: center; margin-bottom: 35px; ">
-		<h1>Mconf-Live Demo</h1>
+<div style="width: 400px; margin: 80px auto; ">
+	<div style="text-align: center; ">
+		<img src="images/mconf.png" style="
+		    width: 300px;
+		    height: auto;
+		    display: block; margin-left: auto; margin-right: auto;
+		">	
 	</div>
 
 	<FORM NAME="form1" METHOD="GET">
@@ -208,7 +211,7 @@ Invalid Password, please <a href="javascript:history.go(-1)">try again</a>.
 		//
 		// Looks good, let's create the meeting
 		//
-		String meeting_ID = createMeeting( meetingID, welcomeMsg, moderatorPW, viewerPW, voiceBridge, logoutURL );
+		String meeting_ID = createMeeting( meetingID, welcomeMsg, moderatorPW, viewerPW, voiceBridge, logoutURL, "false", null, null );
 		
 		//
 		// Check if we have an error.
