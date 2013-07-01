@@ -599,6 +599,18 @@ module BigBlueButton
         stop_evt << new_event
       end
     end
+    
+    # fix the start events list so the matched events will be consistent
+    stop_evt.each do |evt|
+      if start_evt.select{ |s| s[:stream] == evt[:stream] }.empty?
+        new_event = {
+          :stream => evt[:stream],
+          :start_timestamp => evt[:stop_timestamp] - (BigBlueButton.get_video_duration("#{video_dir}/#{evt[:stream]}.flv") * 1000).to_i
+        }
+        BigBlueButton.logger.debug("Adding stop event: #{new_event}")
+        start_evt << new_event
+      end
+    end
 
     matched_evts = BigBlueButton::Events.match_start_and_stop_video_events(start_evt, stop_evt)
 
@@ -726,7 +738,9 @@ module BigBlueButton
       current_event[:grid] = calculate_videos_grid(current_event[:streams], video_streams, { :width => output_width, :height => output_height })
       current_event[:transformation] = calculate_video_position_and_size(current_event[:streams], video_streams, { :width => output_width, :height => output_height }, current_event[:grid])
     end
-    timeline.pop()
+    # last_timestamp - first_timestamp is the actual duration of the entire meeting
+    timeline.last()[:duration] = (last_timestamp - first_timestamp) - timeline.last()[:timestamp]
+    timeline.pop() if timeline.last()[:duration] == 0
 
     BigBlueButton.logger.debug("Current timeline with details on streams:")
     BigBlueButton.logger.debug(hash_to_str(timeline))
