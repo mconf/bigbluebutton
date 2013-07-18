@@ -24,7 +24,6 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 	icon="{phoneIcon}" click="startPhone()"
 	mouseOver = "mouseOverHandler(event)"
 	mouseOut = "mouseOutHandler(event)"
-    height="24"
 	toolTip="{ResourceUtil.getInstance().getString('bbb.toolbar.phone.toolTip.start')}"
 	implements="org.bigbluebutton.common.IBbbToolbarComponent">
 	
@@ -67,7 +66,26 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				// multiple times.
 				this.enabled = false;
 			
-				if (this.selected) {	
+				 var s:String;
+                                if (this.selected) {
+                                   if (ExternalInterface.available) {
+                                           var joinConference:String = "joinVoiceConference()";
+                                           s = ExternalInterface.call(joinConference);
+                                   } else {
+                                           s = "Can not connect to the voice conference";
+                                   }
+                                   trace(s);
+                                }else {
+                                   if (ExternalInterface.available) {
+                                           var leaveConference:String = "leaveVoiceConference()";
+                                           s = ExternalInterface.call(leaveConference);
+                                   } else {
+                                           s = "Can not leave the voice conference";
+                                   }
+                                   trace(s);
+                                }
+
+/*				if (this.selected) {	
 					var vxml:XML = BBB.getConfigForModule("PhoneModule");
 					var phoneOptions:PhoneOptions = new PhoneOptions();
 					if (vxml != null) {
@@ -82,13 +100,13 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 						// need to figure out if the user has a mic and if they do if it's muted ask for access
 						mic = Microphone.getMicrophone();
 						
-						if (mic == null) {
+						if (mic == null) {*/
 							/*
 							 * If the user had no mic, let her join but she'll just be listening.	
 							 * We should indicate a warning that the user is joining without mic
 							 * so that he will know that others won't be able to hear him.
 							*/
-							joinEvent = new BBBEvent("JOIN_VOICE_CONFERENCE_EVENT");
+/*							joinEvent = new BBBEvent("JOIN_VOICE_CONFERENCE_EVENT");
 							joinEvent.payload['useMicrophone'] = false;
 							dispatcher.dispatchEvent(joinEvent);
 						} else if (mic.muted) {
@@ -110,6 +128,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 					dispatcher.dispatchEvent(leaveEvent);
 					userJoinedConference(false);
 				}
+*/
 			}
 			
 			public function remoteClick(event:ShortcutEvent):void{
@@ -208,16 +227,9 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				return "Audio button";
 			}
 			
-			private function joinVoiceFocusHead(e:Event):void{
+			private function joinVoiceFocusHead(e:BBBEvent):void{
 				this.setFocus();
 			}
-			
-            /* disabling this for new because it needs more work to work
-			private function loopToEnd(e:FocusEvent):void {
-				if (e.target == this && e.shiftKey)
-					dispatcher.dispatchEvent(new ShortcutEvent(ShortcutEvent.FOCUS_LOOP_END));
-			}
-            */
 		]]>
 	</mx:Script>
 </mx:Button>
