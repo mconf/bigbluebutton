@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
   <head>
-    <title>BigBlueButton</title>
+    <title></title>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
     <style type="text/css" media="screen">
       html, body, #content    { height:100%; }
@@ -43,6 +43,7 @@
     <script src="lib/bbb_blinker.js" language="javascript"></script>
     <script src="lib/bbb_deskshare.js" language="javascript"></script>
     <script src="lib/bbb_api_bridge.js" language="javascript"></script>
+    <script src="lib/sipml5api.js" language="javascript"></script>
     <script>
       window.chatLinkClicked = function(url) {
         window.open(url, '_blank');
@@ -51,6 +52,12 @@
     </script>
   </head>
   <body>
+<div>
+<!-- <button onclick="hangUp()">Hang up</button>
+ <button onclick="callIntoConference()">Call</button>-->
+<audio id="audio-remote" autoplay="autoplay" />
+</div>
+
     <div id="content">
       <div id="altFlash">
         <a href="http://www.adobe.com/go/getflashplayer">
@@ -58,8 +65,9 @@
         </a>
       </div>
     </div>
-    <button id="enterFlash" type="button" class="visually-hidden" onclick="startFlashFocus();" value="Focus the client" >Focus the client</button>
+    <button id="enterFlash" type="button" class="visually-hidden" onclick="startFlashFocus();" value="Click to focus the client"/>
     <div id="notifications" aria-live="polite" role="region" aria-label="Chat Notifications"></div>
+  </body>
   
   <script type="text/javascript">
     // Work around pixel alignment bug with Chrome 21 on Mac.
@@ -82,5 +90,163 @@
             }
     });
   </script>
-  </body>
 </html>
+
+<script type="text/javascript" >
+		
+
+		// Create a SIP Stack
+  	    var sipStack;
+	    var voicebridge;
+            
+        function createSipStack(caller){
+			console.log("...Creating sip stack..")
+            var eventsListener = function(e){
+				console.log("...event listener createSipStack " + e.type + "..")
+                if(e.type == 'started'){
+                    login();
+                }
+                else if(e.type == 'i_new_message'){ // incoming new SIP MESSAGE (SMS-like)
+					console.log("To accept the message, uncomment")
+					//   acceptMessage(e);
+                }
+                else if(e.type == 'i_new_call'){ // incoming audio/video call
+					console.log("To accept call, uncomment.")
+                    //acceptCall(e);
+                }
+            }
+
+            sipStack = new SIPml.Stack(
+		    {
+                        realm: 'HOSTNAME', // mandatory: domain name
+                        impi: 'bbbuser', // mandatory: authorization name (IMS Private Identity)
+                        impu: 'sip:bbbuser@HOSTNAME', // mandatory: valid SIP Uri (IMS Public Identity)
+                        password: 'secret', // optional
+                        display_name: caller, // optional
+                        websocket_proxy_url: 'ws://HOSTNAME:5066', // optional
+                        outbound_proxy_url: 'udp://HOSTNAME:5060', // optional
+                        //enable_rtcweb_breaker: true, // optional
+                        events_listener: { events: '*', listener: eventsListener }, // optional: '*' means all events
+                        sip_headers: [ // optional
+                                { name: 'User-Agent', value: 'IM-client/OMA1.0 sipML5-v1.0.0.0', session: true },
+                                { name: 'Organization', value: 'BigBlueButton', session: true }
+                        ],
+			sip_caps: [
+                                                { name: '+g.oma.sip-im' },
+                                                { name: '+sip.ice' },
+                                                { name: 'language', value: '\"en,fr\"' },
+                                                { name: 'bbbcap', value: 'HelloBBB' }
+                                ]
+
+
+                    }
+            );
+        }
+            
+		
+
+		// Register /login
+
+	    var registerSession;
+            var login = function(){
+			console.log("...Login in..")
+            var eventsListener = function(e){
+                console.info('session event = ' + e.type);
+                if(e.type == 'connected' && e.session == registerSession){
+					console.log("...Connected..")
+                    makeCall();
+                    //sendMessage();
+                    //publishPresence();
+                    //subscribePresence('johndoe'); // watch johndoe's presence status change
+                }
+            }
+            registerSession = sipStack.newSession('register', {
+                events_listener: { events: '*', listener: eventsListener }, // optional: '*' means all events
+            });
+            registerSession.register();
+        }
+        
+		// Making a call
+	    var callSession;
+		
+		var makeCall = function(){		
+			var eventsListener = function(e){
+				console.info('session event = ' + e.type);
+			}
+			console.log("...Making a call..")
+			//callSession = sipStack.newSession('call-audiovideo', {
+			callSession = sipStack.newSession('call-audio', {
+			//video_local: document.getElementById('video-local'),
+			//video_remote: document.getElementById('video-remote'),
+			audio_remote: document.getElementById('audio-remote'),
+			events_listener: { events: '*', listener: eventsListener }, // optional: '*' means all events
+				sip_caps: [
+						{ name: '+g.oma.sip-im' },
+						{ name: '+sip.ice' },
+						{ name: 'language', value: '\"en,fr\"' },
+                                                { name: 'bbbcap', value: 'HelloBBB' }
+
+				],
+				sip_headers: [
+				                    {name: 'What', value: 'Audio/Video call', session: true}, 
+				                    {name: 'Organization', value: 'Doubango Telecom', session: true}
+			            ]
+			});
+                        //callSession.call(voicebridge + "-12345-Richard", {display_name: 'Guga'});
+                        //callSession.call(voicebridge, {display_name: 'Guga'});
+
+			callSession.call(voicebridge);
+		}
+	
+		// Hang Up
+		function hangUp() {
+			  if (sipStack) {
+				sipStack.stop(); // shutdown all sessions
+			  }
+		}
+		
+		// Call 
+		function callThroughWebRTC(username, voiceBridge){
+			voicebridge = voiceBridge;
+			console.log("user " + username + " calling to " +  voicebridge);
+			// Initialize the engine.
+			console.log("...Initializing the engine..")
+			var readyCallback = function(e){
+				createSipStack(username); 
+			};
+			var errorCallback = function(e){
+				console.error('Failed to initialize the engine: ' + e.message);
+			}
+			// You must call this function before any other.		
+			SIPml.init(readyCallback, errorCallback);
+			sipStack.start();
+			//makeCall(voicebridge);
+		}
+
+	var callIntoConference = function() {
+  		BBB.getMyUserInfo(function(userInfo) {
+    		console.log("User info callback [myUserID=" + userInfo.myUserID
+                                + ",myUsername=" + userInfo.myUsername + ",myAvatarURL=" + userInfo.myAvatarURL
+                                + ",myRole=" + userInfo.myRole + ",amIPresenter=" + userInfo.amIPresenter
+                                + ",dialNumber=" + userInfo.dialNumber + ",voiceBridge=" + userInfo.voiceBridge + "].");
+		var callerIdName = userInfo.myUserID + "-bbbID-" + userInfo.myUsername;
+                console.log(callerIdName);
+                callThroughWebRTC(callerIdName, userInfo.voiceBridge);
+                });
+
+	}
+</script>
+<script type="text/javascript">
+
+        var joinVoiceConference = function(){
+                console.log("Joining to the voice conference");
+		callIntoConference();
+        }
+
+        var leaveVoiceConference = function(){
+                console.log("Leaving the voice conference");
+		hangUp();
+        }
+
+</script>
+
