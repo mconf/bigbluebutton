@@ -69,7 +69,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				 var s:String;
                                 if (this.selected) {
                                    if (ExternalInterface.available) {
-                                           var joinConference:String = "joinVoiceConference()";
+                                           var joinConference:String = "joinWebRTCVoiceConference()";
                                            s = ExternalInterface.call(joinConference);
                                    } else {
                                            s = "Can not connect to the voice conference";
@@ -77,7 +77,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
                                    trace(s);
                                 }else {
                                    if (ExternalInterface.available) {
-                                           var leaveConference:String = "leaveVoiceConference()";
+                                           var leaveConference:String = "leaveWebRTCVoiceConference()";
                                            s = ExternalInterface.call(leaveConference);
                                    } else {
                                            s = "Can not leave the voice conference";

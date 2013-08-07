@@ -90,6 +90,9 @@ package org.bigbluebutton.main.api
         ExternalInterface.addCallback("displayPresentationRequest", handleDisplayPresentationRequest);
         ExternalInterface.addCallback("deletePresentationRequest", handleDeletePresentationRequest);
         ExternalInterface.addCallback("queryListsOfPresentationsRequest", handleQueryListsOfPresentationsRequest);
+
+        ExternalInterface.addCallback("joinWebRTCVoiceConferenceCallback", handleJoinWebRTCVoiceConferenceCallback);
+        ExternalInterface.addCallback("leaveWebRTCVoiceConferenceCallback", handleLeaveWebRTCVoiceConferenceCallback);
       }
       
       // Tell out JS counterpart that we are ready.
@@ -380,5 +383,18 @@ package org.bigbluebutton.main.api
       _dispatcher.dispatchEvent(event);
     }
     
+    private function handleJoinWebRTCVoiceConferenceCallback(message:String=null):void {
+      trace("handleJoinWebRTCVoiceConferenceCallback: [" + message + "]");
+/*
+      var evt:BBBEvent = new BBBEvent("JOIN_VOICE_CONFERENCE_EVENT");
+      joinEvent.payload['useMicrophone'] = true;
+      dispatcher.dispatchEvent(joinEvent);
+*/
+    }
+
+    private function handleLeaveWebRTCVoiceConferenceCallback(message:String=null):void {
+      trace("handleLeaveWebRTCVoiceConferenceCallback: [" + message + "]");
+    }
+
   }
 }
