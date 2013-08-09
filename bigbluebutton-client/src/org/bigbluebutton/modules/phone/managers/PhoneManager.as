@@ -38,7 +38,7 @@ package org.bigbluebutton.modules.phone.managers {
 		private var streamManager:StreamManager;
 		private var onCall:Boolean = false;
 		private var attributes:Object;
-		private var phoneOptions:PhoneOptions;
+		private var phoneOptions:PhoneOptions = new PhoneOptions();
 		// If we are joining with microphone or not
 		private var withMic:Boolean = false;
 		// If we are auto-rejoining the conference because we got disconnected.
@@ -54,14 +54,6 @@ package org.bigbluebutton.modules.phone.managers {
 
 		public function setModuleAttributes(attributes:Object):void {
 			this.attributes = attributes;
-			var vxml:XML = BBB.getConfigForModule("PhoneModule");
-			phoneOptions = new PhoneOptions();
-			if (vxml != null) {
-				phoneOptions.showButton = (vxml.@showButton.toString().toUpperCase() == "TRUE") ? true : false;
-				phoneOptions.autoJoin = (vxml.@autoJoin.toString().toUpperCase() == "TRUE") ? true : false;
-				phoneOptions.skipCheck = (vxml.@skipCheck.toString().toUpperCase() == "TRUE") ? true : false;
-			}
-			
 			if (phoneOptions.autoJoin) {
 				if (phoneOptions.skipCheck || noMicrophone()) {
 					mic = Microphone.getMicrophone();

@@ -60,6 +60,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			private var _currentState:Number = DEFAULT_STATE;
 			
 			[Bindable] public var phoneIcon:Class = images.headsetDefaultIcon;
+			[Bindable] public var phoneOptions:PhoneOptions = new PhoneOptions();
 			
 			private function startPhone():void {
 				// Disable the button right away to prevent the user from clicking
@@ -86,13 +87,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
                                 }
 
 /*				if (this.selected) {	
-					var vxml:XML = BBB.getConfigForModule("PhoneModule");
 					var phoneOptions:PhoneOptions = new PhoneOptions();
-					if (vxml != null) {
-						phoneOptions.showButton = (vxml.@showButton.toString().toUpperCase() == "TRUE") ? true : false;
-						phoneOptions.autoJoin = (vxml.@autoJoin.toString().toUpperCase() == "TRUE") ? true : false;
-						phoneOptions.skipCheck = (vxml.@skipCheck.toString().toUpperCase() == "TRUE") ? true : false;
-					}
           
           var joinEvent:BBBEvent;
           
