@@ -21,7 +21,7 @@ package org.bigbluebutton.main.api
   import com.asfusion.mate.events.Dispatcher;
   
   import flash.external.ExternalInterface;
-  
+
   import mx.controls.Alert;
   
   import org.bigbluebutton.common.LogUtil;
@@ -39,6 +39,8 @@ package org.bigbluebutton.main.api
   import org.bigbluebutton.main.model.users.events.KickUserEvent;
   import org.bigbluebutton.main.model.users.events.RaiseHandEvent;
   import org.bigbluebutton.main.model.users.events.RoleChangeEvent;
+  import org.bigbluebutton.modules.phone.events.CallConnectedEvent;
+  import org.bigbluebutton.modules.phone.events.CallDisconnectedEvent;
   import org.bigbluebutton.modules.present.events.QueryPresentationsListEvent;
   import org.bigbluebutton.modules.present.events.RemovePresentationEvent;
   import org.bigbluebutton.modules.present.events.UploadEvent;
@@ -383,17 +385,30 @@ package org.bigbluebutton.main.api
       _dispatcher.dispatchEvent(event);
     }
     
-    private function handleJoinWebRTCVoiceConferenceCallback(message:String=null):void {
-      trace("handleJoinWebRTCVoiceConferenceCallback: [" + message + "]");
-/*
-      var evt:BBBEvent = new BBBEvent("JOIN_VOICE_CONFERENCE_EVENT");
-      joinEvent.payload['useMicrophone'] = true;
-      dispatcher.dispatchEvent(joinEvent);
-*/
+    private function handleJoinWebRTCVoiceConferenceCallback(err:String=null):void {
+      trace("handleJoinWebRTCVoiceConferenceCallback: [" + err + "]");
+      if (err) {
+        // we cannot use webrtc to join the voice conference, so try to call again using Flash
+        var e:BBBEvent = new BBBEvent("CLICK_TO_JOIN_VOICE_CONFERENCE_EVENT");
+        e.payload['forceSkipCheck'] = true;
+        e.payload['webrtcCapable'] = false;
+        _dispatcher.dispatchEvent(e);
+      } else {
+        var connectedEvent:CallConnectedEvent = new CallConnectedEvent();
+        _dispatcher.dispatchEvent(connectedEvent);
+      }
     }
 
-    private function handleLeaveWebRTCVoiceConferenceCallback(message:String=null):void {
-      trace("handleLeaveWebRTCVoiceConferenceCallback: [" + message + "]");
+    private function handleLeaveWebRTCVoiceConferenceCallback(err:String=null):void {
+      trace("handleLeaveWebRTCVoiceConferenceCallback: [" + err + "]");
+      if (err) {
+        // do something if we cannot leave via webrtc
+//        var e:BBBEvent;
+//        e = new BBBEvent("JOIN_VOICE_CONFERENCE_EVENT");
+      } else {
+        var disconnectedEvent:CallDisconnectedEvent = new CallDisconnectedEvent();
+        _dispatcher.dispatchEvent(disconnectedEvent);
+      }
     }
 
   }

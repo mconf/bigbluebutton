@@ -1,29 +1,32 @@
 // Create a SIP Stack
 var sipStack;
+var connected;
 var voicebridge;
+var connectingTS, connectedTS;
     
 function createSipStack(caller, server, callback) {
     console.log("...Creating sip stack..")
     var eventsListener = function(e){
-        console.log("...event listener createSipStack " + e.type + "..")
-        if(e.type == 'started'){
+        console.log("... SIPml.Stack event listener: " + e.type + "...")
+        if(e.type == 'started') {
             // there's no need to login, call directly!
             //login();
-            makeCall();
-        }
-        else if(e.type == 'i_new_message'){ // incoming new SIP MESSAGE (SMS-like)
-            console.log("To accept the message, uncomment")
+            connected = true;
+            makeCall(callback);
+        } else if(e.type == 'i_new_message') { // incoming new SIP MESSAGE (SMS-like)
+            console.log("To accept the message, uncomment");
             //   acceptMessage(e);
-        }
-        else if(e.type == 'i_new_call'){ // incoming audio/video call
-            console.log("To accept call, uncomment.")
+        } else if(e.type == 'i_new_call') { // incoming audio/video call
+            console.log("To accept call, uncomment.");
             //acceptCall(e);
-        }
-        else if (e.type == 'm_permission_requested'){
-            console.log("Waiting for user authorization to access the microphone")
-        }
-        else if (e.type == 'm_permission_refused'){
-            callback("The user denied the access to the microphone")
+        } else if (e.type == 'm_permission_requested') {
+            console.log("Waiting for user authorization to access the microphone");
+        } else if (e.type == 'm_permission_refused') {
+            callback("The user denied the access to the microphone");
+        } else if (e.type == 'm_permission_accepted') {
+            console.log("Permission accepted");
+            connectingTS = new Date().getTime();
+        } else if (e.type == 'stopped') {
         }
     }
 
@@ -50,35 +53,22 @@ function createSipStack(caller, server, callback) {
     });
 }
     
-// Register /login
-// login isn't needed, we make the call directly without registering
-var registerSession;
-var login = function(){
-    console.log("...Login in..")
-    var eventsListener = function(e){
-        console.info('session event = ' + e.type);
-        if(e.type == 'connected' && e.session == registerSession){
-            console.log("...Connected..")
-            makeCall();
-            //sendMessage();
-            //publishPresence();
-            //subscribePresence('johndoe'); // watch johndoe's presence status change
-        }
-    }
-    registerSession = sipStack.newSession('register', {
-        events_listener: { events: '*', listener: eventsListener }, // optional: '*' means all events
-    });
-    registerSession.register();
-}
-
 // Making a call
 var callSession;
-
-var makeCall = function() {      
+var makeCall = function(callback) {      
     var eventsListener = function(e) {
-        console.info('session event = ' + e.type);
+        console.log("... call session event listener: " + e.type + "...");
+        if (e.type == 'connecting') {
+
+        } else if (e.type == 'connected') {
+            connectedTS = new Date().getTime();
+            callback();
+            console.info("This call was established in " + (connectedTS-connectingTS) + "ms");
+        } else if (e.type == 'terminated') {
+
+        }
     }
-    console.log("...Making a call..");
+    console.log("... Making a call...");
     //callSession = sipStack.newSession('call-audiovideo', {
     callSession = sipStack.newSession('call-audio', {
         //video_local: document.getElementById('video-local'),
@@ -93,19 +83,37 @@ var makeCall = function() {
 }
 
 // Hang Up
-function webrtc_hangup() {
+function webrtc_hangup(callback) {
     if (sipStack) {
+        var onStoppedCallback = function(e) {
+//            if (connected) {
+//                connected = false;
+                callback();
+                sipStack.removeEventListener('stopped', onStoppedCallback);
+//            }
+        }
+        sipStack.addEventListener('stopped', onStoppedCallback);
         sipStack.stop(); // shutdown all sessions
     }
 }
 
 // Call 
 function webrtc_call(username, voiceBridge, server, callback) {
+    var sayswho = navigator.sayswho,
+        browser = sayswho[0],
+        version = +(sayswho[1].split('.')[0]);
+
+    console.log("Browser: " + browser + ", version: " + version);
+    if (browser != "Chrome" || version < 28) {
+        callback("Browser version not supported");
+        return;
+    }
+
     voicebridge = voiceBridge;
     server = server || window.document.location.host;
     console.log("user " + username + " calling to " +  voicebridge);
     // Initialize the engine.
-    console.log("...Initializing the engine..")
+    console.log("... Initializing the engine ...")
     var readyCallback = function(e){
         createSipStack(username, server, callback);
     };
@@ -118,3 +126,14 @@ function webrtc_call(username, voiceBridge, server, callback) {
     sipStack.start();
     //makeCall(voicebridge);
 }
+
+// http://stackoverflow.com/questions/5916900/detect-version-of-browser
+navigator.sayswho= (function(){
+    var ua= navigator.userAgent, 
+        N= navigator.appName, 
+        tem, 
+        M= ua.match(/(opera|chrome|safari|firefox|msie|trident)\/?\s*([\d\.]+)/i) || [];
+    M= M[2]? [M[1], M[2]]:[N, navigator.appVersion, '-?'];
+    if(M && (tem= ua.match(/version\/([\.\d]+)/i))!= null) M[2]= tem[1];
+    return M;
+})();

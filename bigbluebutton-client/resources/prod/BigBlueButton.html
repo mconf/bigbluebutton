@@ -104,9 +104,9 @@
                 var callerIdName = userInfo.myUserID + "-bbbID-" + userInfo.myUsername;
 
                 // setup a timer to call the error callback
-                var checkSuccessCallback = function(ev) {
-                    if (ev.userID == userInfo.myUserID) {
-                        callback();
+                var checkSuccessCallback = function(e) {
+                    if (e.userID == userInfo.myUserID) {
+                        console.info("Received the event from Flash that I've joined the voice conference");
                         BBB.unlisten('UserJoinedVoiceEvent', checkSuccessCallback);
                     }
                 }
@@ -122,9 +122,9 @@
             console.log("Joining to the voice conference");
             var callback = function(err) {
                 if (err) {
-                    console.log("Failed to call");
+                    console.info("Failed to call: " + err);
                 } else {
-                    console.log("Success to call");
+                    console.info("Success to call");
                 }
                 BBB.joinWebRTCVoiceConferenceCallback(err);
             }
@@ -134,7 +134,16 @@
 
         var leaveWebRTCVoiceConference = function(){
             console.log("Leaving the voice conference");
-            webrtc_hangup();
+            var callback = function(err) {
+                if (err) {
+                    console.info("Failed to hang up: " + err);
+                } else {
+                    console.info("Success to hang up");
+                }
+                BBB.leaveWebRTCVoiceConferenceCallback(err);
+            }
+
+            webrtc_hangup(callback);
         }
 
 

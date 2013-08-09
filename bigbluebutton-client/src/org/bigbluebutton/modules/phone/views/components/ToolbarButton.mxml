@@ -66,64 +66,14 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				// Disable the button right away to prevent the user from clicking
 				// multiple times.
 				this.enabled = false;
-			
-				 var s:String;
-                                if (this.selected) {
-                                   if (ExternalInterface.available) {
-                                           var joinConference:String = "joinWebRTCVoiceConference()";
-                                           s = ExternalInterface.call(joinConference);
-                                   } else {
-                                           s = "Can not connect to the voice conference";
-                                   }
-                                   trace(s);
-                                }else {
-                                   if (ExternalInterface.available) {
-                                           var leaveConference:String = "leaveWebRTCVoiceConference()";
-                                           s = ExternalInterface.call(leaveConference);
-                                   } else {
-                                           s = "Can not leave the voice conference";
-                                   }
-                                   trace(s);
-                                }
 
-/*				if (this.selected) {	
-					var phoneOptions:PhoneOptions = new PhoneOptions();
-          
-          var joinEvent:BBBEvent;
-          
-					if (phoneOptions.skipCheck || noMicrophone()) {
-						// need to figure out if the user has a mic and if they do if it's muted ask for access
-						mic = Microphone.getMicrophone();
-						
-						if (mic == null) {*/
-							/*
-							 * If the user had no mic, let her join but she'll just be listening.	
-							 * We should indicate a warning that the user is joining without mic
-							 * so that he will know that others won't be able to hear him.
-							*/
-/*							joinEvent = new BBBEvent("JOIN_VOICE_CONFERENCE_EVENT");
-							joinEvent.payload['useMicrophone'] = false;
-							dispatcher.dispatchEvent(joinEvent);
-						} else if (mic.muted) {
-  							// user has disallowed access to the mic
-  							mic.addEventListener(StatusEvent.STATUS, micStatusEventHandler);
-  							Security.showSettings(SecurityPanel.PRIVACY);
-						} else {
-							// user has allowed access to the mic already
-						  joinEvent = new BBBEvent("JOIN_VOICE_CONFERENCE_EVENT");
-							joinEvent.payload['useMicrophone'] = true;
-							dispatcher.dispatchEvent(joinEvent);
-					  }						
-					} else {
-						dispatcher.dispatchEvent(new BBBEvent("SHOW_MIC_SETTINGS"));
-					}
+				var event:BBBEvent;
+				if (this.selected) {
+					event = new BBBEvent("CLICK_TO_JOIN_VOICE_CONFERENCE_EVENT");
 				} else {
-					var leaveEvent:BBBEvent = new BBBEvent("LEAVE_VOICE_CONFERENCE_EVENT");
-					leaveEvent.payload["userRequested"] = true;
-					dispatcher.dispatchEvent(leaveEvent);
-					userJoinedConference(false);
+					event = new BBBEvent("CLICK_TO_LEAVE_VOICE_CONFERENCE_EVENT");
 				}
-*/
+				dispatcher.dispatchEvent(event);
 			}
 			
 			public function remoteClick(event:ShortcutEvent):void{
@@ -132,7 +82,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			}
 			
 			private function micStatusEventHandler(event:StatusEvent):void {				
-        var joinEvent:BBBEvent;
+				var joinEvent:BBBEvent;
 				switch(event.code) {
 					case "Microphone.Muted":						
 						LogUtil.warn("Access to microphone has been denied.");
