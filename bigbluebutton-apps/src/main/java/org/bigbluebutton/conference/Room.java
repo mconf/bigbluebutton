@@ -21,6 +21,11 @@ package org.bigbluebutton.conference;
 
 import org.slf4j.Logger;
 import org.bigbluebutton.conference.service.participants.ParticipantsBridge;
+import org.bigbluebutton.conference.service.messaging.MessagingService;
+import org.bigbluebutton.conference.service.messaging.RedisMessagingService;
+
+import org.bigbluebutton.conference.service.chat.ChatApplication;
+import redis.clients.jedis.JedisPool;
 import org.red5.logging.Red5LoggerFactory;
 import net.jcip.annotations.ThreadSafe;
 import java.io.Serializable;
@@ -39,17 +44,27 @@ public class Room implements Serializable {
 	ArrayList<String> currentPresenter = null;
 	private String name;
 	private ParticipantsBridge participantsBridge;
+	private ParticipantsBridge auxParticipantBridge;
+	private ArrayList<SlaveRoom> slavesRooms = null;
+	private ParticipantsBridge masterRoom = null;
+	private Boolean masterRoom = true;
 	private Map <String, User> participants;
+	public ChatApplication ca;
 
 	// these should stay transient so they're not serialized in ActiveMQ messages:	
 	//private transient Map <Long, Participant> unmodifiableMap;
 	private transient final Map<String, IRoomListener> listeners;
+	private transient final Map<String, SlaveRoom> slavesRooms; 
 
 	public Room(String name) {
 		this.name = name;
 		participants = new ConcurrentHashMap<String, User>();
 		//unmodifiableMap = Collections.unmodifiableMap(participants);
 		listeners   = new ConcurrentHashMap<String, IRoomListener>();
+
+		slavesRooms = new ConcurrentHashMap<String, SlaveRoom>();
+		
+
 	}
 
 	public String getName() {
@@ -67,16 +82,36 @@ public class Room implements Serializable {
 		participants.putAll(participantsBridge.loadParticipants(name));
 	}
 
+	public void addSlaveRoom(String meetingId, String host, int port) {
+		SlaveRoom slaveRoom = new SlaveRoom(host, port, meetingId, name);
+		synchronized (this) {
+			slavesRooms.put(meetingId, slaveRoom);
+		}
+	}
+
+	public void addMasterRoom(String meetingId, String host, int port) {
+		masterRoom = new MasterRoom(host, port, meetingId);
+	}
+
 	public void removeRoomListener(IRoomListener listener) {
 		log.debug("removing room listener");
 		listeners.remove(listener);		
 	}
 
 	public void addParticipant(User participant) {
+		
 		synchronized (this) {
 			log.debug("adding participant " + participant.getInternalUserID());
 			participants.put(participant.getInternalUserID(), participant);
 //			unmodifiableMap = Collections.unmodifiableMap(participants)
+
+		
+			addSlaveRoom("183f0bf3a0982a127bdb8161e0c44eb696b3e75c-1376577589183", "143.54.10.22", 6379);
+			slavesRooms.get(0).setChatApplication(ca);
+			slavesRooms.get(0).start();
+			participants.putAll(slavesRooms.get(0).loadParticipantsFromMeeting());
+			//slavesRooms.get(0).setParticipantsApplication(((RedisMessagingService) (participantsBridge.getMessagingService())).getParticipantsApplication());
+		
 		}
 		log.debug("Informing roomlisteners " + listeners.size());
 		for (Iterator it = listeners.values().iterator(); it.hasNext();) {

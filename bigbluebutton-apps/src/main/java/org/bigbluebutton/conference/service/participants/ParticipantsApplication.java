@@ -21,25 +21,34 @@ package org.bigbluebutton.conference.service.participants;
 import org.slf4j.Logger;
 import org.red5.logging.Red5LoggerFactory;
 import org.red5.server.api.Red5;
-import java.util.ArrayList;
+import java.util.ArrayList;
 import java.util.Map;
 import org.bigbluebutton.conference.ConnectionInvokerService;
 import org.bigbluebutton.conference.RoomsManager;
-import org.bigbluebutton.conference.Room;import org.bigbluebutton.conference.User;import org.bigbluebutton.conference.IRoomListener;
+import org.bigbluebutton.conference.Room;
+import org.bigbluebutton.conference.User;
+import org.bigbluebutton.conference.IRoomListener;
+import org.bigbluebutton.conference.service.chat.ChatApplication;
 
 public class ParticipantsApplication {
 	private static Logger log = Red5LoggerFactory.getLogger( ParticipantsApplication.class, "bigbluebutton" );	
 	private ConnectionInvokerService connInvokerService;
-	
+	private ChatApplication ca;
 	private RoomsManager roomsManager;
 	
 	public boolean createRoom(String name) {
 		if(!roomsManager.hasRoom(name)){
 			log.info("Creating room " + name);
-			roomsManager.addRoom(new Room(name));
+			Room aux = new Room(name);
+			aux.ca = ca;
+			roomsManager.addRoom(aux);
 			return true;
 		}
 		return false;
+	}
+
+	public void setChatApplication(ChatApplication ca) {
+		this.ca = ca;
 	}
 	
 	public boolean destroyRoom(String name) {

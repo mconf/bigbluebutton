@@ -62,12 +62,13 @@ public class RedisMessagingService implements MessagingService{
 	private PresentationApplication presentationApplication;
 
 	public RedisMessagingService(){
-		
+		//
 	}
 	
 	@Override
 	public void start() {
 		log.debug("Starting redis pubsub...");		
+		participantsApplication.setChatApplication(chatApplication);
 		final Jedis jedis = redisPool.getResource();
 		try {
 			pubsubListener = new Runnable() {
@@ -131,6 +132,12 @@ public class RedisMessagingService implements MessagingService{
 	}
 	public void setPresentationApplication(PresentationApplication pa){
 		this.presentationApplication = pa;
+	}
+	public ChatApplication getChatApplication() {
+		return chatApplication;
+	}
+	public ParticipantsApplication getParticipantsApplication() {
+		return participantsApplication;
 	}
 
 	private class PubSubListener extends JedisPubSub {
