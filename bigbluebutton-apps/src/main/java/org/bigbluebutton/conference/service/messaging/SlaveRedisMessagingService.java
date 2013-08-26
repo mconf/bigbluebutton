@@ -67,6 +67,14 @@ public class SlaveRedisMessagingService implements MessagingService{
 		
 	}
 
+	public SlaveRedisMessagingService(String slaveMeetingId){
+		this.slaveMeetingId = slaveMeetingId;
+	}
+
+	public void setSlaveMeetingId(String slaveMeetingId) {
+		this.slaveMeetingId = slaveMeetingId;
+	}
+
 	public void setMasterMeetingId(String masterMeetingId) {
 		this.masterMeetingId = masterMeetingId;
 	}

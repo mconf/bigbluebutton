@@ -57,17 +57,18 @@ public class MasterRedisMessagingService implements MessagingService{
 	
 	private final Set<MessageListener> listeners = new HashSet<MessageListener>();
 	
-	private ParticipantsApplication participantsApplication;
-	private ChatApplication chatApplication;
-	private PresentationApplication presentationApplication;
-	private String masterMeetingId = "183f0bf3a0982a127bdb8161e0c44eb696b3e75c-1376591399159";
+	private String masterMeetingID = "183f0bf3a0982a127bdb8161e0c44eb696b3e75c-1376591399159";
 
 	public MasterRedisMessagingService(){
 		
 	}
 
+	public MasterRedisMessagingService(String masterMeetingId){
+		this.masterMeetingID = masterMeetingId;
+	}
+
 	public void setMasterMeetingId(String masterMeetingId) {
-		this.masterMeetingId = masterMeetingId;
+		this.masterMeetingID = masterMeetingId;
 	}
 	
 	@Override
@@ -129,13 +130,85 @@ public class MasterRedisMessagingService implements MessagingService{
 		redisPool.returnResource(jedis);
 	}
 	public void setParticipantsApplication(ParticipantsApplication pa){
-		this.participantsApplication = pa;
+		//this.participantsApplication = pa;
 	}
 	public void setChatApplication(ChatApplication ca){
-		this.chatApplication = ca;
+		//this.chatApplication = ca;
 	}
 	public void setPresentationApplication(PresentationApplication pa){
-		this.presentationApplication = pa;
+		//this.presentationApplication = pa;
+	}
+
+	public void storeParticipantFromSlave(String userid, String username, String role, String slaveMeetingID) {
+		Jedis jedis = this.createRedisClient();
+		jedis.sadd("meeting-"+masterMeetingID+"-users", userid);
+		//"username", username,        "meetingID", meetingID, "refreshing", false, "dupSess", false, "sockets", 0, 'pubID', publicID
+		HashMap<String,String> temp_user = new HashMap<String, String>();
+		temp_user.put("username", username);
+		temp_user.put("meetingID", masterMeetingID);
+		temp_user.put("refreshing", "false");
+		temp_user.put("dupSess", "false");
+		temp_user.put("sockets", "0");
+		temp_user.put("pubID", userid);
+		temp_user.put("role", role);
+		temp_user.put("remoteSlaveMeetingID", slaveMeetingID);
+		
+		jedis.hmset("meeting-"+masterMeetingID+"-user-"+userid, temp_user);
+		
+		/* Storing status properties */
+		HashMap<String,String> status = new HashMap<String, String>();
+		status.put("raiseHand", "false");
+		status.put("presenter", "false");
+		status.put("hasStream", "false");
+		
+		jedis.hmset("meeting-"+masterMeetingID+"-user-"+userid +"-status", status);
+		
+		this.dropRedisClient(jedis);
+	}
+
+	public void sendParticipantJoinFromSlave(String userid, String username, String role, String slaveMeetingID) {
+		ArrayList<Object> updates = new ArrayList<Object>();
+		updates.add(masterMeetingID);
+		updates.add("user join");
+		updates.add(userid);
+		updates.add(username);
+		updates.add(role);
+		
+		Gson gson = new Gson();
+		this.send(MessagingConstants.BIGBLUEBUTTON_BRIDGE, gson.toJson(updates));
+	}
+
+	public void sendParticipantLeaveFromSlave(String userid) {
+		ArrayList<Object> updates = new ArrayList<Object>();
+		updates.add(masterMeetingID);
+		updates.add("user leave");
+		updates.add(userid);
+		
+		Gson gson = new Gson();
+		this.send(MessagingConstants.BIGBLUEBUTTON_BRIDGE, gson.toJson(updates));
+	}
+
+	public void sendStoreAssignPresenterFromSlave(String userid, String previousPresenter, String slaveMeetingID) {
+		Jedis jedis = this.createRedisClient();
+		jedis.hset("meeting-"+masterMeetingID+"-user-"+userid+"-status", "presenter", "true");
+		if(previousPresenter != null)
+			jedis.hset("meeting-"+masterMeetingID+"-user-"+previousPresenter+"-status", "presenter", "false");
+		
+		HashMap<String,String> params = new HashMap<String, String>();
+		params.put("sessionID", "0");
+		params.put("publicID",userid);
+		jedis.hmset("meeting-"+masterMeetingID+"-presenter",params);
+		
+		this.dropRedisClient(jedis);
+	}
+
+	public void sendAssignPresenterFromSlave(String userid, String slaveMeetingID) {
+		ArrayList<Object> updates = new ArrayList<Object>();
+		updates.add(masterMeetingID);
+		updates.add("setPresenter");
+		updates.add(userid);
+		Gson gson = new Gson();
+		this.send(MessagingConstants.BIGBLUEBUTTON_BRIDGE, gson.toJson(updates));
 	}
 
 	private class PubSubListener extends JedisPubSub {
@@ -258,35 +331,35 @@ public class MasterRedisMessagingService implements MessagingService{
 					chatObj.toUsername = "";
 					chatObj.message = message_text;
 					//if(meetingId.equals(masterMeetingId))
-					chatApplication.sendPublicMessage(masterMeetingId, chatObj);
+					//chatApplication.sendPublicMessage(masterMeetingId, chatObj);
 				}else if(messageName.equalsIgnoreCase("setPresenter")){
 
-					if(meetingId.equals(masterMeetingId)) {
-					String pubID = gson.fromJson(array.get(2), String.class);
+				//	if(meetingId.equals(masterMeetingId)) {
+			//		String pubID = gson.fromJson(array.get(2), String.class);
 					
-					User p = participantsApplication.getParticipantByUserID(masterMeetingId,pubID);
-					log.debug("new presenter: " + p.getInternalUserID() + " "+p.getName());
+					//User p = participantsApplication.getParticipantByUserID(masterMeetingId,pubID);
+					//log.debug("new presenter: " + p.getInternalUserID() + " "+p.getName());
 
-					ArrayList<String> newPresenter = new ArrayList<String>();
+					//ArrayList<String> newPresenter = new ArrayList<String>();
 					
-					newPresenter.add(pubID);
-					newPresenter.add(p.getName());
-					newPresenter.add(pubID);//TODO: assignedBy, need to check if I can remove it
+//					newPresenter.add(pubID);
+//					newPresenter.add(p.getName());
+//					newPresenter.add(pubID);//TODO: assignedBy, need to check if I can remove it
 					
 					//Update participant status of the new presenter
-					participantsApplication.setParticipantStatus(masterMeetingId, p.getInternalUserID(), "presenter", true);
+					//participantsApplication.setParticipantStatus(masterMeetingId, p.getInternalUserID(), "presenter", true);
 					
-					ArrayList<String> curPresenter = participantsApplication.getCurrentPresenter(masterMeetingId);
-					if(curPresenter != null){
-						String curUserID = curPresenter.get(0);
-						log.debug("previous presenter: " + curUserID + " "+ curPresenter.get(1));
-						if(!curUserID.equalsIgnoreCase(pubID)){
-							participantsApplication.setParticipantStatus(masterMeetingId, curUserID, "presenter", false);
-						}
-					}
-					
-					//participantsApplication.assignPresenter(masterMeetingId, newPresenter);
-				}
+//					ArrayList<String> curPresenter = participantsApplication.getCurrentPresenter(masterMeetingId);
+//					if(curPresenter != null){
+//						String curUserID = curPresenter.get(0);
+//						log.debug("previous presenter: " + curUserID + " "+ curPresenter.get(1));
+//						if(!curUserID.equalsIgnoreCase(pubID)){
+//							//participantsApplication.setParticipantStatus(masterMeetingId, curUserID, "presenter", false);
+//						}
+//					}
+//					
+//					//participantsApplication.assignPresenter(masterMeetingId, newPresenter);
+//				}
 
 				}else if(messageName.equalsIgnoreCase("mvCur")){
 					Double xPercent = gson.fromJson(array.get(2), Double.class);

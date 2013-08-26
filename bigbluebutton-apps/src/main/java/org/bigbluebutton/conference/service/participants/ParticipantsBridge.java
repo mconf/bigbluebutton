@@ -5,21 +5,45 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bigbluebutton.conference.User;
 import org.bigbluebutton.conference.service.messaging.MessagingConstants;
 import org.bigbluebutton.conference.service.messaging.MessagingService;
+import org.bigbluebutton.conference.service.messaging.MasterRedisMessagingService;
+import org.bigbluebutton.conference.service.messaging.SlaveRedisMessagingService;
 
 import com.google.gson.Gson;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+
 
 public class ParticipantsBridge {
 	
 	private MessagingService messagingService;
+	private MasterRedisMessagingService masterMessagingService = null;
+	private Map<String, SlaveRedisMessagingService> slavesMessagingService = null;
 	
 	public ParticipantsBridge(){
-		
+		slavesMessagingService = new ConcurrentHashMap<String, SlaveRedisMessagingService>();
+	}
+
+	public void addMasterMessagingService(String meetingID, String host, int port) {
+		synchronized (this) {
+			masterMessagingService = new MasterRedisMessagingService(meetingID);
+			masterMessagingService.setRedisPool(new JedisPool(host, port));
+			masterMessagingService.start();
+		}
+	}
+
+	public void addSlaveMessagingService(String meetingID, String host, int port) {
+		synchronized (this) {
+			SlaveRedisMessagingService slaveRedisMessagingService = new SlaveRedisMessagingService(meetingID);
+			slaveRedisMessagingService.setRedisPool(new JedisPool(host, port));
+			slaveRedisMessagingService.start();
+			slavesMessagingService.put(meetingID, slaveRedisMessagingService);
+		}
 	}
 
 	public void storeParticipant(String meetingID, String userid, String username, String role) {
@@ -48,6 +72,10 @@ public class ParticipantsBridge {
 		jedis.hmset("meeting-"+meetingID+"-user-"+userid +"-status", status);
 		
 		messagingService.dropRedisClient(jedis);
+
+		if(masterMessagingService != null) {
+			masterMessagingService.storeParticipantFromSlave(userid, username, role, meetingID);
+		}
 	}
 	
 	public void removeParticipant(String meetingID, String internalUserID) {
@@ -68,6 +96,10 @@ public class ParticipantsBridge {
 		
 		Gson gson = new Gson();
 		messagingService.send(MessagingConstants.BIGBLUEBUTTON_BRIDGE, gson.toJson(updates));
+
+		if(masterMessagingService != null) {
+			masterMessagingService.sendParticipantJoinFromSlave(userid, username, role, meetingID);
+		}
 	}
 	
 	public void sendParticipantLeave(String meetingID, String userid){
@@ -78,6 +110,10 @@ public class ParticipantsBridge {
 		
 		Gson gson = new Gson();
 		messagingService.send(MessagingConstants.BIGBLUEBUTTON_BRIDGE, gson.toJson(updates));
+
+		if(masterMessagingService != null) {
+			masterMessagingService.sendParticipantLeaveFromSlave(userid);
+		}
 	}
 	
 	/*public void sendParticipantsUpdateList(String meetingID){
@@ -150,6 +186,10 @@ public class ParticipantsBridge {
 		jedis.hmset("meeting-"+meetingID+"-presenter",params);
 		
 		messagingService.dropRedisClient(jedis);
+
+		if(masterMessagingService != null) {
+			masterMessagingService.sendStoreAssignPresenterFromSlave(userid, previousPresenter, meetingID);
+		}
 	}
 	
 	public void sendAssignPresenter(String meetingID, String userid) {
@@ -159,6 +199,10 @@ public class ParticipantsBridge {
 		updates.add(userid);
 		Gson gson = new Gson();
 		messagingService.send(MessagingConstants.BIGBLUEBUTTON_BRIDGE, gson.toJson(updates));
+
+		if(masterMessagingService != null) {
+			masterMessagingService.sendAssignPresenterFromSlave(userid, meetingID);
+		}
 	}
 	
 }
