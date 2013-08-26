@@ -28,6 +28,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
            height="24"
 		   toolTip="{this.selected ? ResourceUtil.getInstance().getString('bbb.toolbar.video.toolTip.stop') : ResourceUtil.getInstance().getString('bbb.toolbar.video.toolTip.start')}"
 		   visible="{isPresenter}"
+		   includeInLayout="{isPresenter}"
 		   implements="org.bigbluebutton.common.IBbbToolbarComponent">
 
 	<mate:Listener type="{ShortcutEvent.SHARE_WEBCAM}" method="remoteClick" />

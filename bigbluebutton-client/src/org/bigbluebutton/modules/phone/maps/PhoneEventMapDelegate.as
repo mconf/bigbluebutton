@@ -26,28 +26,33 @@ package org.bigbluebutton.modules.phone.maps
 	import org.bigbluebutton.core.BBB;
 	import org.bigbluebutton.modules.phone.PhoneOptions;
 	import org.bigbluebutton.modules.phone.views.components.ToolbarButton;
+	import org.bigbluebutton.modules.phone.views.components.MuteButton;
+	import org.bigbluebutton.main.events.BBBEvent;
 	
 	public class PhoneEventMapDelegate {
 		private var phoneOptions:PhoneOptions;
 		private var phoneButton:ToolbarButton;
+		private var soundButton:MuteButton;
 		private var buttonOpen:Boolean = false;
 		private var globalDispatcher:Dispatcher;
 				
 		public function PhoneEventMapDelegate() {
-			phoneButton = new ToolbarButton();
-			globalDispatcher = new Dispatcher();
 			phoneOptions = new PhoneOptions();
-			var vxml:XML = BBB.getConfigForModule("PhoneModule");
-			if (vxml != null) {
-				phoneOptions.showButton = (vxml.@showButton.toString().toUpperCase() == "TRUE") ? true : false;
-				phoneOptions.autoJoin = (vxml.@autoJoin.toString().toUpperCase() == "TRUE") ? true : false;
-				phoneOptions.skipCheck = (vxml.@skipCheck.toString().toUpperCase() == "TRUE") ? true : false;
-			}			
+			phoneButton = new ToolbarButton();
+			if(phoneOptions.showSpeakerButton == true) {
+				soundButton = new MuteButton();
+			}
+			else
+				soundButton = null;
+			globalDispatcher = new Dispatcher();
+			
 		}
 
 		public function addToolbarButton():void {
 		   	phoneButton.toggle = true;
-		   	
+			if(phoneButton.noMicrophone())
+				phoneButton.disableButton();
+			
 		   	if (phoneOptions.showButton) {
 			   	// Use the GLobal Dispatcher so that this message will be heard by the
 			   	// main application.		   	
@@ -56,6 +61,16 @@ package org.bigbluebutton.modules.phone.maps
 				globalDispatcher.dispatchEvent(event);		   	
 			   	buttonOpen = true;		   		
 		   	}
+
+		   	if(phoneOptions.showSpeakerButton == true) {
+				var event2:ToolbarButtonEvent = new ToolbarButtonEvent(ToolbarButtonEvent.ADD);
+				event2.button = soundButton;
+				globalDispatcher.dispatchEvent(event2);
+			}
+
+			
+
+			
 		}
 		
 		public function removeToolbarButton():void {
@@ -72,13 +87,27 @@ package org.bigbluebutton.modules.phone.maps
 		public function disableToolbarButton():void {
 			phoneButton.selected = true;
 			phoneButton.enabled = true;
-			phoneButton.userJoinedConference(true);
+			//phoneButton.userJoinedConference(true);
+		}
+
+		public function enableMuteButton():void {
+			if(soundButton != null)
+				soundButton.enabled = true;		
 		}
 		
-		public function enableToolbarButton():void {
+		public function enableToolbarButton(event:BBBEvent = null):void {
 			phoneButton.selected = false;
 			phoneButton.enabled = true;
-			phoneButton.userJoinedConference(false);
+			if(event != null && event.payload.leaveVoiceConference == true)
+				phoneButton.userJoinedConference(false);
+		}
+
+		public function switchToPresenter():void {
+			phoneButton.setPresenter(true);
+		}
+
+		public function switchToViewer():void {
+			phoneButton.setPresenter(false);
 		}
 	}
 }

@@ -54,8 +54,10 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			private var playingAudio:Boolean = false;
 			private var images:Images = new Images();
 			[Bindable] private var cancelIcon:Class = images.cancel;
-            
-            [Bindable]private var baseIndex:int = 1;
+			
+			[Bindable]private var baseIndex:int = 1;
+			
+			public var listenOnlyMode:Boolean = true;
 			
       override public function move(x:Number, y:Number):void
       {
@@ -151,18 +153,36 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
                     Security.showSettings(SecurityPanel.PRIVACY);
                 }
                 
-				cleanUp();      
-				var joinEvent:BBBEvent = new BBBEvent("JOIN_VOICE_CONFERENCE_EVENT");
-				joinEvent.payload['useMicrophone'] = true;
-				dispatchEvent(joinEvent);
+				cleanUp();
+				if(listenOnlyMode) {
+					var e:BBBEvent = new BBBEvent("RESTORE_TO_ADJUST");
+					dispatchEvent(e);
+					var askToChangeEvent:BBBEvent = new BBBEvent("ASK_TO_CHANGE_VOICE_CONFERENCE_EVENT");
+					askToChangeEvent.payload["global"] = false;
+					dispatchEvent(askToChangeEvent);
+				}
+				else {
+					var joinEvent:BBBEvent = new BBBEvent("JOIN_VOICE_CONFERENCE_EVENT");
+					joinEvent.payload['useMicrophone'] = true;
+					dispatchEvent(joinEvent);
+				}
+
 				PopUpManager.removePopUp(this);
 			}	
 			
 			private function onCancelClicked():void {
 				cleanUp();
-				var event:BBBEvent = new BBBEvent(BBBEvent.MIC_SETTINGS_CLOSED);
-				event.payload['clicked'] = "cancel";
-				dispatchEvent(event);
+				if(listenOnlyMode) {
+					var e:BBBEvent = new BBBEvent("RESTORE_TO_ADJUST");
+					dispatchEvent(e);
+					e = new BBBEvent("ENABLE_JOIN_BUTTON");
+					dispatchEvent(e);
+				}
+				else {
+					var event:BBBEvent = new BBBEvent(BBBEvent.MIC_SETTINGS_CLOSED);
+					event.payload['clicked'] = "cancel";
+					dispatchEvent(event);
+				}
 				PopUpManager.removePopUp(this);
 			}
 			
