@@ -85,7 +85,7 @@ package org.bigbluebutton.main.model.users
         trace("JoinService::handleComplete() Join SUCESS = " + xml);
 				var user:Object = {username:xml.fullname, conference:xml.conference, conferenceName:xml.confname, externMeetingID:xml.externMeetingID,
 										meetingID:xml.meetingID, externUserID:xml.externUserID, internalUserId:xml.internalUserID,
-										role:xml.role, room:xml.room, authToken:xml.room, record:xml.record, 
+										role:xml.role, room:xml.room, authToken:xml.room, record:xml.record, guest:xml.guest,
 										webvoiceconf:xml.webvoiceconf, dialnumber:xml.dialnumber,
 										voicebridge:xml.voicebridge, mode:xml.mode, welcome:xml.welcome, logoutUrl:xml.logoutUrl, 
                     defaultLayout:xml.defaultLayout, avatarURL:xml.avatarURL};

@@ -27,5 +27,9 @@ public interface IRoomListener {
 	public void participantJoined(User participant);
 	public void participantLeft(User participant);
 	public void assignPresenter(ArrayList<String> presenter);
+	public void guestEntrance(User p);
 	public void endAndKickAll();
+	public void guestResponse(User p, Boolean resp);
+	public void guestWaitingForModerator(String userid, String userId_userName); 
+	public void guestPolicyChanged(String guestPolicy);
 }

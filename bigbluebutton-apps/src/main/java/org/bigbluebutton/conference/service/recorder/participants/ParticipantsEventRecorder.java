@@ -68,6 +68,23 @@ public class ParticipantsEventRecorder implements IRoomListener {
 		recorder.record(session, ev);
 	}
 
+	public void guestEntrance(User p) {
+		GuestAskToEnterRecordEvent ev = new GuestAskToEnterRecordEvent();
+		ev.setTimestamp(System.currentTimeMillis());
+		ev.setUserId(p.getInternalUserID().toString());
+		ev.setName(p.getName());
+		recorder.record(session, ev);
+	}
+
+	@Override
+	public void guestResponse(User p, Boolean resp) {
+		ModeratorResponseEvent ev = new ModeratorResponseEvent();
+		ev.setTimestamp(System.currentTimeMillis());
+		ev.setUserId(p.getInternalUserID().toString());
+		ev.setResp(resp);
+		recorder.record(session, ev);
+	}
+
 	@Override
 	public void participantStatusChange(User p, String status, Object value) {
 		ParticipantStatusChangeRecordEvent ev = new ParticipantStatusChangeRecordEvent();
@@ -91,6 +108,23 @@ public class ParticipantsEventRecorder implements IRoomListener {
 		event.setAssignedBy(presenter.get(2).toString());
 		
 		recorder.record(session, event);
+	}
+
+	@Override
+	public void guestWaitingForModerator(String userid, String userId_userName) {
+		WaitingForModeratorEvent ev = new WaitingForModeratorEvent();
+		ev.setTimestamp(System.currentTimeMillis());
+		ev.setUserId(userid.toString());
+		ev.setArg(userId_userName);
+		recorder.record(session, ev);		
+	}
+	
+	@Override
+	public void guestPolicyChanged(String guestPolicy) {
+		GuestPolicyEvent ev = new GuestPolicyEvent();
+		ev.setTimestamp(System.currentTimeMillis());
+		ev.setPolicy(guestPolicy);
+		recorder.record(session, ev);
 	}
 	
 	@Override

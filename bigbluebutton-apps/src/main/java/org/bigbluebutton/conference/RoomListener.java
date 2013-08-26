@@ -58,6 +58,36 @@ public class RoomListener implements IRoomListener{
 		so.sendMessage("participantLeft", args);
 	}
 
+	@SuppressWarnings("unchecked")
+	public void guestResponse(User p, Boolean resp) {
+		List list = new ArrayList();
+		list.add(p.getInternalUserID());
+		list.add(resp);
+		so.sendMessage("guestResponse", list);
+	}
+
+	@SuppressWarnings("unchecked")
+	public void guestEntrance(User p) {
+		List list = new ArrayList();
+		list.add(p.getInternalUserID());
+		list.add(p.getName());
+		so.sendMessage("guestEntrance", list);
+	}
+
+	@SuppressWarnings("unchecked")
+	public void guestWaitingForModerator(String userid, String userId_userName) {
+		List list = new ArrayList();
+		list.add(userid);
+		list.add(userId_userName);
+		so.sendMessage("guestWaitingForModerator", list);
+	}
+
+	public void guestPolicyChanged(String guestPolicy) {
+		List list = new ArrayList();
+		list.add(guestPolicy);
+		so.sendMessage("guestPolicyChanged", list);
+	}
+
 	public void assignPresenter(ArrayList<String> presenter) {
 		so.sendMessage("assignPresenterCallback", presenter);
 	}

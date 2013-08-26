@@ -24,7 +24,8 @@ import java.util.Hashtable;
 import java.util.Map;
 import org.bigbluebutton.conference.service.recorder.Recorder;
 import org.bigbluebutton.conference.IRoomListener;
-import org.bigbluebutton.conference.BigBlueButtonUtils;import org.red5.server.api.so.ISharedObject;
+import org.bigbluebutton.conference.BigBlueButtonUtils;
+import org.red5.server.api.so.ISharedObject;
 import org.bigbluebutton.conference.User;
 import org.slf4j.Logger;
 import org.red5.logging.Red5LoggerFactory;
@@ -88,7 +89,42 @@ public class ParticipantsEventSender implements IRoomListener {
 		args.add(value);
 		so.sendMessage("participantStatusChange", args);
 	}
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public void guestEntrance(User p) {
+		log.debug("guest entrance enviando.");
+		ArrayList list = new ArrayList();
+		list.add(p.getInternalUserID());
+		list.add(p.getName());
+		so.sendMessage("guestEntrance", list);
+	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public void guestResponse(User p, Boolean resp) {
+		ArrayList list = new ArrayList();
+		list.add(p.getInternalUserID());
+		list.add(resp);
+		so.sendMessage("guestResponse", list);
+	}
+
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public void guestPolicyChanged(String guestPolicy) {
+		ArrayList list = new ArrayList();
+		list.add(guestPolicy);
+		so.sendMessage("guestPolicyChanged", list);
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public void guestWaitingForModerator(String userid, String userId_userName) {
+		ArrayList list = new ArrayList();
+		list.add(userid);
+		list.add(userId_userName);
+		so.sendMessage("guestWaitingForModerator", list);
+	}
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub

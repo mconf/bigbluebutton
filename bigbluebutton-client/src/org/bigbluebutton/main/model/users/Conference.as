@@ -125,6 +125,14 @@ package org.bigbluebutton.main.model.users {
 		public function getDefaultLayout():String {
 			return defaultLayout;
 		}
+
+		public function amIWaitForModerator():Boolean {
+			return me.waitingForMod;		
+		}
+		
+		public function setWaitForModerator(state:Boolean):void {
+			me.waitingForMod = state;
+		}
     
 		public function hasUser(userID:String):Boolean {
 			var p:Object = getUserIndex(userID);
@@ -365,6 +373,14 @@ package org.bigbluebutton.main.model.users {
 		
 		public function setMyRole(role:String):void {
 			me.role = role;
+		}
+
+		public function isGuest():Boolean {
+			return me.guest;		
+		}
+
+		public function setGuest(guest:Boolean):void {
+			me.guest = guest;
 		}
 		
 		public function setMyRoom(room:String):void {

@@ -34,9 +34,12 @@ package org.bigbluebutton.main.model.users {
 	import org.bigbluebutton.core.managers.UserManager;
 	import org.bigbluebutton.main.events.BBBEvent;
 	import org.bigbluebutton.main.events.LogoutEvent;
+	import org.bigbluebutton.main.events.SwitchedPresenterEvent;
 	import org.bigbluebutton.main.events.MadePresenterEvent;
 	import org.bigbluebutton.main.events.PresenterStatusEvent;
-	import org.bigbluebutton.main.events.SwitchedPresenterEvent;
+	import org.bigbluebutton.main.events.AddGuestEvent;
+	import org.bigbluebutton.main.events.RemoveGuestRequestEvent;
+	import org.bigbluebutton.main.events.ModeratorRespEvent;
 	import org.bigbluebutton.main.events.UserJoinedEvent;
 	import org.bigbluebutton.main.events.UserLeftEvent;
 	import org.bigbluebutton.main.model.ConferenceParameters;
@@ -78,6 +81,11 @@ package org.bigbluebutton.main.model.users {
         _participantsSO.close();
       }
       _connectionManager.disconnect(onUserAction);
+		}
+
+		public function guestDisconnect():void {
+			if (_participantsSO != null) _participantsSO.close();
+			_connectionManager.guestDisconnect();
 		}
 		
 	    public function join(userid:String, room:String):void {
@@ -219,6 +227,16 @@ package org.bigbluebutton.main.model.users {
 		public function kickUser(userid:String):void{
 			_participantsSO.send("kickUserCallback", userid);
 		}
+
+		public function kickGuest(userid:String):void {
+			_participantsSO.send("kickGuestCallback", userid);
+		}
+
+		public function kickGuestCallback(userid:String):void{
+			if (UserManager.getInstance().getConference().amIThisUser(userid)){
+				dispatcher.dispatchEvent(new LogoutEvent(LogoutEvent.GUEST_KICKED_OUT));
+			}
+		}
 		
 		public function kickUserCallback(userid:String):void {
       var kickedEvent:LogoutEvent = new LogoutEvent(LogoutEvent.USER_KICKED_OUT);
@@ -233,6 +251,11 @@ package org.bigbluebutton.main.model.users {
 		public function participantLeft(userID:String):void { 			
 			var user:BBBUser = UserManager.getInstance().getConference().getUser(userID);
 			
+			if(user.amIGuest()) {
+				var e:RemoveGuestRequestEvent = new RemoveGuestRequestEvent(RemoveGuestRequestEvent.GUEST_EVENT);
+				e.userid = user.userID;
+				dispatcher.dispatchEvent(e);
+			}
       trace("Notify others that user [" + user.userID + ", " + user.name + "] is leaving!!!!");
       
       // Flag that the user is leaving the meeting so that apps (such as avatar) doesn't hang
@@ -251,6 +274,8 @@ package org.bigbluebutton.main.model.users {
 			user.userID = joinedUser.userid;
 			user.name = joinedUser.name;
 			user.role = joinedUser.role;
+			user.guest = joinedUser.guest;
+			user.acceptedJoin = !user.guest;
       user.externUserID = joinedUser.externUserID;
       user.isLeavingFlag = false;
       
@@ -293,7 +318,40 @@ package org.bigbluebutton.main.model.users {
 				dispatcher.dispatchEvent(e);
 			}		
 		}
-					
+
+		//Callback from server	
+		public function guestEntrance(userid:String, name:String):void {
+			if(UserManager.getInstance().getConference().amIModerator() && UserManager.getInstance().getConference().amIWaitForModerator() == false) {
+				var e:AddGuestEvent = new AddGuestEvent();
+				e.userid = userid;
+				e.name = name;				
+				var dispatcher:Dispatcher = new Dispatcher();
+				dispatcher.dispatchEvent(e);
+			}
+		}
+		
+		public function guestResponse(userid:String, resp:Boolean):void {
+			if(UserManager.getInstance().getConference().getMyUserId() == userid) {
+				if(UserManager.getInstance().getConference().amIWaitForModerator()) {
+					UserManager.getInstance().getConference().setWaitForModerator(false);
+					if(resp == false)
+						kickGuest(userid);
+					else {
+						var allowCommand:ModeratorRespEvent = new ModeratorRespEvent(ModeratorRespEvent.GUEST_ALLOWED);
+						var dispatcherCommand:Dispatcher = new Dispatcher();
+						dispatcherCommand.dispatchEvent(allowCommand);
+					}
+				}
+			}
+
+			if(UserManager.getInstance().getConference().amIModerator()) {
+				var e:RemoveGuestRequestEvent = new RemoveGuestRequestEvent(RemoveGuestRequestEvent.GUEST_EVENT);
+				e.userid = userid;
+				var dispatcher:Dispatcher = new Dispatcher();
+				dispatcher.dispatchEvent(e);				
+			}
+		}
+			
 		public function raiseHand(userID:String, raise:Boolean):void {
 			var nc:NetConnection = _connectionManager.connection;			
 			nc.call(
@@ -302,6 +360,116 @@ package org.bigbluebutton.main.model.users {
         userID,
 				"raiseHand",
 				raise
+			); //_netConnection.call
+		}
+
+
+		public function responseToAllGuests(resp:Boolean):void {
+			var nc:NetConnection = _connectionManager.connection;			
+			nc.call(
+				"participants.responseToAllGuests",// Remote function name
+				responder,
+				resp
+			); //_netConnection.call
+		}
+
+
+		public function askForGuestWaiting(userid:String):void {
+			var nc:NetConnection = _connectionManager.connection;			
+			nc.call(
+				"participants.askingForGuestWaiting",// Remote function name
+				responder,
+				userid
+			); //_netConnection.call
+		}
+
+
+		public function newGuestPolicy(guestPolicy:String):void {
+			
+		 	var nc:NetConnection = _connectionManager.connection;			
+			nc.call(
+				"participants.newGuestPolicy",
+				responder,
+				guestPolicy
+			); //_netConnection.call
+			
+			
+		}
+
+		public function guestPolicyChanged(guestPolicy:String):void {
+		    var policy:BBBEvent = new BBBEvent(BBBEvent.RETRIEVE_GUEST_POLICY);
+		    policy.payload['guestPolicy'] = guestPolicy;
+		    dispatcher.dispatchEvent(policy);
+		    
+		    LogUtil.debug("Received from server: " + guestPolicy);
+			
+		}
+
+
+		public function getGuestPolicy():void {
+			var nc:NetConnection = _connectionManager.connection;			
+			nc.call(
+				"participants.getGuestPolicy",// Remote function name
+				new Responder(
+	        			function(result:Object):void { 
+							var policy:BBBEvent = new BBBEvent(BBBEvent.RETRIEVE_GUEST_POLICY);
+							policy.payload['guestPolicy'] = result;
+							if(UserManager.getInstance().getConference().isGuest()) {
+								if(result == "ALWAYS_DENY")
+									dispatcher.dispatchEvent(new BBBEvent(BBBEvent.DENY_GUEST));
+								else if(result == "ALWAYS_ACCEPT")
+									dispatcher.dispatchEvent(new BBBEvent(BBBEvent.ACCEPT_GUEST));
+								else
+								     dispatcher.dispatchEvent(new BBBEvent(BBBEvent.ASK_TO_ACCEPT_GUEST));
+							}
+							dispatcher.dispatchEvent(policy);
+					},	
+					// status - On error occurred
+					function(status:Object):void { 
+						LogUtil.error("Error occurred:"); 
+						for (var x:Object in status) { 
+							LogUtil.error(x + " : " + status[x]); 
+						} 
+					}
+				)//new Responder
+			); //_netConnection.call
+		}
+
+		public function guestWaitingForModerator(userid:String, userId_userName:String):void {
+			if(UserManager.getInstance().getConference().getMyUserId() == userid && UserManager.getInstance().getConference().amIModerator()) {
+				if(userId_userName != "") {
+					var i:int = 0;
+					var users:Array =  userId_userName.split("!1");
+					for(i = 0; i < users.length; i++) {
+						if(users[i] != "") {
+							var pairSplited:Array = users[i].split("!2");
+							var addGuestEvent:AddGuestEvent = new AddGuestEvent(AddGuestEvent.ADD_GUEST);
+							addGuestEvent.userid = pairSplited[0];
+							addGuestEvent.name = pairSplited[1];
+							var dispatcher:Dispatcher = new Dispatcher();
+							dispatcher.dispatchEvent(addGuestEvent);
+						}
+					}
+				}	
+			}		
+		}
+
+		public function askToEnter(userid:String):void {
+			var nc:NetConnection = _connectionManager.connection;			
+			nc.call(
+				"participants.askingToEnter",// Remote function name
+				responder,
+				userid
+			); //_netConnection.call
+		}
+
+		public function responseToGuest(userid:String, resp:Boolean):void {
+			var nc:NetConnection = _connectionManager.connection;			
+			nc.call(
+				"participants.responseToGuest",// Remote function name
+				 responder,
+				 userid,
+				 resp
 			); //_netConnection.call
 		}
 		

@@ -36,12 +36,19 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 	<mate:Listener type="{AddUIComponentToMainCanvas.ADD_COMPONENT}" method="addComponentToCanvas" />
 	<mate:Listener type="{AppVersionEvent.APP_VERSION_EVENT}" method="handleApplicationVersionEvent" />	
 	<mate:Listener type="{ConnectionFailedEvent.USER_LOGGED_OUT}" method="handleLogout" />
+	<mate:Listener type="{ConnectionFailedEvent.GUEST_KICKED_OUT}" method="handleLogout" />
 	<mate:Listener type="{ConnectionFailedEvent.CONNECTION_FAILED}" method="attemptReconnect" />
 	<mate:Listener type="{ConnectionFailedEvent.CONNECTION_CLOSED}" method="attemptReconnect"  />
 	<mate:Listener type="{ConnectionFailedEvent.UNKNOWN_REASON}" method="attemptReconnect"  />
 	<mate:Listener type="{ConnectionFailedEvent.CONNECTION_REJECTED}" method="attemptReconnect"  />
 	<mate:Listener type="configLoadedEvent" method="initOptions"  />
+	<mate:Listener type="{WaitModeratorEvent.USER_LOGGED_IN}" method="openWaitWindow" />
+	<mate:Listener type="{RemoveGuestRequestEvent.GUEST_EVENT}" method="removeGuestWindow" />
 	<mate:Listener type="SHOW_MIC_SETTINGS" method="showMicSettings"  />
+	<mate:Listener type="SHOW_BBB_SETTINGS" method="showBBBSettings"  />
+	<mate:Listener type="{ModeratorRespEvent.GUEST_ALLOWED}" method="guestAllowed" />
+	<mate:Listener type="{BBBEvent.RETRIEVE_GUEST_POLICY}" method="setGuestPolicy"/>
+	<mate:Listener type="{RefreshGuestEvent.REFRESH_GUEST_VIEW}" method="refreshGuestView" />
 	<mate:Listener type="{ToolbarButtonEvent.ADD}" method="handleAddToolbarComponent" />	
 	<mate:Listener type="{ToolbarButtonEvent.REMOVE}" method="handleRemoveToolbarComponent"/>
 	<mate:Listener type="{ShortcutEvent.OPEN_SHORTCUT_WIN}" method="openShortcutHelpWindow" />
@@ -71,17 +78,25 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			import org.bigbluebutton.common.events.AddUIComponentToMainCanvas;
 			import org.bigbluebutton.common.events.CloseWindowEvent;
 			import org.bigbluebutton.common.events.OpenWindowEvent;
+			import org.bigbluebutton.common.events.SettingsComponentEvent;
 			import org.bigbluebutton.common.events.ToolbarButtonEvent;
+			import org.bigbluebutton.common.Role;
+			import org.bigbluebutton.core.managers.UserManager;
 			import org.bigbluebutton.core.BBB;
 			import org.bigbluebutton.main.events.AppVersionEvent;
 			import org.bigbluebutton.main.events.BBBEvent;
 			import org.bigbluebutton.main.events.ConfigEvent;
 			import org.bigbluebutton.main.events.LogoutEvent;
+			import org.bigbluebutton.main.events.ModeratorRespEvent;
 			import org.bigbluebutton.main.events.ModuleLoadEvent;
 			import org.bigbluebutton.main.events.PortTestEvent;
 			import org.bigbluebutton.main.events.RecordStatusEvent;
+			import org.bigbluebutton.main.events.RefreshGuestEvent;
+			import org.bigbluebutton.main.events.RemoveGuestRequestEvent;
 			import org.bigbluebutton.main.events.ShortcutEvent;
 			import org.bigbluebutton.main.events.SuccessfulLoginEvent;
+			import org.bigbluebutton.main.events.WaitModeratorEvent;
+			import org.bigbluebutton.main.model.Guest;
 			import org.bigbluebutton.main.model.LayoutOptions;
 			import org.bigbluebutton.main.model.users.events.ConnectionFailedEvent;
 			import org.bigbluebutton.util.i18n.ResourceUtil;
@@ -93,6 +108,9 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			private var stoppedModules:ArrayCollection;			
 			private var logs:Logger = new Logger();
 			private var logWindow:LogWindow;
+			private var waitWindow:WaitingWindow = null;	
+			private var guestWindow:GuestWindow = null;
+			private var bbbSettings:BBBSettings = null;
 			private var scWindow:ShortcutHelpWindow;
 			private var logoutWindow:LoggedOutWindow;
 			private var connectionLostWindow:ConnectionLostWindow;
@@ -112,6 +130,9 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       
 			private var receivedConfigLocaleVer:Boolean = false;
 			private var receivedResourceLocaleVer:Boolean = false;
+			private var guestManagement:GuestManagement = null;
+			private var guest:Guest = new Guest();
+			private var guestPolicy:String = "ASK_MODERATOR";
 			
 			public function get mode():String {
 				return _mode;
@@ -143,10 +164,22 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
         if (!showFooterOpt) {
           footerHeight = 0;
         }
+
+		bbbSettings = BBBSettings(PopUpManager.createPopUp(mdiCanvas, BBBSettings, true));	
 			
         
       }
 			
+			private function setGuestPolicy(event:BBBEvent):void {
+				guestPolicy = event.payload.guestPolicy;
+				if(guestManagement == null) {
+					LogUtil.debug("ADD Guest Event");
+					guestManagement = new GuestManagement();
+					guestManagement.setGuestPolicy(guestPolicy);
+					guestManagement.addToSettings();
+				}
+			}
+
 			protected function initializeShell():void {	
 				globalDispatcher = new Dispatcher();
 			}
@@ -181,6 +214,11 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				}						
 			}
 			
+			public function guestAllowed(evt:ModeratorRespEvent):void {
+				progressBar.visible = true;
+				waitWindow.guestAllowed();
+			}
+			
 			public function sendStartAllModulesEvent():void{
 				LogUtil.debug("Sending start all modules event");
 				var dispatcher:Dispatcher = new Dispatcher();
@@ -197,6 +235,42 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 					LogUtil.debug("Switching to normal screen");
 					/* Do something specific here if we switched to normal mode. */
 				}
+			}			
+			
+			private function closeGuestWindow(e:Event):void {
+				if(guestWindow != null) {
+					guestWindow.closeWindow();
+					guestWindow = null;
+				}
+			}
+				
+			private function refreshGuestView(evt:RefreshGuestEvent):void {
+				LogUtil.debug("REFRESH GUEST");
+				if(guestWindow == null) {
+					guestWindow = PopUpManager.createPopUp( mdiCanvas, GuestWindow, false) as GuestWindow;
+					guestWindow.addEventListener(Event.CLOSE, closeGuestWindow);
+					guestWindow.x = width - 400;
+					guestWindow.y = 20;
+				}
+				guestWindow.refreshGuestView(evt.listOfGuests);
+			}
+
+			public function removeGuestWindow(evt:RemoveGuestRequestEvent):void {
+				if(guestWindow != null)
+					guestWindow.remove(evt.userid);
+			}
+
+			private function openWaitWindow(evt:WaitModeratorEvent):void {
+				 progressBar.visible = false;
+				 waitWindow = PopUpManager.createPopUp( mdiCanvas, WaitingWindow, false) as WaitingWindow;
+				 waitWindow.conferenceParameters = evt.conferenceParameters;
+				 
+				 var point1:Point = new Point();
+				 // Calculate position of TitleWindow in Application's coordinates. 
+				 point1.x = width/2;
+				 point1.y = height/2;                 
+				 waitWindow.x = point1.x - (waitWindow.width/2);
+				 waitWindow.y = point1.y - (waitWindow.height/2);
 			}			
 			
 			private function openLogWindow():void {
@@ -292,6 +366,16 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				micSettings.y = point1.y - (micSettings.height/2);	
 			}
 			
+			private function showBBBSettings(event:BBBEvent):void {
+				bbbSettings.visible = true;
+				var point1:Point = new Point();
+				// Calculate position of TitleWindow in Application's coordinates. 
+				point1.x = width/2;
+				point1.y = height/2;                
+				bbbSettings.x = point1.x - (bbbSettings.width/2);
+				bbbSettings.y = point1.y - (bbbSettings.height/2);
+			}
+
       private function openVideoPreviewWindow(event:BBBEvent):void {
         var camSettings:CameraDisplaySettings = CameraDisplaySettings(PopUpManager.createPopUp(mdiCanvas, CameraDisplaySettings, true));		
         camSettings.resolutions = (event.payload.resolutions as String).split(",");
@@ -319,6 +403,16 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       }
 			
 			private function handleLogout(e:ConnectionFailedEvent):void {
+				if(progressBar != null)
+					progressBar.visible = false;
+			
+				if(waitWindow != null)				
+					waitWindow.removeWindow();
+				
+				if(guestWindow != null) {
+					guestWindow.closeWindow();
+				}
+
 				if (layoutOptions.showLogoutWindow) {
 					if (logoutWindow != null) return;
 					logoutWindow = LoggedOutWindow(PopUpManager.createPopUp( mdiCanvas, LoggedOutWindow, false));
