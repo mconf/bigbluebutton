@@ -22,27 +22,32 @@ import redis.clients.jedis.JedisPool;
 public class ParticipantsBridge {
 	
 	private MessagingService messagingService;
-	private MasterRedisMessagingService masterMessagingService = null;
-	private Map<String, SlaveRedisMessagingService> slavesMessagingService = null;
+	private Map<String, MasterRedisMessagingService> mastersMessagingService = null;
+	private Map<String, Map<String, SlaveRedisMessagingService>> slavesMessagingService = null;
 	
 	public ParticipantsBridge(){
-		slavesMessagingService = new ConcurrentHashMap<String, SlaveRedisMessagingService>();
+		slavesMessagingService = new ConcurrentHashMap<String, Map<String, SlaveRedisMessagingService>>();
+		mastersMessagingService = new ConcurrentHashMap<String, MasterRedisMessagingService>();
 	}
 
-	public void addMasterMessagingService(String meetingID, String host, int port) {
+	public void addMasterMessagingService(String myMeetingID, String masterMeetingID, String host, int port) {
 		synchronized (this) {
-			masterMessagingService = new MasterRedisMessagingService(meetingID);
+			MasterRedisMessagingService masterMessagingService = new MasterRedisMessagingService(myMeetingID, masterMeetingID);
 			masterMessagingService.setRedisPool(new JedisPool(host, port));
 			masterMessagingService.start();
+			mastersMessagingService.put(myMeetingID, masterMessagingService);
 		}
 	}
 
-	public void addSlaveMessagingService(String meetingID, String host, int port) {
+	public void addSlaveMessagingService(String myMeetingID, String slaveMeetingID, String host, int port) {
 		synchronized (this) {
-			SlaveRedisMessagingService slaveRedisMessagingService = new SlaveRedisMessagingService(meetingID);
+			SlaveRedisMessagingService slaveRedisMessagingService = new SlaveRedisMessagingService(myMeetingID, slaveMeetingID);
 			slaveRedisMessagingService.setRedisPool(new JedisPool(host, port));
 			slaveRedisMessagingService.start();
-			slavesMessagingService.put(meetingID, slaveRedisMessagingService);
+			if(!slavesMessagingService.containsKey(myMeetingID)) {
+				slavesMessagingService.put(myMeetingID, new ConcurrentHashMap<String, SlaveRedisMessagingService>());
+			}
+			slavesMessagingService.get(myMeetingID).put(slaveMeetingID, slaveRedisMessagingService);
 		}
 	}
 
@@ -73,8 +78,8 @@ public class ParticipantsBridge {
 		
 		messagingService.dropRedisClient(jedis);
 
-		if(masterMessagingService != null) {
-			masterMessagingService.storeParticipantFromSlave(userid, username, role, meetingID);
+		if(mastersMessagingService != null && mastersMessagingService.containsKey(meetingID)) {
+			mastersMessagingService.get(meetingID).storeParticipantFromSlave(userid, username, role, meetingID);
 		}
 	}
 	
@@ -97,8 +102,8 @@ public class ParticipantsBridge {
 		Gson gson = new Gson();
 		messagingService.send(MessagingConstants.BIGBLUEBUTTON_BRIDGE, gson.toJson(updates));
 
-		if(masterMessagingService != null) {
-			masterMessagingService.sendParticipantJoinFromSlave(userid, username, role, meetingID);
+		if(mastersMessagingService != null && mastersMessagingService.containsKey(meetingID)) {
+			mastersMessagingService.get(meetingID).sendParticipantJoinFromSlave(userid, username, role, meetingID);
 		}
 	}
 	
@@ -111,8 +116,8 @@ public class ParticipantsBridge {
 		Gson gson = new Gson();
 		messagingService.send(MessagingConstants.BIGBLUEBUTTON_BRIDGE, gson.toJson(updates));
 
-		if(masterMessagingService != null) {
-			masterMessagingService.sendParticipantLeaveFromSlave(userid);
+		if(mastersMessagingService != null && mastersMessagingService.containsKey(meetingID)) {
+			mastersMessagingService.get(meetingID).sendParticipantLeaveFromSlave(userid);
 		}
 	}
 	
@@ -187,8 +192,8 @@ public class ParticipantsBridge {
 		
 		messagingService.dropRedisClient(jedis);
 
-		if(masterMessagingService != null) {
-			masterMessagingService.sendStoreAssignPresenterFromSlave(userid, previousPresenter, meetingID);
+		if(mastersMessagingService != null && mastersMessagingService.containsKey(meetingID)) {
+			mastersMessagingService.get(meetingID).sendStoreAssignPresenterFromSlave(userid, previousPresenter, meetingID);
 		}
 	}
 	
@@ -200,8 +205,8 @@ public class ParticipantsBridge {
 		Gson gson = new Gson();
 		messagingService.send(MessagingConstants.BIGBLUEBUTTON_BRIDGE, gson.toJson(updates));
 
-		if(masterMessagingService != null) {
-			masterMessagingService.sendAssignPresenterFromSlave(userid, meetingID);
+		if(mastersMessagingService != null && mastersMessagingService.containsKey(meetingID)) {
+			mastersMessagingService.get(meetingID).sendAssignPresenterFromSlave(userid, meetingID);
 		}
 	}
 	

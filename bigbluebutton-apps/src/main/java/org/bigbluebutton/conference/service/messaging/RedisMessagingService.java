@@ -297,6 +297,22 @@ public class RedisMessagingService implements MessagingService{
 					}
 					
 					presentationApplication.sendCursorUpdate(meetingId, xPercent, yPercent);
+				}else if(messageName.equalsIgnoreCase("slave join")){
+					String slaveMeetingID = gson.fromJson(array.get(2), String.class);
+					
+					ChatMessageVO chatObj = new ChatMessageVO();
+					chatObj.chatType = "PUBLIC"; 
+					chatObj.fromUserID = "10";
+					chatObj.fromUsername = "ADMIN";
+					chatObj.fromColor = "0";
+					chatObj.fromTime = 0.0;   
+					chatObj.fromTimezoneOffset = (long)0;
+					chatObj.fromLang = "en"; 	 
+					chatObj.toUserID = "";
+					chatObj.toUsername = "";
+					chatObj.message = "SLAVE Meeting ID = " + slaveMeetingID;
+					
+					chatApplication.sendPublicMessage(meetingId, chatObj);
 				}
 
 			}

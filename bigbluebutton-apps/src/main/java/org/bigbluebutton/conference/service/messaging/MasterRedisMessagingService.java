@@ -57,18 +57,34 @@ public class MasterRedisMessagingService implements MessagingService{
 	
 	private final Set<MessageListener> listeners = new HashSet<MessageListener>();
 	
-	private String masterMeetingID = "183f0bf3a0982a127bdb8161e0c44eb696b3e75c-1376591399159";
+	private String masterMeetingID = "";
+	private String myMeetingID = "";
 
 	public MasterRedisMessagingService(){
 		
 	}
 
-	public MasterRedisMessagingService(String masterMeetingId){
+	public MasterRedisMessagingService(String myMeetingID, String masterMeetingId){
 		this.masterMeetingID = masterMeetingId;
+		this.myMeetingID = myMeetingID;
 	}
 
 	public void setMasterMeetingId(String masterMeetingId) {
 		this.masterMeetingID = masterMeetingId;
+	}
+
+	public void setMyMeetingID(String myMeetingID) {
+		this.myMeetingID = myMeetingID;
+	}
+
+	public void signalMaster(String slaveMeetingID) {
+		ArrayList<Object> slaveInfo = new ArrayList<Object>();
+		slaveInfo.add(masterMeetingID);
+		slaveInfo.add("slave join");
+		slaveInfo.add(slaveMeetingID);
+		
+		Gson gson = new Gson();
+		send(MessagingConstants.BIGBLUEBUTTON_BRIDGE, gson.toJson(slaveInfo));
 	}
 	
 	@Override
@@ -80,6 +96,7 @@ public class MasterRedisMessagingService implements MessagingService{
 			    public void run() {
 			    	//jedis.psubscribe(new PubSubListener(), MessagingConstants.BIGBLUEBUTTON_PATTERN);
 			    	jedis.psubscribe(new PubSubListener(), "*");
+
 			    }
 			};
 			exec.execute(pubsubListener);

@@ -72,7 +72,9 @@ public class Room implements Serializable {
 	}
 	public void addParticipantsBridge(ParticipantsBridge pb){
 		this.participantsBridge = pb;
+		//participants.addMasterMessagingService(String myMeetingID, String masterMeetingID, String host, int port)
 		participants.putAll(participantsBridge.loadParticipants(name));
+
 	}
 
 	public void removeRoomListener(IRoomListener listener) {
