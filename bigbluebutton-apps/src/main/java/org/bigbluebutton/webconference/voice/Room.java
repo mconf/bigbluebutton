@@ -32,5 +32,7 @@ public interface Room {
 	public boolean record();
 	public void recording(boolean rec);
 	public boolean isRecording();
+	public String getMeetingId();
+	public void setMeetingId(String meetingid);
 	public int getUserWithID(String userID);
 }

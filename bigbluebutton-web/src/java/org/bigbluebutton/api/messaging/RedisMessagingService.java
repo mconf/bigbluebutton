@@ -180,6 +180,14 @@ public class RedisMessagingService implements MessagingService {
 					for (MessageListener listener : listeners) {
 						listener.userLeft(meetingId, internalUserId);
 					}
+				} else if(MessagingConstants.USER_JOINED_VOICE_EVENT.equalsIgnoreCase(messageId)){
+					for (MessageListener listener : listeners) {
+						listener.userJoinedVoice(meetingId);
+					}
+				} else if(MessagingConstants.USER_LEFT_VOICE_EVENT.equalsIgnoreCase(messageId)){
+					for (MessageListener listener : listeners) {
+						listener.userLeftVoice(meetingId);
+					}
 				}
 			}
 		}

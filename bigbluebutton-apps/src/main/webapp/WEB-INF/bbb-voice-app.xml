@@ -38,6 +38,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 	</beans:bean>
 
 	<beans:bean id="roomManager" class="org.bigbluebutton.webconference.voice.internal.RoomManager">
+		<beans:property name="messagingService" ref="messagingService"/>
 		<beans:property name="voiceEventRecorder" ref="voiceEventRecorder"/>
 	</beans:bean>
 
