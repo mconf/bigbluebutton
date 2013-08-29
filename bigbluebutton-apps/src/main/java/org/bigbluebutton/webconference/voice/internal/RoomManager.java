@@ -20,6 +20,7 @@ package org.bigbluebutton.webconference.voice.internal;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+import org.bigbluebutton.conference.service.messaging.MessagingService;
 import org.bigbluebutton.webconference.voice.ConferenceService;
 import org.bigbluebutton.webconference.voice.Participant;
 import org.bigbluebutton.webconference.voice.VoiceEventRecorder;
@@ -41,11 +42,17 @@ public class RoomManager {
 	private final ConcurrentHashMap<String, RoomImp> rooms;
 	private ConferenceService confService;
 	private VoiceEventRecorder recorder;
+	private MessagingService messagingService;
 		
 	public RoomManager() {
 		rooms = new ConcurrentHashMap<String, RoomImp>();
 	}
 	
+	public void setMessagingService(MessagingService messagingService) {
+		this.messagingService = messagingService;
+		this.messagingService.start();
+	}
+
 	public int getVoiceUserIDFromRoom(String room, String userID) {
 		RoomImp rm = rooms.get(room);
 		if (rm != null) {
@@ -58,6 +65,7 @@ public class RoomManager {
 	public void createRoom(String name, boolean record, String meetingid) {
 		log.debug("Creating room: " + name);
 		RoomImp r = new RoomImp(name, record, meetingid);
+		r.addRoomListener(new ParticipantUpdatingRoomListener(r, messagingService));
 		rooms.putIfAbsent(name, r);
 	}
 	
@@ -148,7 +156,7 @@ public class RoomManager {
 		/**
 		 * Record the event if the meeting is being recorded.
 		 */
-		recorder.recordConferenceEvent(event, rm.getMeeting());
+		recorder.recordConferenceEvent(event, rm.getMeetingId());
 	}
 
 	private void handleParticipantJoinedEvent(ConferenceEvent event, RoomImp rm) {
@@ -171,11 +179,11 @@ public class RoomManager {
 				rm.recording(true);
 				log.debug("Starting recording of voice conference");
 				log.warn(" ** WARNING: Prototyping only. Works only with FreeSWITCH for now. We need to come up with a generic way to trigger recording for both Asterisk and FreeSWITCH.");
-				confService.recordSession(event.getRoom(), rm.getMeeting());
+				confService.recordSession(event.getRoom(), rm.getMeetingId());
 			}
 			
 			// Broadcast the audio
-			confService.broadcastSession(event.getRoom(), rm.getMeeting());
+			confService.broadcastSession(event.getRoom(), rm.getMeetingId());
 		}
 		
 		

@@ -48,6 +48,7 @@ public class Meeting {
 	private int maxUsers;
 	private boolean record;
 	private String dialNumber;
+	private int listenerCount = 0;
 	private String defaultAvatarURL;
 	private String defaultConfigToken;
 	
@@ -273,6 +274,27 @@ public class Meeting {
 		long now = System.currentTimeMillis();
 		System.out.println("Expiry " + now + " endTime=" + endTime + "expiry=" + (expiry * MILLIS_IN_A_MINUTE));
 		return (System.currentTimeMillis() - endTime > (expiry * MILLIS_IN_A_MINUTE));
+	}
+
+	public void userJoinedVoice() {
+		listenerCount++;
+	}
+
+	public void userLeftVoice() {
+		listenerCount--;
+	}
+
+	public int getNumListeners() {
+		return listenerCount;
+	}
+
+	public int getNumVideos() {
+		int sum = 0;
+		for (String key : users.keySet()) {
+		    User u =  (User) users.get(key);
+		    if (u.hasStream()) sum++;
+		}
+		return sum;
 	}
 	
 	public void addUserCustomData(String userID, Map<String, String> data) {

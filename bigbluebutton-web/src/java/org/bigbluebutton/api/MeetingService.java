@@ -336,6 +336,28 @@ public class MeetingService {
 			}
 			log.warn("The meeting " + meetingId + " doesn't exist");
 		}
+
+		@Override
+		public void userJoinedVoice(String meetingId) {
+			Meeting m = getMeeting(meetingId);
+			if (m != null) {
+				m.userJoinedVoice();
+				log.debug("A user joined the voice conference in the meeting " + meetingId);
+				return;
+			}
+			log.warn("The meeting " + meetingId + " doesn't exist");
+		}
+
+		@Override
+		public void userLeftVoice(String meetingId) {
+			Meeting m = getMeeting(meetingId);
+			if (m != null) {
+				m.userLeftVoice();
+				log.debug("A user left the voice conference in the meeting " + meetingId);
+				return;
+			}
+			log.warn("The meeting " + meetingId + " doesn't exist");
+		}
 	}
 	
 }

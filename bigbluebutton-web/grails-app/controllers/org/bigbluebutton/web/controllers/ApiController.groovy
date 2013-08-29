@@ -748,6 +748,9 @@ class ApiController {
                   moderatorPW(m.getModeratorPassword())
                   hasBeenForciblyEnded(m.isForciblyEnded() ? "true" : "false")
                   running(m.isRunning() ? "true" : "false")
+                  participantCount(m.getNumUsers())
+                  listenerCount(m.getNumListeners())
+                  videoCount(m.getNumVideos())
                 }
               }
             }
@@ -1445,6 +1448,7 @@ class ApiController {
             returncode(RESP_CODE_SUCCESS)
 			meetingName(meeting.getName())
             meetingID(meeting.getExternalId())
+            internalMeetingID(meeting.getInternalId())
 			createTime(meeting.getCreateTime())
 			voiceBridge(meeting.getTelVoice())
 			dialNumber(meeting.getDialNumber())
@@ -1458,12 +1462,16 @@ class ApiController {
             participantCount(meeting.getNumUsers())
             maxUsers(meeting.getMaxUsers())
             moderatorCount(meeting.getNumModerators())
+            listenerCount(meeting.getNumListeners())
             attendees() {
               meeting.getUsers().each { att ->
                 attendee() {
                   userID("${att.externalUserId}")
                   fullName("${att.fullname}")
                   role("${att.role}")
+                  isPresenter("${att.isPresenter()}")
+                  hasVideoStream("${att.hasStream()}")
+                  videoStreamName("${att.getStreamName()}")
 				  customdata(){
 					  meeting.getUserCustomData(att.externalUserId).each{ k,v ->
 						  "$k"("$v")
