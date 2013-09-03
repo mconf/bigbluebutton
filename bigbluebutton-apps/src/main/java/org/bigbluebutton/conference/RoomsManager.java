@@ -188,6 +188,14 @@ public class RoomsManager {
 		log.warn("Changing participant status on a non-existing room " + roomName);
 	}
 
+	public void addRemoteParticipantsFromMaster(String roomName, Map<String, User> users) {
+		Room r = getRoom(roomName);
+		if (r != null) {
+			r.addRemoteParticipantsFromMaster(users);
+			return;
+		}
+	}
+
 	public void setMessagingService(MessagingService messagingService) {
 		this.messagingService = messagingService;
 		this.messagingService.addListener(new RoomsManagerListener());

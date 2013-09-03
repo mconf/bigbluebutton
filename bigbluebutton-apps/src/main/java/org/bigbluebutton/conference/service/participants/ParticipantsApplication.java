@@ -81,6 +81,11 @@ public class ParticipantsApplication {
 	public void setParticipantStatus(String room, String userid, String status, Object value) {
 		roomsManager.changeParticipantStatus(room, userid, status, value);
 	}
+
+	public void addRemoteParticipantsFromMaster(String room, Map<String, User> users) {
+		if(users != null)
+			roomsManager.addRemoteParticipantsFromMaster(room, users);
+	}
 	
 	public Map getParticipants(String roomName) {
 		log.debug("getParticipants - " + roomName);

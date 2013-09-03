@@ -10,8 +10,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.bigbluebutton.conference.User;
 import org.bigbluebutton.conference.service.messaging.MessagingConstants;
 import org.bigbluebutton.conference.service.messaging.MessagingService;
-import org.bigbluebutton.conference.service.messaging.MasterRedisMessagingService;
-import org.bigbluebutton.conference.service.messaging.SlaveRedisMessagingService;
+import org.bigbluebutton.conference.service.messaging.RedisMessagingService;
+import org.bigbluebutton.conference.service.messaging.MeetingRedisObserver;
+import org.bigbluebutton.conference.service.messaging.MasterMeetingRedisObserver;
 
 import com.google.gson.Gson;
 
@@ -22,37 +23,39 @@ import redis.clients.jedis.JedisPool;
 public class ParticipantsBridge {
 	
 	private MessagingService messagingService;
-	private Map<String, MasterRedisMessagingService> mastersMessagingService = null;
-	private Map<String, Map<String, SlaveRedisMessagingService>> slavesMessagingService = null;
+	private Map<String, MeetingRedisObserver> mastersSendBridge = null;
+	private Map<String, MasterMeetingRedisObserver> mastersReceiveBridge = null;
+	private Map<String, Integer> numberOfSlavesOnMeeting = null;
 	
 	public ParticipantsBridge(){
-		slavesMessagingService = new ConcurrentHashMap<String, Map<String, SlaveRedisMessagingService>>();
-		mastersMessagingService = new ConcurrentHashMap<String, MasterRedisMessagingService>();
+		mastersSendBridge = new ConcurrentHashMap<String, MeetingRedisObserver>();
+		mastersReceiveBridge = new ConcurrentHashMap<String, MasterMeetingRedisObserver>();
+		numberOfSlavesOnMeeting = new ConcurrentHashMap<String, Integer>();
 	}
 
-	public void addMasterMessagingService(String myMeetingID, String masterMeetingID, String host, int port) {
+	public void addMaster(String myMeetingID, String masterMeetingID, String host, int port) {
 		synchronized (this) {
-			MasterRedisMessagingService masterMessagingService = new MasterRedisMessagingService(myMeetingID, masterMeetingID);
-			masterMessagingService.setRedisPool(new JedisPool(host, port));
-			masterMessagingService.start();
-			mastersMessagingService.put(myMeetingID, masterMessagingService);
-		}
-	}
+			if(!mastersSendBridge.containsKey(myMeetingID)) {
+				MeetingRedisObserver meetingRedisObserver = new MeetingRedisObserver(masterMeetingID, myMeetingID, new JedisPool(host, port), new JedisPool("127.0.0.1", port));
+				mastersSendBridge.put(myMeetingID, meetingRedisObserver);
+				MasterMeetingRedisObserver masterMeetingRedisObserver = new MasterMeetingRedisObserver(masterMeetingID, myMeetingID, new JedisPool(host, port), new JedisPool("127.0.0.1", port));
+				mastersReceiveBridge.put(myMeetingID, masterMeetingRedisObserver);
 
-	public void addSlaveMessagingService(String myMeetingID, String slaveMeetingID, String host, int port) {
-		synchronized (this) {
-			SlaveRedisMessagingService slaveRedisMessagingService = new SlaveRedisMessagingService(myMeetingID, slaveMeetingID);
-			slaveRedisMessagingService.setRedisPool(new JedisPool(host, port));
-			slaveRedisMessagingService.start();
-			if(!slavesMessagingService.containsKey(myMeetingID)) {
-				slavesMessagingService.put(myMeetingID, new ConcurrentHashMap<String, SlaveRedisMessagingService>());
+				//mastersMessagingService.get(myMeetingID).setParticipantsApplication(((RedisMessagingService) messagingService).getParticipantsApplication());
+				meetingRedisObserver.start();
+				masterMeetingRedisObserver.start();
 			}
-			slavesMessagingService.get(myMeetingID).put(slaveMeetingID, slaveRedisMessagingService);
 		}
+	}
+
+	public Map<String,User> loadParticipantsFromMaster(String myMeetingID) {
+		//if(mastersMessagingService.containsKey(myMeetingID)) {
+		//	return mastersMessagingService.get(myMeetingID).loadParticipantsFromMaster();
+		//}
+		return null;
 	}
 
 	public void storeParticipant(String meetingID, String userid, String username, String role) {
-
 		//temporary solution for integrate with the html5 client
 		Jedis jedis = messagingService.createRedisClient();
 		jedis.sadd("meeting-"+meetingID+"-users", userid);
@@ -77,10 +80,6 @@ public class ParticipantsBridge {
 		jedis.hmset("meeting-"+meetingID+"-user-"+userid +"-status", status);
 		
 		messagingService.dropRedisClient(jedis);
-
-		if(mastersMessagingService != null && mastersMessagingService.containsKey(meetingID)) {
-			mastersMessagingService.get(meetingID).storeParticipantFromSlave(userid, username, role, meetingID);
-		}
 	}
 	
 	public void removeParticipant(String meetingID, String internalUserID) {
@@ -101,10 +100,6 @@ public class ParticipantsBridge {
 		
 		Gson gson = new Gson();
 		messagingService.send(MessagingConstants.BIGBLUEBUTTON_BRIDGE, gson.toJson(updates));
-
-		if(mastersMessagingService != null && mastersMessagingService.containsKey(meetingID)) {
-			mastersMessagingService.get(meetingID).sendParticipantJoinFromSlave(userid, username, role, meetingID);
-		}
 	}
 	
 	public void sendParticipantLeave(String meetingID, String userid){
@@ -115,10 +110,6 @@ public class ParticipantsBridge {
 		
 		Gson gson = new Gson();
 		messagingService.send(MessagingConstants.BIGBLUEBUTTON_BRIDGE, gson.toJson(updates));
-
-		if(mastersMessagingService != null && mastersMessagingService.containsKey(meetingID)) {
-			mastersMessagingService.get(meetingID).sendParticipantLeaveFromSlave(userid);
-		}
 	}
 	
 	/*public void sendParticipantsUpdateList(String meetingID){
@@ -191,10 +182,6 @@ public class ParticipantsBridge {
 		jedis.hmset("meeting-"+meetingID+"-presenter",params);
 		
 		messagingService.dropRedisClient(jedis);
-
-		if(mastersMessagingService != null && mastersMessagingService.containsKey(meetingID)) {
-			mastersMessagingService.get(meetingID).sendStoreAssignPresenterFromSlave(userid, previousPresenter, meetingID);
-		}
 	}
 	
 	public void sendAssignPresenter(String meetingID, String userid) {
@@ -204,10 +191,5 @@ public class ParticipantsBridge {
 		updates.add(userid);
 		Gson gson = new Gson();
 		messagingService.send(MessagingConstants.BIGBLUEBUTTON_BRIDGE, gson.toJson(updates));
-
-		if(mastersMessagingService != null && mastersMessagingService.containsKey(meetingID)) {
-			mastersMessagingService.get(meetingID).sendAssignPresenterFromSlave(userid, meetingID);
-		}
 	}
-	
 }

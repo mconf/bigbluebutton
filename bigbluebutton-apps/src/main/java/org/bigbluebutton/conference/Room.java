@@ -72,9 +72,7 @@ public class Room implements Serializable {
 	}
 	public void addParticipantsBridge(ParticipantsBridge pb){
 		this.participantsBridge = pb;
-		//participants.addMasterMessagingService(String myMeetingID, String masterMeetingID, String host, int port)
 		participants.putAll(participantsBridge.loadParticipants(name));
-
 	}
 
 	public void removeRoomListener(IRoomListener listener) {
@@ -95,6 +93,19 @@ public class Room implements Serializable {
 			log.debug("calling participantJoined on listener " + listener.getName());
 			listener.participantJoined(participant);
 		}
+	}
+
+	public void addRemoteParticipantsFromMaster(Map<String, User> users) {
+		//synchronized(this) {
+		//	participants.putAll(users);
+		//}
+		//for (Iterator it = listeners.values().iterator(); it.hasNext();) {
+		//	for (Iterator participant = users.values().iterator(); participant.hasNext();) {
+		//		IRoomListener listener = (IRoomListener) it.next();
+		//		log.debug("calling participantJoined on listener " + listener.getName());
+		//		listener.participantJoined((User) participant.next());
+		//	}
+		//}
 	}
 
 	public void removeParticipant(String userid) {
