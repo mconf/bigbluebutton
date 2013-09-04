@@ -20,7 +20,8 @@ package org.bigbluebutton.conference.service.chat;
 
 import java.util.Map;
 import org.slf4j.Logger;
-import org.red5.logging.Red5LoggerFactory;import org.red5.server.api.Red5;
+import org.red5.logging.Red5LoggerFactory;
+import org.red5.server.api.Red5;
 
 public class ChatService {
 	
@@ -75,7 +76,7 @@ public class ChatService {
 		chatObj.toUsername = msg.get("toUsername").toString();
 		chatObj.message = msg.get("message").toString();
 	
-		application.sendPrivateMessage(chatObj);
-
+		//application.sendPrivateMessage(chatObj);
+		chatBridge.sendMsg(meetingID,chatObj);
 	}
 }

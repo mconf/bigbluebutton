@@ -90,6 +90,7 @@ public class MasterMeetingRedisObserver implements MessagingService {
 		try {
 			pubsubListener = new Runnable() {
 				public void run() {
+					sendMasterParticipantsToMyRedis();
 					//jedis.psubscribe(new PubSubListener(), MessagingConstants.BIGBLUEBUTTON_PATTERN);
 					jedis.psubscribe(new PubSubListener(), "*");
 				}
@@ -144,7 +145,7 @@ public class MasterMeetingRedisObserver implements MessagingService {
 		return myRedisPool.getResource();
 	}
 	public void dropRedisClient(Jedis jedis){
-		masterRedisPool.returnResource(jedis);
+		myRedisPool.returnResource(jedis);
 	}
 	
 	private void storeParticipantToMyRedis(String userid, String username, String role, String originalMeetingID) {
@@ -227,10 +228,8 @@ public class MasterMeetingRedisObserver implements MessagingService {
 		this.send(MessagingConstants.BIGBLUEBUTTON_BRIDGE, gson.toJson(updates));
 	}
 
-	private Map<String,User> loadParticipantsToMyRedis() {
-		HashMap<String,User> map = new HashMap<String, User>();
-		
-		Jedis jedis = this.createRedisClient();
+	private void sendMasterParticipantsToMyRedis() {
+		Jedis jedis = masterRedisPool.getResource();
 		Set<String> userids = jedis.smembers("meeting-"+masterMeetingID+"-users");
 		
 		for(String userid:userids){
@@ -238,21 +237,26 @@ public class MasterMeetingRedisObserver implements MessagingService {
 			
 			String internalUserID = users.get("pubID");
 			String externalUserID = UUID.randomUUID().toString();
-			
+			String originalMeetingID = (users.containsKey("originalMeetingID") ? users.get("originalMeetingID") : "");
 			Map<String,String> status_from_db = jedis.hgetAll("meeting-"+masterMeetingID+"-user-"+userid+"-status");
 			
-			Map<String, Object> status = new HashMap<String, Object>();
-			status.put("raiseHand", Boolean.parseBoolean(status_from_db.get("raiseHand")));
-			status.put("presenter", Boolean.parseBoolean(status_from_db.get("presenter")));
-			status.put("hasStream", Boolean.parseBoolean(status_from_db.get("hasStream")));
+			//Map<String, Object> status = new HashMap<String, Object>();
+			//status.put("raiseHand", Boolean.parseBoolean(status_from_db.get("raiseHand")));
+			//status.put("presenter", Boolean.parseBoolean(status_from_db.get("presenter")));
+			//status.put("hasStream", Boolean.parseBoolean(status_from_db.get("hasStream")));
 			
-			User p = new User(internalUserID, users.get("username"), users.get("role"), externalUserID, status);
-			map.put(internalUserID, p);
+			//User p = new User(internalUserID, users.get("username"), users.get("role"), externalUserID, status);
+			//map.put(internalUserID, p);
+			if(originalMeetingID.equals("") || !originalMeetingID.equals(myMeetingID)) {
+				if(originalMeetingID.equals("")) 
+					originalMeetingID = masterMeetingID;
+				
+				storeParticipantToMyRedis(internalUserID, users.get("username"), users.get("role"), originalMeetingID);
+				sendParticipantJoinToMyRedis(internalUserID, users.get("username"), users.get("role"), originalMeetingID);
+			}
 		}
 		
-		this.dropRedisClient(jedis);
-		
-		return map;
+		masterRedisPool.returnResource(jedis);
 	}
 
 
@@ -323,27 +327,26 @@ public class MasterMeetingRedisObserver implements MessagingService {
 					
 					String externalUserID = UUID.randomUUID().toString();
 					
-					String slaveMeetingID = (array.size() > 5) ? gson.fromJson(array.get(5), String.class) : "";
+					String originalMeetingID = (array.size() > 5) ? gson.fromJson(array.get(5), String.class) : "";
 
-					if(masterMeetingID.equals(meetingId) && !slaveMeetingID.equals(myMeetingID)){
-						if(slaveMeetingID.equals(""))
-							slaveMeetingID = masterMeetingID;
-
-						storeParticipantToMyRedis(nUserId, username, role, slaveMeetingID);
-						sendParticipantJoinToMyRedis(nUserId, username, role, slaveMeetingID);
+					if(masterMeetingID.equals(meetingId) && !originalMeetingID.equals(myMeetingID)){
+						if(originalMeetingID.equals(""))
+							originalMeetingID = masterMeetingID;
+						storeParticipantToMyRedis(nUserId, username, role, originalMeetingID);
+						sendParticipantJoinToMyRedis(nUserId, username, role, originalMeetingID);
 					}
 				}else if(messageName.equalsIgnoreCase("user leave")){
 					String nUserId = gson.fromJson(array.get(2), String.class);
-					String slaveMeetingID = (array.size() > 3) ? gson.fromJson(array.get(3), String.class) : "";					
-					if(masterMeetingID.equals(meetingId) && !slaveMeetingID.equals(myMeetingID)){
+					String originalMeetingID = (array.size() > 3) ? gson.fromJson(array.get(3), String.class) : "";					
+					if(masterMeetingID.equals(meetingId) && !originalMeetingID.equals(myMeetingID)){
 						removeParticipantFromMyRedis(nUserId);
-						sendParticipantLeaveToMyRedis(nUserId, slaveMeetingID);
+						sendParticipantLeaveToMyRedis(nUserId, originalMeetingID);
 					}
 				}else if(messageName.equalsIgnoreCase("msg")){
 					String username = gson.fromJson(array.get(2), String.class);
 					String message_text = gson.fromJson(array.get(3), String.class);
 					String userid = gson.fromJson(array.get(4), String.class);
-					String slaveMeetingID = (array.size() > 5) ? gson.fromJson(array.get(5), String.class) : "";
+					String originalMeetingID = (array.size() > 5) ? gson.fromJson(array.get(5), String.class) : "";
 
 					ChatMessageVO chatObj = new ChatMessageVO();
 					chatObj.chatType = "PUBLIC"; 
@@ -357,27 +360,27 @@ public class MasterMeetingRedisObserver implements MessagingService {
 					chatObj.toUsername = "";
 					chatObj.message = message_text;
 					
-					if(masterMeetingID.equals(meetingId) && !slaveMeetingID.equals(myMeetingID)){
+					if(masterMeetingID.equals(meetingId) && !originalMeetingID.equals(myMeetingID)){
 						storePublicMsg(chatObj);
-						sendPublicMsg(chatObj, slaveMeetingID);
+						sendPublicMsg(chatObj, originalMeetingID);
 					}
 				}else if(messageName.equalsIgnoreCase("setPresenter")){
-					String slaveMeetingID = "";
+					String originalMeetingID = "";
 					
 					//sendStoreAssignPresenterToMyRedis(pubID, String previousPresenter);
 					//sendAssignPresenterToMyRedis(pubID);
 				}else if(messageName.equalsIgnoreCase("mvCur")){
 					Double xPercent = gson.fromJson(array.get(2), Double.class);
 					Double yPercent = gson.fromJson(array.get(3), Double.class);
-					String slaveMeetingID = (array.size() > 4) ? gson.fromJson(array.get(4), String.class) : "";
+					String originalMeetingID = (array.size() > 4) ? gson.fromJson(array.get(4), String.class) : "";
 
 					if(xPercent == null || yPercent == null)
 					{
 						xPercent = 0.0;
 						yPercent = 0.0;
 					}
-					if(masterMeetingID.equals(meetingId) && !slaveMeetingID.equals(myMeetingID)){
-						sendCursorUpdateToMyRedis(xPercent, yPercent, slaveMeetingID);
+					if(masterMeetingID.equals(meetingId) && !originalMeetingID.equals(myMeetingID)){
+						sendCursorUpdateToMyRedis(xPercent, yPercent, originalMeetingID);
 					}
 				}
 

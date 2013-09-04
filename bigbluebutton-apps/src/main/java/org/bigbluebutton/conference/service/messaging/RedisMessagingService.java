@@ -246,20 +246,26 @@ public class RedisMessagingService implements MessagingService{
 					String username = gson.fromJson(array.get(2), String.class);
 					String message_text = gson.fromJson(array.get(3), String.class);
 					String userid = gson.fromJson(array.get(4), String.class);
-					
-					ChatMessageVO chatObj = new ChatMessageVO();
-					chatObj.chatType = "PUBLIC"; 
-					chatObj.fromUserID = userid;
-					chatObj.fromUsername = username;
-					chatObj.fromColor = "0";
-					chatObj.fromTime = 0.0;   
-					chatObj.fromTimezoneOffset = (long)0;
-					chatObj.fromLang = "en"; 	 
-					chatObj.toUserID = "";
-					chatObj.toUsername = "";
-					chatObj.message = message_text;
-					
-					chatApplication.sendPublicMessage(meetingId, chatObj);
+					String chatType = gson.fromJson(array.get(5), String.class);
+
+					if(chatType.equalsIgnoreCase("PUBLIC")) {
+						ChatMessageVO chatObj = new ChatMessageVO();
+						chatObj.chatType = "PUBLIC"; 
+						chatObj.fromUserID = userid;
+						chatObj.fromUsername = username;
+						chatObj.fromColor = "0";
+						chatObj.fromTime = 0.0;   
+						chatObj.fromTimezoneOffset = (long)0;
+						chatObj.fromLang = "en"; 	 
+						chatObj.toUserID = "";
+						chatObj.toUsername = "";
+						chatObj.message = message_text;
+						
+						chatApplication.sendPublicMessage(meetingId, chatObj);
+					}
+					else {
+						
+					}
 				}else if(messageName.equalsIgnoreCase("setPresenter")){
 					String pubID = gson.fromJson(array.get(2), String.class);
 					

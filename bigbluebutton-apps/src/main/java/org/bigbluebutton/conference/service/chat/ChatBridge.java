@@ -18,9 +18,17 @@ public class ChatBridge {
 		ArrayList<Object> updates = new ArrayList<Object>();
 		updates.add(meetingID);
 		updates.add("msg");
-		updates.add(chat.fromUsername);
-		updates.add(chat.message);
+		updates.add(chat.chatType);
 		updates.add(chat.fromUserID);
+		updates.add(chat.fromUsername);
+		updates.add(chat.fromColor);
+		updates.add(chat.fromTime);
+		updates.add(chat.fromTimezoneOffset);
+		updates.add(chat.fromLang);
+		updates.add(chat.toUserID);
+		updates.add(chat.toUsername);
+		updates.add(chat.message);
+
 		Gson gson = new Gson();
 
 		messagingService.send(MessagingConstants.BIGBLUEBUTTON_BRIDGE, gson.toJson(updates));

@@ -100,6 +100,7 @@ public class MeetingRedisObserver implements MessagingService {
 		try {
 			pubsubListener = new Runnable() {
 				public void run() {
+					sendMyParticipantsToMaster();
 					//jedis.psubscribe(new PubSubListener(), MessagingConstants.BIGBLUEBUTTON_PATTERN);
 					jedis.psubscribe(new PubSubListener(), "*");
 				}
@@ -238,32 +239,36 @@ public class MeetingRedisObserver implements MessagingService {
 		this.send(MessagingConstants.BIGBLUEBUTTON_BRIDGE, gson.toJson(updates));
 	}
 
-	private Map<String,User> loadParticipantsFromMaster() {
-		HashMap<String,User> map = new HashMap<String, User>();
+	private void sendMyParticipantsToMaster() {
+		// HashMap<String,User> map = new HashMap<String, User>();
 		
 		Jedis jedis = this.createRedisClient();
-		Set<String> userids = jedis.smembers("meeting-"+masterMeetingID+"-users");
+		Set<String> userids = jedis.smembers("meeting-"+myMeetingID+"-users");
 		
 		for(String userid:userids){
-			Map<String,String> users = jedis.hgetAll("meeting-"+masterMeetingID+"-user-"+userid);
+			Map<String,String> users = jedis.hgetAll("meeting-"+myMeetingID+"-user-"+userid);
 			
 			String internalUserID = users.get("pubID");
 			String externalUserID = UUID.randomUUID().toString();
+			String originalMeetingID = (users.containsKey("originalMeetingID") ? users.get("originalMeetingID") : "");
+			Map<String,String> status_from_db = jedis.hgetAll("meeting-"+myMeetingID+"-user-"+userid+"-status");
 			
-			Map<String,String> status_from_db = jedis.hgetAll("meeting-"+masterMeetingID+"-user-"+userid+"-status");
+			//Map<String, Object> status = new HashMap<String, Object>();
+			//status.put("raiseHand", Boolean.parseBoolean(status_from_db.get("raiseHand")));
+			//status.put("presenter", Boolean.parseBoolean(status_from_db.get("presenter")));
+			//status.put("hasStream", Boolean.parseBoolean(status_from_db.get("hasStream")));
 			
-			Map<String, Object> status = new HashMap<String, Object>();
-			status.put("raiseHand", Boolean.parseBoolean(status_from_db.get("raiseHand")));
-			status.put("presenter", Boolean.parseBoolean(status_from_db.get("presenter")));
-			status.put("hasStream", Boolean.parseBoolean(status_from_db.get("hasStream")));
-			
-			User p = new User(internalUserID, users.get("username"), users.get("role"), externalUserID, status);
-			map.put(internalUserID, p);
+			//User p = new User(internalUserID, users.get("username"), users.get("role"), externalUserID, status);
+			//map.put(internalUserID, p);
+			if(originalMeetingID.equals("") || !originalMeetingID.equals(myMeetingID)) {
+				storeParticipantToMaster(internalUserID, users.get("username"), users.get("role"));
+				sendParticipantJoinToMaster(internalUserID, users.get("username"), users.get("role"));
+			}
 		}
 		
 		this.dropRedisClient(jedis);
 		
-		return map;
+		//return map;
 	}
 
 
@@ -392,7 +397,6 @@ public class MeetingRedisObserver implements MessagingService {
 						sendCursorUpdateToMaster(xPercent, yPercent);
 					}
 				}
-
 			}
 		}
 
