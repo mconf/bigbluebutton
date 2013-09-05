@@ -260,13 +260,20 @@ public class MasterMeetingRedisObserver implements MessagingService {
 	}
 
 
-	private void sendPublicMsg(ChatMessageVO chat, String originalMeetingID){
+	private void sendMsg(ChatMessageVO chat, String originalMeetingID){
 		ArrayList<Object> updates = new ArrayList<Object>();
 		updates.add(myMeetingID);
 		updates.add("msg");
-		updates.add(chat.fromUsername);
-		updates.add(chat.message);
+		updates.add(chat.chatType);
 		updates.add(chat.fromUserID);
+		updates.add(chat.fromUsername);
+		updates.add(chat.fromColor);
+		updates.add(chat.fromTime);
+		updates.add(chat.fromTimezoneOffset);
+		updates.add(chat.fromLang);
+		updates.add(chat.toUserID);
+		updates.add(chat.toUsername);
+		updates.add(chat.message);
 		updates.add(originalMeetingID);
 		Gson gson = new Gson();
 		this.send(MessagingConstants.BIGBLUEBUTTON_BRIDGE, gson.toJson(updates));
@@ -343,26 +350,63 @@ public class MasterMeetingRedisObserver implements MessagingService {
 						sendParticipantLeaveToMyRedis(nUserId, originalMeetingID);
 					}
 				}else if(messageName.equalsIgnoreCase("msg")){
-					String username = gson.fromJson(array.get(2), String.class);
-					String message_text = gson.fromJson(array.get(3), String.class);
-					String userid = gson.fromJson(array.get(4), String.class);
-					String originalMeetingID = (array.size() > 5) ? gson.fromJson(array.get(5), String.class) : "";
+					String chatType = gson.fromJson(array.get(2), String.class);
+					String fromUserID = gson.fromJson(array.get(3), String.class);
+					String fromUsername = gson.fromJson(array.get(4), String.class);
+					String fromColor = gson.fromJson(array.get(5), String.class);
+					Double fromTime = gson.fromJson(array.get(6), Double.class);
+					Long fromTimezoneOffset = gson.fromJson(array.get(7), Long.class);
+					String fromLang = gson.fromJson(array.get(8), String.class);
+					String toUserID = gson.fromJson(array.get(9), String.class);
+					String toUsername = gson.fromJson(array.get(10), String.class);
+					String message_text = gson.fromJson(array.get(11), String.class);
+					String originalMeetingID = (array.size() > 12) ? gson.fromJson(array.get(12), String.class) : "";
 
-					ChatMessageVO chatObj = new ChatMessageVO();
-					chatObj.chatType = "PUBLIC"; 
-					chatObj.fromUserID = userid;
-					chatObj.fromUsername = username;
-					chatObj.fromColor = "0";
-					chatObj.fromTime = 0.0;   
-					chatObj.fromTimezoneOffset = (long)0;
-					chatObj.fromLang = "en"; 	 
-					chatObj.toUserID = "";
-					chatObj.toUsername = "";
-					chatObj.message = message_text;
-					
-					if(masterMeetingID.equals(meetingId) && !originalMeetingID.equals(myMeetingID)){
-						storePublicMsg(chatObj);
-						sendPublicMsg(chatObj, originalMeetingID);
+					if(chatType.equalsIgnoreCase("PUBLIC")) {
+						ChatMessageVO chatObj = new ChatMessageVO();
+						/*chatObj.chatType = "PUBLIC"; 
+						chatObj.fromUserID = userid;
+						chatObj.fromUsername = username;
+						chatObj.fromColor = "0";
+						chatObj.fromTime = 0.0;   
+						chatObj.fromTimezoneOffset = (long)0;
+						chatObj.fromLang = "en"; 	 
+						chatObj.toUserID = "";
+						chatObj.toUsername = "";
+						chatObj.message = message_text;
+						*/
+						chatObj.chatType = chatType;
+						chatObj.fromUserID = fromUserID;
+						chatObj.fromUsername = fromUsername;
+						chatObj.fromColor = fromColor;
+						chatObj.fromTime = fromTime;
+						chatObj.fromTimezoneOffset = fromTimezoneOffset;
+						chatObj.fromLang = fromLang;
+						chatObj.toUserID = "";
+						chatObj.toUsername = "";
+						chatObj.message = message_text;
+
+						if(masterMeetingID.equals(meetingId) && !originalMeetingID.equals(myMeetingID)){
+							storePublicMsg(chatObj);
+							sendMsg(chatObj, originalMeetingID);
+						}
+					}
+					else {
+						ChatMessageVO chatObj = new ChatMessageVO();
+						chatObj.chatType = chatType;
+						chatObj.fromUserID = fromUserID;
+						chatObj.fromUsername = fromUsername;
+						chatObj.fromColor = fromColor;
+						chatObj.fromTime = fromTime;
+						chatObj.fromTimezoneOffset = fromTimezoneOffset;
+						chatObj.fromLang = fromLang;
+						chatObj.toUserID = toUserID;
+						chatObj.toUsername = toUsername;
+						chatObj.message = message_text;
+
+						if(masterMeetingID.equals(meetingId) && !originalMeetingID.equals(myMeetingID)){
+							sendMsg(chatObj, originalMeetingID);
+						}
 					}
 				}else if(messageName.equalsIgnoreCase("setPresenter")){
 					String originalMeetingID = "";

@@ -160,8 +160,14 @@ public class ParticipantsBridge {
 			status.put("raiseHand", Boolean.parseBoolean(status_from_db.get("raiseHand")));
 			status.put("presenter", Boolean.parseBoolean(status_from_db.get("presenter")));
 			status.put("hasStream", Boolean.parseBoolean(status_from_db.get("hasStream")));
+
+			String originalMeetingID = users.get("originalMeetingID");
+			Boolean remote = true;
+
+			if(originalMeetingID != null && (originalMeetingID.equals(meetingID) || originalMeetingID.equals("")))
+				remote = false;
 			
-			User p = new User(internalUserID, users.get("username"), users.get("role"), externalUserID, status);
+			User p = new User(internalUserID, users.get("username"), users.get("role"), externalUserID, status, false);
 			map.put(internalUserID, p);
 		}
 		

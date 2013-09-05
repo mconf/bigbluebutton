@@ -82,11 +82,6 @@ public class ParticipantsApplication {
 		roomsManager.changeParticipantStatus(room, userid, status, value);
 	}
 
-	public void addRemoteParticipantsFromMaster(String room, Map<String, User> users) {
-		if(users != null)
-			roomsManager.addRemoteParticipantsFromMaster(room, users);
-	}
-	
 	public Map getParticipants(String roomName) {
 		log.debug("getParticipants - " + roomName);
 		if (! roomsManager.hasRoom(roomName)) {
@@ -120,10 +115,10 @@ public class ParticipantsApplication {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public boolean participantJoin(String roomName, String userid, String username, String role, String externUserID, Map status) {
+	public boolean participantJoin(String roomName, String userid, String username, String role, String externUserID, Map status, Boolean remote) {
 		log.debug("participant joining room " + roomName);
 		if (roomsManager.hasRoom(roomName)) {
-			User p = new User(userid, username, role, externUserID, status);			
+			User p = new User(userid, username, role, externUserID, status, remote);			
 			Room room = roomsManager.getRoom(roomName);
 			room.addParticipant(p);
 			log.debug("participant joined room " + roomName);

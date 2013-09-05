@@ -35,16 +35,18 @@ public class User implements Serializable {
 	private String name;
 	private String role = "VIEWER";
 	private String externalUserID;
-	
+	private Boolean remote;
+
 	private final Map status;
 	private Map<String, Object> unmodifiableStatus;
 	
-	public User(String internalUserID, String name, String role, String externalUserID, Map<String, Object> status) {
+	public User(String internalUserID, String name, String role, String externalUserID, Map<String, Object> status, Boolean remote) {
 		this.internalUserID = internalUserID;
 		this.name = name;
 		this.role = role;
 		this.externalUserID = externalUserID;
 		this.status = new ConcurrentHashMap<String, Object>(status);
+		this.remote = remote;
 		unmodifiableStatus = Collections.unmodifiableMap(status);
 	}
 	
@@ -60,6 +62,10 @@ public class User implements Serializable {
 		return internalUserID;
 	}
 	
+	public Boolean isRemote() {
+		return remote;
+	}
+
 	public String getRole() {
 		return role;
 	}
@@ -114,6 +120,7 @@ public class User implements Serializable {
 		 * for their own purpose but our copy still remains unmodified.
 		 */
 		m.put("status", new HashMap(unmodifiableStatus));
+		m.put("remote", remote);
 		return m;
 	}
 }

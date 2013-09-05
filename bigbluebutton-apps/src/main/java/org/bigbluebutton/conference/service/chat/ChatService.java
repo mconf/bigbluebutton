@@ -64,6 +64,8 @@ public class ChatService {
 	}
 	
 	public void sendPrivateMessage(Map<String, Object> msg){
+		String meetingID = Red5.getConnectionLocal().getScope().getName();
+		
 		ChatMessageVO chatObj = new ChatMessageVO();
 		chatObj.chatType = msg.get("chatType").toString();  
 		chatObj.fromUserID = msg.get("fromUserID").toString();

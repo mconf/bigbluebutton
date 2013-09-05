@@ -232,25 +232,37 @@ public class RedisMessagingService implements MessagingService{
 					String username = gson.fromJson(array.get(3), String.class);
 					String role = gson.fromJson(array.get(4), String.class);
 					String externalUserID = UUID.randomUUID().toString();
-					
+					String originalMeetingID = (array.size() > 5) ? gson.fromJson(array.get(5), String.class) : "";
+
+					Boolean remote = true;
+
+					if(originalMeetingID.equalsIgnoreCase("") || originalMeetingID.equalsIgnoreCase(meetingId))
+						remote = false;
+
 					Map<String, Object> status = new HashMap<String, Object>();
 					status.put("raiseHand", false);
 					status.put("presenter", false);
 					status.put("hasStream", false);
 					
-					participantsApplication.participantJoin(meetingId, nUserId, username, role, externalUserID, status);
+					participantsApplication.participantJoin(meetingId, nUserId, username, role, externalUserID, status, remote);
 				}else if(messageName.equalsIgnoreCase("user leave")){
 					String nUserId = gson.fromJson(array.get(2), String.class);
 					participantsApplication.participantLeft(meetingId, nUserId);
 				}else if(messageName.equalsIgnoreCase("msg")){
-					String username = gson.fromJson(array.get(2), String.class);
-					String message_text = gson.fromJson(array.get(3), String.class);
-					String userid = gson.fromJson(array.get(4), String.class);
-					String chatType = gson.fromJson(array.get(5), String.class);
+					String chatType = gson.fromJson(array.get(2), String.class);
+					String fromUserID = gson.fromJson(array.get(3), String.class);
+					String fromUsername = gson.fromJson(array.get(4), String.class);
+					String fromColor = gson.fromJson(array.get(5), String.class);
+					Double fromTime = gson.fromJson(array.get(6), Double.class);
+					Long fromTimezoneOffset = gson.fromJson(array.get(7), Long.class);
+					String fromLang = gson.fromJson(array.get(8), String.class);
+					String toUserID = gson.fromJson(array.get(9), String.class);
+					String toUsername = gson.fromJson(array.get(10), String.class);
+					String message_text = gson.fromJson(array.get(11), String.class);
 
 					if(chatType.equalsIgnoreCase("PUBLIC")) {
 						ChatMessageVO chatObj = new ChatMessageVO();
-						chatObj.chatType = "PUBLIC"; 
+						/*chatObj.chatType = "PUBLIC"; 
 						chatObj.fromUserID = userid;
 						chatObj.fromUsername = username;
 						chatObj.fromColor = "0";
@@ -260,11 +272,49 @@ public class RedisMessagingService implements MessagingService{
 						chatObj.toUserID = "";
 						chatObj.toUsername = "";
 						chatObj.message = message_text;
-						
+						*/
+						chatObj.chatType = chatType;
+						chatObj.fromUserID = fromUserID;
+						chatObj.fromUsername = fromUsername;
+						chatObj.fromColor = fromColor;
+						chatObj.fromTime = fromTime;
+						chatObj.fromTimezoneOffset = fromTimezoneOffset;
+						chatObj.fromLang = fromLang;
+						chatObj.toUserID = "";
+						chatObj.toUsername = "";
+						chatObj.message = message_text;
+
 						chatApplication.sendPublicMessage(meetingId, chatObj);
 					}
 					else {
-						
+
+						ChatMessageVO chatObj = new ChatMessageVO();
+						/*chatObj.chatType = "PUBLIC"; 
+						chatObj.fromUserID = userid;
+						chatObj.fromUsername = username;
+						chatObj.fromColor = "0";
+						chatObj.fromTime = 0.0;   
+						chatObj.fromTimezoneOffset = (long)0;
+						chatObj.fromLang = "en"; 	 
+						chatObj.toUserID = "";
+						chatObj.toUsername = "";
+						chatObj.message = message_text;
+						*/
+						chatObj.chatType = chatType;
+						chatObj.fromUserID = fromUserID;
+						chatObj.fromUsername = fromUsername;
+						chatObj.fromColor = fromColor;
+						chatObj.fromTime = fromTime;
+						chatObj.fromTimezoneOffset = fromTimezoneOffset;
+						chatObj.fromLang = fromLang;
+						chatObj.toUserID = toUserID;
+						chatObj.toUsername = toUsername;
+						chatObj.message = message_text;
+
+						if(participantsApplication.getParticipantByUserID(meetingId, toUserID).isRemote() == false)
+							chatApplication.sendPartialPrivateMessageToUser(chatObj);
+						if(participantsApplication.getParticipantByUserID(meetingId, fromUserID).isRemote() == false)
+							chatApplication.sendPartialPrivateMessageFromUser(chatObj);
 					}
 				}else if(messageName.equalsIgnoreCase("setPresenter")){
 					String pubID = gson.fromJson(array.get(2), String.class);

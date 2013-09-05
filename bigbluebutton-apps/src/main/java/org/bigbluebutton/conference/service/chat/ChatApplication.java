@@ -25,12 +25,14 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.red5.logging.Red5LoggerFactory;
-import org.red5.server.api.Red5;import org.bigbluebutton.conference.BigBlueButtonSession;
+import org.red5.server.api.Red5;
+import org.bigbluebutton.conference.BigBlueButtonSession;
 import org.bigbluebutton.conference.ClientMessage;
 import org.bigbluebutton.conference.ConnectionInvokerService;
 import org.bigbluebutton.conference.Constants;
 import org.bigbluebutton.conference.service.chat.ChatRoomsManager;
-import org.bigbluebutton.conference.service.chat.ChatRoom;import org.bigbluebutton.conference.service.chat.IChatRoomListener;
+import org.bigbluebutton.conference.service.chat.ChatRoom;
+import org.bigbluebutton.conference.service.chat.IChatRoomListener;
 
 
 public class ChatApplication {
@@ -96,6 +98,16 @@ public class ChatApplication {
 		
 		ClientMessage m2 = new ClientMessage(ClientMessage.DIRECT, chatobj.fromUserID, "ChatReceivePrivateMessageCommand", chatobj.toMap());
 		connInvokerService.sendMessage(m2);
+	}
+
+	public void sendPartialPrivateMessageToUser(ChatMessageVO chatobj) {
+		ClientMessage m = new ClientMessage(ClientMessage.DIRECT, chatobj.toUserID, "ChatReceivePrivateMessageCommand", chatobj.toMap());
+		connInvokerService.sendMessage(m);
+	}
+
+	public void sendPartialPrivateMessageFromUser(ChatMessageVO chatobj) {
+		ClientMessage m = new ClientMessage(ClientMessage.DIRECT, chatobj.fromUserID, "ChatReceivePrivateMessageCommand", chatobj.toMap());
+		connInvokerService.sendMessage(m);	
 	}
 	
 	public void setRoomsManager(ChatRoomsManager r) {
