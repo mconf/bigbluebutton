@@ -152,7 +152,7 @@ if (request.getParameterMap().isEmpty()) {
 						out.println("<option value=\"" + key + "\">" + key + "</option>");
 					}
 				%>
-				</select><span id="label_meeting_running"><i>&nbsp;Running!</i></span>
+				</select><span id="label_meeting_running" hidden><i>&nbsp;Running!</i></span>
 					
 				</td>
 			</tr>
