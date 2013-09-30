@@ -67,8 +67,10 @@ sudo chown -R tomcat6:tomcat6 /var/bigbluebutton/ /var/log/bigbluebutton/
 sudo chown -R red5:red5 /var/bigbluebutton/deskshare/
 sudo chown -R freeswitch:daemon /var/bigbluebutton/meetings/
 
+pushd . > /dev/null
 cd /usr/local/bigbluebutton/core/
 sudo bundle install
+popd > /dev/null
 
 sudo cp bbb-record-core /etc/init.d/
 sudo service bbb-record-core restart
