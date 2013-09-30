@@ -69,3 +69,6 @@ sudo chown -R freeswitch:daemon /var/bigbluebutton/meetings/
 
 cd /usr/local/bigbluebutton/core/
 sudo bundle install
+
+sudo cp bbb-record-core /etc/init.d/
+sudo service bbb-record-core restart
