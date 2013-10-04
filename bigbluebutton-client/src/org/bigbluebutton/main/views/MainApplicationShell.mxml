@@ -89,7 +89,6 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			import org.bigbluebutton.main.events.ModeratorRespEvent;
 			import org.bigbluebutton.main.events.ModuleLoadEvent;
 			import org.bigbluebutton.main.events.PortTestEvent;
-			import org.bigbluebutton.main.events.RecordStatusEvent;
 			import org.bigbluebutton.main.events.RefreshGuestEvent;
 			import org.bigbluebutton.main.events.RemoveGuestRequestEvent;
 			import org.bigbluebutton.main.events.ShortcutEvent;
@@ -458,10 +457,6 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				handleLogout(e);
 			}
 			
-			private function handleRecordStatusEvent(evt:RecordStatusEvent):void {
-				Alert.show(evt.status, evt.module);
-			}
-						
 			private function handleAddToolbarComponent(event:ToolbarButtonEvent):void {
 				if (event.location == ToolbarButtonEvent.BOTTOM_TOOLBAR) {
 					(event.button as UIComponent).tabIndex = baseIndex;
@@ -515,7 +510,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 	</views:MainCanvas>	
 	
 	<mx:ControlBar width="100%" height="{footerHeight}" paddingTop="0">		
-	  <mx:Text htmlText="{ResourceUtil.getInstance().getString('bbb.mainshell.copyrightLabel2',[appVersion])}" id="copyrightLabel2" />
+	  <mx:Text htmlText="{ResourceUtil.getInstance().getString('bbb.mainshell.copyrightLabel2',[appVersion])}" id="copyrightLabel2"/>
 	 	<mx:Spacer width="20"/>
 		<mx:Spacer width="100%"/> 
     <mx:Label text="{isTunneling ? '[Tunnelling]' : ''}" id="isTunnellingLbl"/>

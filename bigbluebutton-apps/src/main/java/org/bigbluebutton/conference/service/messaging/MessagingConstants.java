@@ -40,4 +40,5 @@ public class MessagingConstants {
 	public static final String MODERATOR_RESPONSE_EVENT = "responseToGuest";
 	public static final String GUESTS_WAITING_EVENT = "guestsWaitingEvent";
 	public static final String NEW_GUEST_POLICY = "newGuestPolicy";
+	public static final String RECORD_STATUS_EVENT = "RecordStatusEvent";
 }

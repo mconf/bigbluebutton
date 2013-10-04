@@ -36,6 +36,7 @@ require 'recordandplayback/generators/matterhorn_processor'
 require 'recordandplayback/generators/audio_processor'
 require 'recordandplayback/generators/presentation'
 require 'open4'
+require 'pp'
 
 module BigBlueButton
   class MissingDirectoryException < RuntimeError
@@ -137,5 +138,9 @@ module BigBlueButton
       BigBlueButton.logger.info "Exit status: #{$?.exitstatus}"
       return $?.exitstatus
     end
+  end
+
+  def self.hash_to_str(hash)
+    return PP.pp(hash, "")
   end
 end

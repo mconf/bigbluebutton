@@ -119,6 +119,7 @@ function removeSlideChangeAttribute() {
 // - - - END OF JAVASCRIPT FUNCTIONS - - - //
 
 function runPopcorn() {
+
   if(svgobj.contentDocument) svgfile = svgobj.contentDocument.getElementById("svgfile");
   else svgfile = svgobj.getSVGDocument('svgfile');
 
@@ -144,9 +145,22 @@ function runPopcorn() {
   });
   var images = shapeelements[0].getElementsByTagName("image");
 
+
+  //create a map from timestamp to id list
+  var timestampToId = {};
+  for (var j = 0; j < array.length; j++) {
+    shapeTime = array[j].getAttribute("timestamp");
+    shapeId = array[j].getAttribute("id");
+
+    if (timestampToId[shapeTime] == undefined) {
+      timestampToId[shapeTime] = new Array(0);
+    }
+    timestampToId[shapeTime].push(shapeId);
+  }
+
   //fill the times array with the times of the svg images.
   for (var j = 0; j < array.length; j++) {
-  	times[j] = array[j].getAttribute("id").substr(4);
+    times[j] = array[j].getAttribute("timestamp");
   }
 
   var times_length = times.length; //get the length of the times array.
@@ -224,12 +238,15 @@ function runPopcorn() {
   var shape;
   for (var i = 0, len = times_length; i < len-1; i++) { //iterate through all the shapes and pick out the main ones
   	var time = times[i];
-  	  shape = svgobj.contentDocument.getElementById("draw" + time).getAttribute("shape");
-  	  next_shape = svgobj.contentDocument.getElementById("draw" + times[i+1]).getAttribute("shape");
+        /*
+  	  shape = svgobj.contentDocument.getElementById(timestampToId[time][0]).getAttribute("shape");
+  	  next_shape = svgobj.contentDocument.getElementById(timestampToId[times[i+1]][0]).getAttribute("shape");
 
   	if(shape !== next_shape) {
   		main_shapes_times[main_shapes_times.length] = time;
   	}
+        */
+        main_shapes_times[main_shapes_times.length] = time;
   }
   if(times.length !== 0) {
   	main_shapes_times[main_shapes_times.length] = times[times.length-1]; //put last value into this array always!
@@ -243,43 +260,62 @@ function runPopcorn() {
       onFrame: function(options) {
         if(!((p.paused() === true) && (p.seeking() === false))) {
           var t = p.currentTime().toFixed(1); //get the time and round to 1 decimal place
-          
-          if(svgobj.contentDocument) current_shape = svgobj.contentDocument.getElementById("draw" + t);
-          else current_shape = svgobj.getSVGDocument('svgfile').getElementById("draw" + t);
 
-          if(current_shape !== null) { //if there is actually a new shape to be displayed
-            current_shape = current_shape.getAttribute("shape"); //get actual shape tag for this specific time of playback
+          current_shapes = [];
+
+          if(timestampToId[t] != undefined) {
+            if(svgobj.contentDocument) {
+              for (var j = 0; j < timestampToId[t].length; j++) {
+                current_shapes[j] = svgobj.contentDocument.getElementById(timestampToId[t][j]);
+              }
+            }
+            else {
+              for (var j = 0; j < timestampToId[t].length; j++) {
+                current_shapes[j] = svgobj.getSVGDocument('svgfile').getElementById(timestampToId[t][j]);
+              }
+            }
+          }
+          else {
+            current_shapes = null
+          }
+
+          if(current_shapes !== null) { //if there is actually a new shape to be displayed
+            for (var j = 0; j < current_shapes.length; j++) {
+              current_shapes[j] = current_shapes[j].getAttribute("shape"); //get actual shape tag for this specific time of playback
+            }
           }
           //redraw everything (only way to make everything elegant)
           for (var i = 0, len = times_length; i < len; i++) {
             var time_s = times[i];
             var time_f = parseFloat(time_s);
             
-            if(svgobj.contentDocument) shape = svgobj.contentDocument.getElementById("draw" + time_s);
-            else shape = svgobj.getSVGDocument('svgfile').getElementById("draw" + time_s);
-            
-            var shape_i = shape.getAttribute("shape");
-            if (time_f < t) {
-              if(shape_i === current_shape) { //currently drawing the same shape so don't draw the older steps
-                shape.style.visibility = "hidden"; //hide older steps to shape
-  	      }
-              else if(main_shapes_times.indexOf(time_s) !== -1) { //as long as it is a main shape, it can be drawn... no intermediate steps.
-                if(parseFloat(shape.getAttribute("undo")) === -1) { //As long as the undo event hasn't happened yet...
-                  shape.style.visibility = "visible";
-                }
-                else if (parseFloat(shape.getAttribute("undo")) > t) {
-                  shape.style.visibility = "visible";
-                }
-                else {
-                  shape.style.visibility = "hidden";
+            for (var j = 0; j < timestampToId[time_s].length; j++) {
+              if(svgobj.contentDocument) shape = svgobj.contentDocument.getElementById(timestampToId[time_s][j]);
+              else shape = svgobj.getSVGDocument('svgfile').getElementById(timestampToId[time_s][j]);
+              
+              var shape_i = shape.getAttribute("shape");
+              if (time_f < t) {
+                if(current_shapes !== null && shape_i === current_shapes[j]) { //currently drawing the same shape so don't draw the older steps
+                  shape.style.visibility = "hidden"; //hide older steps to shape
+  	        }
+                else if(main_shapes_times.indexOf(time_s) !== -1) { //as long as it is a main shape, it can be drawn... no intermediate steps.
+                  if(parseFloat(shape.getAttribute("undo")) === -1) { //As long as the undo event hasn't happened yet...
+                    shape.style.visibility = "visible";
+                  }
+                  else if (parseFloat(shape.getAttribute("undo")) > t) {
+                    shape.style.visibility = "visible";
+                  }
+                  else {
+                    shape.style.visibility = "hidden";
+                  }
                 }
               }
-            }
-            else if(time_s === t) { //for the shape with the time specific to the current time
-              shape.style.visibility = "visible";
-            }
-            else { //for shapes that shouldn't be drawn yet (larger time than current time), don't draw them.
-              shape.style.visibility = "hidden";
+              else if(time_s === t) { //for the shape with the time specific to the current time
+                shape.style.visibility = "visible";
+              }
+              else { //for shapes that shouldn't be drawn yet (larger time than current time), don't draw them.
+                shape.style.visibility = "hidden";
+              }
             }
           }
           
@@ -395,12 +431,15 @@ var svgfile;
 //current time
 var t;
 var len;
-var current_shape;
+var current_shapes = [];
 //coordinates for x and y for each second
 var panAndZoomTimes = [];
 var viewBoxes = [];
 var coords = [];
 var times = [];
+// timestamp and id for drawings
+var shapeTime;
+var shapeId;
 var clearTimes = [];
 var main_shapes_times = [];
 var vboxValues = {};

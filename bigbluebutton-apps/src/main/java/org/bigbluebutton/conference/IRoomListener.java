@@ -32,4 +32,5 @@ public interface IRoomListener {
 	public void guestResponse(User p, Boolean resp);
 	public void guestWaitingForModerator(String userid, String userId_userName); 
 	public void guestPolicyChanged(String guestPolicy);
+	public void recordingStatusChange(User p, Boolean recording);
 }

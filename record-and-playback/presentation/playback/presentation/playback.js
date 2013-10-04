@@ -78,6 +78,7 @@ secondsToYouTubeFormat = function(secs) {
   if (hours > 0)   {time += hours+"h";}
   if (minutes > 0) {time += minutes+"m";}
   if (seconds > 0) {time += seconds+"s";}
+  if (secs == 0) {time = "0s";}
 
   return time;
 }
@@ -268,6 +269,10 @@ generateThumbnails = function() {
         div.append(img);
         div.append(label);
         div.append(hiddenDesc);
+
+        if (parseFloat(timeIn) == 0 ) {
+          div.addClass("active");
+        }
 
         imagesList.push(timeIn);
         elementsMap[timeIn] = div;

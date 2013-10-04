@@ -87,6 +87,7 @@ package org.bigbluebutton.main.model.users
         UserManager.getInstance().getConference().avatarURL = result.avatarURL;
 		UserManager.getInstance().getConference().voiceBridge = result.voicebridge;
 		UserManager.getInstance().getConference().dialNumber = result.dialnumber;
+		UserManager.getInstance().getConference().record = (result.record != "false");
 		
         
 				_conferenceParameters = new ConferenceParameters();
@@ -104,11 +105,7 @@ package org.bigbluebutton.main.model.users
 				_conferenceParameters.externUserID = result.externUserID;
 				_conferenceParameters.internalUserID = result.internalUserId;
 				_conferenceParameters.logoutUrl = result.logoutUrl;
-				_conferenceParameters.record = true;
-				
-				if (result.record == "false") {
-					_conferenceParameters.record = false;
-				}
+				_conferenceParameters.record = (result.record != "false");
 				
                 // assign the meeting name to the document title
                 ExternalInterface.call("setTitle", _conferenceParameters.meetingName);
@@ -237,5 +234,16 @@ package org.bigbluebutton.main.model.users
 			var name:String = e.username;
 			_userSOService.assignPresenter(assignTo, name, 1);
 		}
+
+		public function changeRecordingStatus(e:BBBEvent):void {
+			trace("UserService::changeRecordingStatus")
+			if (this.isModerator() && !e.payload.remote) {
+				_userSOService.changeRecordingStatus(
+						UserManager.getInstance().getConference().getMyUserId(), 
+						e.payload.recording
+				);
+			}
+		}
+
 	}
 }

@@ -154,6 +154,10 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
     <MethodInvoker generator="{ModulesProxy}" method="startAllModules" />
   </EventHandlers>
 
+	<EventHandlers type="{BBBEvent.CHANGE_RECORDING_STATUS}">
+		<MethodInvoker generator="{UserService}" method="changeRecordingStatus" arguments="{event}" />
+	</EventHandlers>
+
 	<mx:Script>
 	<![CDATA[
 		import mx.events.FlexEvent;

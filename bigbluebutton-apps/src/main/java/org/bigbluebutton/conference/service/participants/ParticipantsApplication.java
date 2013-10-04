@@ -163,4 +163,12 @@ public class ParticipantsApplication {
 	public void responseToAllGuests(String roomName, Boolean resp) {
 		roomsManager.responseToAllGuests(roomName, resp);
 	}
+
+	public void setRecordingStatus(String room, String userid, Boolean recording) {
+		roomsManager.changeRecordingStatus(room, userid, recording);
+	}
+
+	public Boolean getRecordingStatus(String roomName) {
+		return roomsManager.getRecordingStatus(roomName);
+	}
 }
