@@ -24,7 +24,8 @@ package org.bigbluebutton.main.model.users
 	
 	import org.bigbluebutton.common.LogUtil;
 	import org.bigbluebutton.common.Role;
-    import org.bigbluebutton.core.managers.UserManager;
+	import org.bigbluebutton.core.managers.UserManager;
+	import org.bigbluebutton.main.model.users.events.ChangeStatusEvent;
 	import org.bigbluebutton.main.model.users.events.StreamStartedEvent;
 	import org.bigbluebutton.util.i18n.ResourceUtil;
 
@@ -108,17 +109,36 @@ package org.bigbluebutton.main.model.users
 			_presenter = p;
 			verifyUserStatus();
 		}
-		
-		private var _raiseHand:Boolean = false;
-		[Bindable]
-		public function get raiseHand():Boolean {
-			return _raiseHand;
+
+		private var _mood:String = ChangeStatusEvent.CLEAR_STATUS;
+		public function get hasMood():Boolean {
+			return _mood != ChangeStatusEvent.CLEAR_STATUS;
 		}
-		public function set raiseHand(r:Boolean):void {
-			_raiseHand = r;
+		[Bindable]
+		public function get mood():String {
+			return _mood;
+		}
+		public function set mood(m:String):void {
+			_mood = m;
 			verifyUserStatus();
 		}
-		
+		[Bindable]
+		public function get raiseHand():Boolean {
+			return _mood == ChangeStatusEvent.RAISE_HAND;
+		}
+		public function set raiseHand(r:Boolean):void {
+			mood = (r? ChangeStatusEvent.RAISE_HAND: ChangeStatusEvent.CLEAR_STATUS);
+		}
+
+		private var _moodTimestamp:Number = 0;
+		[Bindable]
+		public function get moodTimestamp():Number {
+			return _moodTimestamp;
+		}
+		public function set moodTimestamp(t:Number):void {
+			_moodTimestamp = t;
+		}
+
 		private var _role:String = Role.VIEWER;
 		[Bindable] 
 		public function get role():String {
@@ -155,7 +175,6 @@ package org.bigbluebutton.main.model.users
 		}
 		
 		[Bindable] public var voiceLocked:Boolean = false;
-		[Bindable] public var status:String = "";
 		[Bindable] public var customdata:Object = {};
 		
 		/*
@@ -175,10 +194,42 @@ package org.bigbluebutton.main.model.users
 				_userStatus = ResourceUtil.getInstance().getString('bbb.users.usersGrid.statusItemRenderer.presenter');
 			else if (role == Role.MODERATOR)
 				_userStatus = ResourceUtil.getInstance().getString('bbb.users.usersGrid.statusItemRenderer.moderator');
-			else if (raiseHand)
-				_userStatus = ResourceUtil.getInstance().getString('bbb.users.usersGrid.statusItemRenderer.handRaised');
-			else
+			else if (hasMood) {
+				switch(mood) {
+					case ChangeStatusEvent.RAISE_HAND:
+						_userStatus = ResourceUtil.getInstance().getString('bbb.users.usersGrid.statusItemRenderer.handRaised');
+						break;
+					case ChangeStatusEvent.AGREE:
+						_userStatus = ResourceUtil.getInstance().getString('bbb.users.usersGrid.statusItemRenderer.agree');
+						break;
+					case ChangeStatusEvent.DISAGREE:
+						_userStatus = ResourceUtil.getInstance().getString('bbb.users.usersGrid.statusItemRenderer.disagree');
+						break;
+					case ChangeStatusEvent.SPEAK_LOUDER:
+						_userStatus = ResourceUtil.getInstance().getString('bbb.users.usersGrid.statusItemRenderer.speakLouder');
+						break;
+					case ChangeStatusEvent.SPEAK_LOWER:
+						_userStatus = ResourceUtil.getInstance().getString('bbb.users.usersGrid.statusItemRenderer.speakSofter');
+						break;
+					case ChangeStatusEvent.SPEAK_FASTER:
+						_userStatus = ResourceUtil.getInstance().getString('bbb.users.usersGrid.statusItemRenderer.speakFaster');
+						break;
+					case ChangeStatusEvent.SPEAK_SLOWER:
+						_userStatus = ResourceUtil.getInstance().getString('bbb.users.usersGrid.statusItemRenderer.speakSlower');
+						break;
+					case ChangeStatusEvent.BE_RIGHT_BACK:
+						_userStatus = ResourceUtil.getInstance().getString('bbb.users.usersGrid.statusItemRenderer.beRightBack');
+						break;
+					case ChangeStatusEvent.LAUGHTER:
+						_userStatus = ResourceUtil.getInstance().getString('bbb.users.usersGrid.statusItemRenderer.laughter');
+						break;
+					case ChangeStatusEvent.SAD:
+						_userStatus = ResourceUtil.getInstance().getString('bbb.users.usersGrid.statusItemRenderer.sad');
+						break;
+				}
+			} else {
 				_userStatus = ResourceUtil.getInstance().getString('bbb.users.usersGrid.statusItemRenderer.viewer');
+			}
 		}
 		
 		public function amIGuest():Boolean {
@@ -206,28 +257,12 @@ package org.bigbluebutton.main.model.users
 		 
 		private var _status:StatusCollection = new StatusCollection();
 			
-		public function buildStatus():void{
-			var showingWebcam:String = "";
-			var isPresenter:String = "";
-			var handRaised:String = "";
-			if (hasStream)
-				showingWebcam = ResourceUtil.getInstance().getString('bbb.viewers.viewersGrid.statusItemRenderer.streamIcon.toolTip');
-			if (presenter)
-				isPresenter = ResourceUtil.getInstance().getString('bbb.viewers.viewersGrid.statusItemRenderer.presIcon.toolTip');
-			if (raiseHand)
-				handRaised = ResourceUtil.getInstance().getString('bbb.viewers.viewersGrid.statusItemRenderer.raiseHand.toolTip');
-			status = showingWebcam + isPresenter + handRaised;
-		}
-	
 		public function addStatus(status:Status):void {
 			_status.addStatus(status);
 		}
 		
 		public function changeStatus(status:Status):void {
 			//_status.changeStatus(status);
-			if (status.name == "presenter") {
-				presenter = status.value
-			}
 			switch (status.name) {
 				case "presenter":
 					presenter = status.value;
@@ -251,14 +286,22 @@ package org.bigbluebutton.main.model.users
 					streamName = streamNameInfo[1]; 
 					if (hasStream) sendStreamStartedEvent();
 					break;
-				case "raiseHand":
-					raiseHand = status.value as Boolean;
-                    if (me) {
-                        UserManager.getInstance().getConference().isMyHandRaised = status.value;
-                    }
+				case "mood":
+					trace("New mood received: " + status.value);
+					var moodValue:String = String(status.value);
+					if (moodValue == "") {
+						trace("Empty mood, assuming CLEAR_STATUS");
+						moodValue = ChangeStatusEvent.CLEAR_STATUS;
+						moodTimestamp = 0;
+					} else {
+						var valueSplit:Array = moodValue.split(",");
+						moodValue = valueSplit[0];
+						moodTimestamp = Number(valueSplit[1]);
+					}
+					mood = moodValue;
 					break;
 			}
-			buildStatus();
+			//buildStatus();
 		}
 		
 		public function removeStatus(name:String):void {
@@ -280,7 +323,8 @@ package org.bigbluebutton.main.model.users
             n._viewingStream = user._viewingStream;
 			n.streamName = user.streamName;
 			n.presenter = user.presenter;
-			n.raiseHand = user.raiseHand;
+			n.mood = user.mood;
+			n.moodTimestamp = user.moodTimestamp;
 			n.role = user.role;	
 			n.room = user.room;
 			n.customdata = user.customdata;
