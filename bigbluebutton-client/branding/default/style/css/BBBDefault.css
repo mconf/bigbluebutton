@@ -96,10 +96,6 @@ Button, .logoutButtonStyle, .chatSendButtonStyle, .helpLinkButtonStyle, .cameraD
   icon: Embed('assets/images/logout.png');
 }
 
-.settingsButtonStyle {
-  icon: Embed('assets/images/wrench.png');
-}
-
 DataGrid {
   backgroundColor: #e1e2e5;
   rollOverColor: #f3f3f3;
