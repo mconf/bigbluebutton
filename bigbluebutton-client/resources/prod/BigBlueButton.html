@@ -44,7 +44,9 @@
     <script src="lib/bbb_deskshare.js" language="javascript"></script>
     <script src="lib/bbb_api_bridge.js" language="javascript"></script>
     <script src="lib/sipml5api.js" language="javascript"></script>
-    <script src="lib/bbb_webrtc_bridge.js" language="javascript"></script>
+    <script src="lib/jssip-devel.js" language="javascript"></script>
+    <script src="lib/bbb_webrtc_bridge_jssip.js" language="javascript"></script>
+    <script src="lib/bbb_webrtc_bridge_sipml5.js" language="javascript"></script>
     <script>
       window.chatLinkClicked = function(url) {
         window.open(url, '_blank');
@@ -57,6 +59,9 @@
 <!-- <button onclick="hangUp()">Hang up</button>
  <button onclick="callIntoConference()">Call</button>-->
 <audio id="audio-remote" autoplay="autoplay" />
+
+<audio id="local-media" autoplay="autoplay" />
+<audio id="remote-media" autoplay="autoplay" />
 </div>
 
     <div id="content">
