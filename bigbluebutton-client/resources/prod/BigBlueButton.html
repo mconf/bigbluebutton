@@ -95,6 +95,8 @@
 
 <script type="text/javascript">
 
+	var fsServer = "YOUR_FREESWITCH_SERVER";
+
         var callIntoConference = function(callback) {
             BBB.getMyUserInfo(function(userInfo) {
                 console.log("User info callback [myUserID=" + userInfo.myUserID
@@ -114,7 +116,7 @@
                 BBB.listen('UserJoinedVoiceEvent', checkSuccessCallback);
 
                 console.log(callerIdName);
-                webrtc_call(callerIdName, userInfo.voiceBridge, null, callback);
+                webrtc_call(callerIdName, userInfo.voiceBridge, fsServer, callback);
             });
         }
 
