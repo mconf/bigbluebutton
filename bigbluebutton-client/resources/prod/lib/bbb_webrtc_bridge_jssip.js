@@ -19,7 +19,7 @@ function webrtc_call(username, voiceBridge, server, callback) {
         version = +(sayswho[1].split('.')[0]);
 
     console.log("Browser: " + browser + ", version: " + version);
-    if (browser != "Chrome" || version < 28) {
+    if ( !( (browser == "Chrome" && version > 27) || (browser == "Firefox" && version > 22) ) ) {
         callback("Browser version not supported");
         return;
     }
