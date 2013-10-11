@@ -184,6 +184,20 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 
 			protected function initializeShell():void {	
 				globalDispatcher = new Dispatcher();
+
+				systemManager.addEventListener(Event.RESIZE, updateCopyrightLabelDimensions);
+				copyrightLabel2.addEventListener(FlexEvent.UPDATE_COMPLETE, updateCopyrightLabelDimensions);
+				updateCopyrightLabelDimensions();
+			}
+
+			private function updateCopyrightLabelDimensions(e:Event = null):void {
+				var screenRect:Rectangle = systemManager.screen;
+
+				if (spacer.width == 0) {
+					copyrightLabel2.width += (screenRect.width - controlBar.width);
+				} else {
+					copyrightLabel2.width += Math.min(spacer.width, copyrightLabel2.measuredWidth - copyrightLabel2.width);
+				}
 			}
 		
 			protected function initFullScreen():void {				
@@ -509,24 +523,42 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 		<views:BrandingLogo x="{this.width - 300}" y="{this.height - 300}" />
 	</views:MainCanvas>	
 	
-	<mx:ControlBar width="100%" height="{footerHeight}" paddingTop="0">		
-	  <mx:Text htmlText="{ResourceUtil.getInstance().getString('bbb.mainshell.copyrightLabel2',[appVersion])}" id="copyrightLabel2"/>
-	 	<mx:Spacer width="20"/>
-		<mx:Spacer width="100%"/> 
-    <mx:Label text="{isTunneling ? '[Tunnelling]' : ''}" id="isTunnellingLbl"/>
-		
-		<mx:Button width="20" 
-				   height="20" 
-				   visible="{layoutOptions.showLogButton}" 
-				   toolTip="{ResourceUtil.getInstance().getString('bbb.mainshell.logBtn.toolTip')}" 
-				   id="logBtn" 
-				   icon="{logs_icon}" 
-				   click="openLogWindow()" 
-				   tabIndex="{baseIndex}"/>
-		
-		<!-- mx:Button width="20" height="20" visible="{layoutOptions.showResetLayout}" toolTip="{ResourceUtil.getInstance().getString('bbb.mainshell.resetLayoutBtn.toolTip')}" id="btnResetLayout" icon="{reset_layout_icon}" click="resetLayout()" /-->
-		<mx:Label text="[{ResourceUtil.getInstance().getString('bbb.bwmonitor.upload.short')}: {_bandwidthConsumedUp} | {ResourceUtil.getInstance().getString('bbb.bwmonitor.download.short')}: {_bandwidthConsumedDown}]" id="lblNetworkStats" visible="{layoutOptions.showNetworkMonitor}" />
-		<mx:Button id="btnNetwork" icon="{statsIcon}" width="20" height="20" click="openNetworkStatsWindow()" visible="{layoutOptions.showNetworkMonitor}" />
+	<mx:ControlBar width="100%" height="{footerHeight}" paddingTop="0" id="controlBar">
+		<mx:Label
+				htmlText="{ResourceUtil.getInstance().getString('bbb.mainshell.copyrightLabel2',[appVersion])}"
+				id="copyrightLabel2"
+				selectable="false" />
+		<mx:Spacer width="20"/>
+		<mx:Spacer width="100%" id="spacer" />
+		<mx:Label
+				text="[Tunnelling]"
+				id="isTunnellingLbl"
+				visible="{isTunneling}"
+				includeInLayout="{isTunneling}" />
+
+		<mx:Button
+				width="20"
+				height="20"
+				visible="{layoutOptions.showLogButton}"
+				includeInLayout="{layoutOptions.showLogButton}"
+				toolTip="{ResourceUtil.getInstance().getString('bbb.mainshell.logBtn.toolTip')}"
+				id="logBtn"
+				icon="{logs_icon}"
+				click="openLogWindow()"
+				tabIndex="{baseIndex}"/>
+		<mx:Label
+				text="[{ResourceUtil.getInstance().getString('bbb.bwmonitor.upload.short')}: {_bandwidthConsumedUp} | {ResourceUtil.getInstance().getString('bbb.bwmonitor.download.short')}: {_bandwidthConsumedDown}]"
+				id="lblNetworkStats"
+				visible="{layoutOptions.showNetworkMonitor}"
+				includeInLayout="{layoutOptions.showNetworkMonitor}" />
+		<mx:Button
+				id="btnNetwork"
+				icon="{statsIcon}"
+				width="20"
+				height="20"
+				click="openNetworkStatsWindow()"
+				visible="{layoutOptions.showNetworkMonitor}"
+				includeInLayout="{layoutOptions.showNetworkMonitor}" />
 		<mx:HBox id="addedBtns" />
 	</mx:ControlBar>
 </mx:VBox>
