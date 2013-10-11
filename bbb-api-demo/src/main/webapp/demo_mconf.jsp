@@ -160,17 +160,6 @@ if (request.getParameterMap().isEmpty()) {
 				<td>
 					&nbsp;</td>
 				<td style="text-align: right; ">
-					Record:</td>
-				<td>
-					&nbsp;</td>
-				<td>
-					<input id="check_record" type="checkbox" name="record" value="record" />
-				</td>
-			</tr>
-			<tr>
-				<td>
-					&nbsp;</td>
-				<td style="text-align: right; ">
 					Full&nbsp;Name:</td>
 				<td style="width: 5px; ">
 					&nbsp;</td>
@@ -394,7 +383,7 @@ Invalid Password, please <a href="javascript:history.go(-1)">try again</a>.
 		String create_parameters = "name=" + urlEncode(meetingID)
 			+ "&meetingID=" + urlEncode(meetingID) + welcome_param + voiceBridge_param
 			+ moderator_password_param + attendee_password_param + logoutURL_param
-			+ "&record=" + record;
+			+ "&record=true";
 
 		// Attempt to create a meeting using meetingID
 		Document doc = null;
