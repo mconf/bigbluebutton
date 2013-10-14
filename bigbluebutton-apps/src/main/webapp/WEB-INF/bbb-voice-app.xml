@@ -21,8 +21,11 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 <beans:beans 
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:util="http://www.springframework.org/schema/util"
     xsi:schemaLocation="http://www.springframework.org/schema/beans
-            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+            http://www.springframework.org/schema/util
+            http://www.springframework.org/schema/util/spring-util-2.0.xsd">
 	
 	<beans:bean id="voiceHandler" class="org.bigbluebutton.conference.service.voice.VoiceHandler">
 		<beans:property name="conferenceService" ref="conferenceService"/>
@@ -48,6 +51,46 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				
 	<beans:bean id="voice.service" class="org.bigbluebutton.conference.service.voice.VoiceService">
 		<beans:property name="conferenceService" ref="conferenceService"/>
+	</beans:bean>
+
+	<beans:bean id="messagingService" class="org.bigbluebutton.conference.service.messaging.RedisMessagingService">
+		<beans:property name="redisPool" ref="redisPool"/>
+	</beans:bean>
+
+	<beans:bean id="config" class="org.bigbluebutton.conference.service.recorder.GenericObjectPoolConfigWrapper">
+		<!-- Action to take when trying to acquire a connection and all connections are taken -->
+		<beans:property name="whenExhaustedAction">
+		<!-- Fail-fast behaviour, we don't like to keep the kids waiting -->
+		<util:constant static-field="org.apache.commons.pool.impl.GenericObjectPool.WHEN_EXHAUSTED_FAIL" />
+		<!-- Default behaviour, block the caller until a resource becomes available -->
+		<!--<util:constant static-field="org.apache.commons.pool.impl.GenericObjectPool.WHEN_EXHAUSTED_BLOCK" />-->
+		</beans:property>
+		<!-- Maximum active connections to Redis instance -->
+		<beans:property name="maxActive" value="12" />
+		<!-- Number of connections to Redis that just sit there and do nothing -->
+		<beans:property name="maxIdle" value="6" />
+		<!-- Minimum number of idle connections to Redis - these can be seen as always open and ready to serve -->
+		<beans:property name="minIdle" value="1" />
+		<!-- Tests whether connection is dead when connection retrieval method is called -->
+		<beans:property name="testOnBorrow" value="true" />
+		<!-- Tests whether connection is dead when returning a connection to the pool -->
+		<beans:property name="testOnReturn" value="true" />
+		<!-- Tests whether connections are dead during idle periods -->
+		<beans:property name="testWhileIdle" value="true" />
+		<!-- Maximum number of connections to test in each idle check -->
+		<beans:property name="numTestsPerEvictionRun" value="12" />
+		<!-- Idle connection checking period -->
+		<beans:property name="timeBetweenEvictionRunsMillis" value="60000" />
+		<!-- Maximum time, in milliseconds, to wait for a resource when exausted action is set to WHEN_EXAUSTED_BLOCK -->
+		<beans:property name="maxWait" value="5000" />
+	</beans:bean>
+
+	<beans:bean id="redisPool" class="redis.clients.jedis.JedisPool">
+		<beans:constructor-arg index="0">
+			<beans:bean factory-bean="config" factory-method="getConfig" />
+		</beans:constructor-arg>
+		<beans:constructor-arg index="1" value="${redis.host}"/>
+		<beans:constructor-arg index="2" value="${redis.port}"/>
 	</beans:bean>
 
 </beans:beans>
