@@ -43,10 +43,10 @@
     <script src="lib/bbb_blinker.js" language="javascript"></script>
     <script src="lib/bbb_deskshare.js" language="javascript"></script>
     <script src="lib/bbb_api_bridge.js" language="javascript"></script>
-    <script src="lib/sipml5api.js" language="javascript"></script>
     <script src="lib/jssip-devel.js" language="javascript"></script>
     <script src="lib/bbb_webrtc_bridge_jssip.js" language="javascript"></script>
-    <script src="lib/bbb_webrtc_bridge_sipml5.js" language="javascript"></script>
+<!--    <script src="lib/bbb_webrtc_bridge_sipml5.js" language="javascript"></script> -->
+<!--    <script src="lib/sipml5api.js" language="javascript"></script> -->
     <script>
       window.chatLinkClicked = function(url) {
         window.open(url, '_blank');
@@ -54,6 +54,9 @@
       }
     </script>
   </head>
+<input type="button" onclick="startWebrtcAudioTest();" value="Start Webrtc Audio Test"/>
+<input type="button" onclick="stopWebrtcAudioTest();" value="Stop Webrtc Audio Test"/>
+
   <body>
 <div>
 <!-- <button onclick="hangUp()">Hang up</button>
@@ -153,6 +156,20 @@
             webrtc_hangup(callback);
         }
 
+	var startWebrtcAudioTest = function(){
+		console.log("Testing webrtc audio");
+		webrtc_call("tester", 9196, fsServer, function(message){
+			console.log("You should hear yourself talking");	
+		});
+	}
 
+	var stopWebrtcAudioTest = function(){
+		console.log("Stopping webrtc audio test");
+		webrtc_hangup(function(){
+			console.log("Webrtc audio test stopped");
+		});
+	}
+
+	
 </script>
 
