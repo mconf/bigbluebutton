@@ -526,7 +526,6 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				htmlText="{ResourceUtil.getInstance().getString('bbb.mainshell.copyrightLabel2',[appVersion])}"
 				id="copyrightLabel2"
 				selectable="false" />
-		<mx:Spacer width="20"/>
 		<mx:Spacer width="100%" id="spacer" />
 		<mx:Label
 				text="[Tunnelling]"
@@ -548,7 +547,9 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				text="[{ResourceUtil.getInstance().getString('bbb.bwmonitor.upload.short')}: {_bandwidthConsumedUp} | {ResourceUtil.getInstance().getString('bbb.bwmonitor.download.short')}: {_bandwidthConsumedDown}]"
 				id="lblNetworkStats"
 				visible="{layoutOptions.showNetworkMonitor}"
-				includeInLayout="{layoutOptions.showNetworkMonitor}" />
+				includeInLayout="{layoutOptions.showNetworkMonitor}"
+				width="200"
+				textAlign="right" />
 		<mx:Button
 				id="btnNetwork"
 				icon="{statsIcon}"
