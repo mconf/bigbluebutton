@@ -1,15 +1,15 @@
 
 
 var bbbAudioConference;
+var currentSession;
 var freeswitchPassword = "secret123";
 var freeswitchUser = "bbbuser123";
 
 // Hang Up webrtc call
 function webrtc_hangup(callback) {
-  if(bbbAudioConference){
-    bbbAudioConference.stop();
-    callback();
-  }
+      console.log("Terminating current session");
+      currentSession.terminate(); // allows calling multiple times
+      callback();
 }
 
 // Call 
@@ -46,12 +46,18 @@ function webrtc_call(username, voiceBridge, server, callback) {
       //   hack_ip_in_contact: null
   };
 
-  bbbAudioConference = new JsSIP.UA(configuration);
+  
+  bbbAudioConference = (bbbAudioConference == undefined) ? new JsSIP.UA(configuration) : bbbAudioConference;
+  bbbAudioConference.on('newRTCSession', function(e) {
+      console.log("New Webrtc session created!");
+      currentSession = e.data.session;
+    });
   bbbAudioConference.start();
   // Make an audio/video call:
   // HTML5 <video> elements in which local and remote video will be shown
   var selfView =   document.getElementById('local-media');
   var remoteView =  document.getElementById('remote-media');
+
 	
  
   console.log("Registering callbacks to desired call events..");
