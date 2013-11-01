@@ -53,6 +53,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			private var mic:Microphone;
 			private var playingAudio:Boolean = false;
 			private var images:Images = new Images();
+			private var webrtcCapable:String = "false";
 			[Bindable] private var cancelIcon:Class = images.cancel;
             
             [Bindable]private var baseIndex:int = 1;
@@ -63,27 +64,50 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       }
       
 			private function initDefaultMic():void {
-				mic = Microphone.getMicrophone();
-				
-				if (mic != null) {
-					if (mic.muted) {
-						// user has disallowed access to the mic
-						mic.addEventListener(StatusEvent.STATUS, micStatusEventHandler);
-                        // when we open the window show the default acceptor first and then the custom one every other time
-						mic.setLoopBack(true);
-                        mic.setLoopBack(false);
-					} else {
-						// user has allowed access to the mic
-						mic.setLoopBack(false);
-            mic.setUseEchoSuppression(true);
-					}
+
+				webrtcCapable =  ExternalInterface.call("webrtcCapable");
+				if (webrtcCapable == "true"){					
+					settingBtn.label = "Test Webrtc call";
+					settingBtn.addEventListener(MouseEvent.CLICK, webrtcTestCall);
+					settingBtn.toolTip = "Test Webrtc call";
+					settingTxt.text =  ResourceUtil.getInstance().getString('bbb.micSettings.speakIntoMic') + " You should hear yourself.";
 				} else {
-					LogUtil.warn("Microphone is used by another application.");
+
+					mic = Microphone.getMicrophone();
+				
+					if (mic != null) {
+						if (mic.muted) {
+							// user has disallowed access to the mic
+							mic.addEventListener(StatusEvent.STATUS, micStatusEventHandler);
+				                        // when we open the window show the default acceptor first and then the custom one every other time
+							mic.setLoopBack(true);
+				                        mic.setLoopBack(false);
+						} else {
+							// user has allowed access to the mic
+							mic.setLoopBack(false);
+						            mic.setUseEchoSuppression(true);
+						}
+					} else {
+						LogUtil.warn("Microphone is used by another application.");
+					}
+					timer = new Timer(100);
+					timer.addEventListener(TimerEvent.TIMER, updateMicLevel);
+					//timer.start(); Commenting this out because the mic level has been removed
 				}
-				timer = new Timer(100);
-				timer.addEventListener(TimerEvent.TIMER, updateMicLevel);
-				//timer.start(); Commenting this out because the mic level has been removed
 			}
+						
+
+
+			private function webrtcTestCall(e:MouseEvent):void {
+				if (settingBtn.selected) {
+					ExternalInterface.call("startWebrtcAudioTest");				
+				} else {
+					ExternalInterface.call("stopWebrtcAudioTest");
+				}
+			}
+	
+
+			
 			
 			// Added by Chad to enable closing the window without clicking the X
 			private function handleKeyDown(event:KeyboardEvent):void {
@@ -145,13 +169,18 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			}
 			
 			private function onJoinClicked():void {
-                // Do one last check for if the mic has been allowed.
-                // This must come first because cleanUp() will destroy mic 
-                if (mic != null && mic.muted) {
-                    Security.showSettings(SecurityPanel.PRIVACY);
-                }
-                
-				cleanUp();      
+
+	        	        // Do one last check for if the mic has been allowed.
+        	        	// This must come first because cleanUp() will destroy mic 
+	                	if (mic != null && mic.muted) {
+		                    Security.showSettings(SecurityPanel.PRIVACY);
+        		        }
+				if (webrtcCapable == "true"){
+					 ExternalInterface.call("stopWebrtcAudioTest");					
+				} else {
+					cleanUp();      
+				}
+
 				var joinEvent:BBBEvent = new BBBEvent("JOIN_VOICE_CONFERENCE_EVENT");
 				joinEvent.payload['useMicrophone'] = true;
 				dispatchEvent(joinEvent);
@@ -159,7 +188,11 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			}	
 			
 			private function onCancelClicked():void {
-				cleanUp();
+				if (webrtcCapable == "true"){
+					ExternalInterface.call("stopWebrtcAudioTest");
+				} else {
+					cleanUp();
+				}
 				var event:BBBEvent = new BBBEvent(BBBEvent.MIC_SETTINGS_CLOSED);
 				event.payload['clicked'] = "cancel";
 				dispatchEvent(event);
@@ -200,7 +233,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
         </mx:VBox>   
         
         <mx:HBox width="100%">      
-            <mx:Text width="100%" text="{ResourceUtil.getInstance().getString('bbb.micSettings.speakIntoMic')}"
+            <mx:Text id="settingTxt" width="100%" text="{ResourceUtil.getInstance().getString('bbb.micSettings.speakIntoMic')}"
                      styleName="micSettingsWindowSpeakIntoMicLabelStyle" tabIndex="{baseIndex+3}"/>
             <mx:Button id="settingBtn" label="{ResourceUtil.getInstance().getString('bbb.micSettings.changeMic')}" 
                        styleName="micSettingsWindowChangeMicButtonStyle" toggle="true"
