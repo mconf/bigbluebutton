@@ -174,7 +174,7 @@
 			private function openSettings():void {
 				// everyone can see the audio settings
 				var myMenuData:Array = [];
-
+				
 				if(UserManager.getInstance().getConference().amIModerator()) {
 					myMenuData.push( {label: ResourceUtil.getInstance().getString('bbb.users.settings.clearAllStatus'), icon: images.delete_icon, callback: clearAllStatus} );
 					if (!roomMuted) {
@@ -202,13 +202,14 @@
 					myMenuData.push( {label: ResourceUtil.getInstance().getString('bbb.users.status.laughter'), icon: images.laughter, callback: function():void { changeStatus(ChangeStatusEvent.LAUGHTER); }} );
 					myMenuData.push( {label: ResourceUtil.getInstance().getString('bbb.users.status.sad'), icon: images.sad, callback: function():void { changeStatus(ChangeStatusEvent.SAD); }} );
 				}
-
+				
 				// make sure the previous menu is closed before opening a new one
 				// This could be improved to include a flag that tells if the menu is open,
 				// but it would require an extra listener for the MenuCloseEvent.
 				if (myMenu) myMenu.hide();
 				
 				myMenu = Menu.createMenu(null, myMenuData, true);
+				
 				myMenu.variableRowHeight = true;
 				var settingsBtnPos:Point = settingsBtn.localToGlobal(new Point(0,0));
 
@@ -225,7 +226,7 @@
 				myMenu.show(myMenuPos.x, myMenuPos.y);
 				myMenu.setFocus();
 			}
-
+			
 			private function menuShowHandler(e:MenuEvent):void {
 				myMenuStaticHeight = e.currentTarget.height;
 				trace("New menu height is " + myMenuStaticHeight);
@@ -234,7 +235,7 @@
 			private function menuClickHandler(e:MenuEvent):void {
 				e.item.callback();
 			}
-
+			
 			private function changeStatus(status:String):void {
 				var e:ChangeStatusEvent = new ChangeStatusEvent(UserManager.getInstance().getConference().getMyUserId(), status);
 				dispatchEvent(e);
@@ -421,7 +422,6 @@
 		<mx:Button id="settingsBtn" icon="{images.users_settings}" width="30" height="30"
 					toolTip="{ResourceUtil.getInstance().getString('bbb.users.settings.buttonTooltip')}" click="openSettings()" visible="true" tabIndex="{partOptions.baseTabIndex+10}" />
 		<mx:Label id="roomMutedLbl" text="{ResourceUtil.getInstance().getString('bbb.users.settings.muteAll')}" />
-		<mx:Spacer width="100%"/>
 	</mx:ControlBar>
 	
 </mdi:MDIWindow>
