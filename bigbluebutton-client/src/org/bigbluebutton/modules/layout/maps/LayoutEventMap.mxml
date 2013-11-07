@@ -25,6 +25,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			
 			import org.bigbluebutton.core.EventConstants;
 			import org.bigbluebutton.main.events.MadePresenterEvent;
+			import org.bigbluebutton.main.model.users.events.ChangeMyRole;
 			import org.bigbluebutton.modules.layout.events.ComboBoxCreatedEvent;
 			import org.bigbluebutton.modules.layout.events.ConnectionEvent;
 			import org.bigbluebutton.modules.layout.events.LayoutEvent;
@@ -60,6 +61,10 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
     <EventHandlers type="{LayoutEvent.STOP_LAYOUT_MODULE_EVENT}">
    		<MethodInvoker generator="{LayoutService}" method="leave" />
    		<MethodInvoker generator="{LayoutEventMapDelegate}" method="stopModule" />
+    </EventHandlers>
+
+    <EventHandlers type="{ChangeMyRole.CHANGE_MY_ROLE_EVENT}">
+      <MethodInvoker generator="{LayoutEventMapDelegate}" method="refreshRole" arguments="{event}"/>
     </EventHandlers>
         
     <EventHandlers type="{ConnectionEvent.CONNECT_EVENT}">

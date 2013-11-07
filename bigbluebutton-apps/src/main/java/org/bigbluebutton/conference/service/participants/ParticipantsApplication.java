@@ -25,9 +25,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import org.bigbluebutton.conference.ConnectionInvokerService;
 import org.bigbluebutton.conference.RoomsManager;
-import org.bigbluebutton.conference.Room;
-import org.bigbluebutton.conference.User;
-import org.bigbluebutton.conference.IRoomListener;
+import org.bigbluebutton.conference.Room;import org.bigbluebutton.conference.User;import org.bigbluebutton.conference.IRoomListener;
 
 public class ParticipantsApplication {
 	private static Logger log = Red5LoggerFactory.getLogger( ParticipantsApplication.class, "bigbluebutton" );	
@@ -138,6 +136,13 @@ public class ParticipantsApplication {
 		
 	public void setConnInvokerService(ConnectionInvokerService connInvokerService) {
 		this.connInvokerService = connInvokerService;
+	}
+
+	public void setParticipantRole(String roomName, String userid, String role) {
+		if (roomsManager.hasRoom(roomName)) {
+			roomsManager.setParticipantRole(roomName, userid, role);
+			return;
+		}
 	}
 
 	public void askingToEnter(String roomName, String userid) {

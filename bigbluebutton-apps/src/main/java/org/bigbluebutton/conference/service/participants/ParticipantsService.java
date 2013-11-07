@@ -29,8 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
-import org.bigbluebutton.conference.User;
+import java.util.Map;import org.bigbluebutton.conference.User;
 
 public class ParticipantsService {
 
@@ -105,6 +104,12 @@ public class ParticipantsService {
 	public void setParticipantsApplication(ParticipantsApplication a) {
 		log.debug("Setting Participants Applications");
 		application = a;
+	}
+
+	public void setParticipantRole(String userid, String role) {
+		String roomName = Red5.getConnectionLocal().getScope().getName();
+		log.debug("Setting participant role " + roomName + " " + userid + " " + role);
+		application.setParticipantRole(roomName, userid, role);
 	}
 
 	public void askingToEnter(String userid) {

@@ -48,7 +48,6 @@ package org.bigbluebutton.modules.users.business
 		private var pingCount:int = 0;
 		private var _module:UsersModule;
 		private var dispatcher:Dispatcher;
-		private var moderator:Boolean;
 		
 		private static var globalDispatcher:Dispatcher = new Dispatcher();
 		
@@ -56,7 +55,6 @@ package org.bigbluebutton.modules.users.business
 			_conference = UserManager.getInstance().getConference();		
 			_module = module;			
 			dispatcher = new Dispatcher();
-			moderator = _conference.amIModerator();
 		}
 		
 		public function connect(uri:String):void {

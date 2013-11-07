@@ -26,6 +26,7 @@ public interface IRoomListener {
 	public void participantStatusChange(User p, String status, Object value);
 	public void participantJoined(User participant);
 	public void participantLeft(User participant);
+	public void participantRoleChange(User p, String role);
 	public void assignPresenter(ArrayList<String> presenter);
 	public void guestEntrance(User p);
 	public void endAndKickAll();

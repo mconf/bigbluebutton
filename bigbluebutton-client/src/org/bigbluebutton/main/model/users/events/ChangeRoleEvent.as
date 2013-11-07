@@ -16,16 +16,22 @@
 * with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 *
 */
+package org.bigbluebutton.main.model.users.events
+{
+	import flash.events.Event;
 
-package org.bigbluebutton.api.messaging;
-
-public interface MessageListener {
-	void meetingStarted(String meetingId);
-	void meetingEnded(String meetingId);
-	void userJoined(String meetingId, String internalUserId, String externalUserId, String name, String role, String guest);
-	void userLeft(String meetingId, String internalUserId);
-	void userRoleChange(String meetingId, String internalUserId, String role);
-	void updatedStatus(String meetingId, String internalUserId, String status, String value);
-	void userJoinedVoice(String meetingId);
-	void userLeftVoice(String meetingId);
+	public class ChangeRoleEvent extends Event
+	{
+		public static const CHANGE_ROLE_EVENT:String = "CHANGE_ROLE_EVENT";
+		
+		public var userid:String;
+		public var role:String;
+		
+		public function ChangeRoleEvent(userid:String, role:String)
+		{
+			this.userid = userid;
+			this.role = role;
+			super(CHANGE_ROLE_EVENT, true, false);
+		}
+	}
 }

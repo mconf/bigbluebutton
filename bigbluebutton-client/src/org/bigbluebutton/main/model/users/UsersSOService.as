@@ -45,6 +45,7 @@ package org.bigbluebutton.main.model.users {
 	import org.bigbluebutton.main.events.UserLeftEvent;
 	import org.bigbluebutton.main.model.ConferenceParameters;
 	import org.bigbluebutton.main.model.users.BBBUser;
+	import org.bigbluebutton.main.model.users.events.ChangeMyRole;
 	import org.bigbluebutton.main.model.users.events.ConnectionFailedEvent;
 	import org.bigbluebutton.main.model.users.events.RoleChangeEvent;
 	import org.bigbluebutton.modules.deskshare.events.StopSharingButtonEvent;
@@ -321,7 +322,17 @@ package org.bigbluebutton.main.model.users {
 				dispatcher.dispatchEvent(e);
 			}		
 		}
-
+		
+		public function participantRoleChange(userID:String, role:String):void {
+			LogUtil.debug("Received role change [" + userID + "," + role + "]");
+			UserManager.getInstance().getConference().newUserRole(userID, role);
+			if(UserManager.getInstance().getConference().amIThisUser(userID)) {
+				UserManager.getInstance().getConference().setMyRole(role);
+				var e:ChangeMyRole = new ChangeMyRole(role);
+				dispatcher.dispatchEvent(e);
+			}
+		}
+		
 		//Callback from server	
 		public function guestEntrance(userid:String, name:String):void {
 			if(UserManager.getInstance().getConference().amIModerator() && UserManager.getInstance().getConference().amIWaitForModerator() == false) {
@@ -564,6 +575,16 @@ package org.bigbluebutton.main.model.users {
 				} 
 			}
 		)
+
+		public function changeRole(userID:String, role:String):void {
+			var nc:NetConnection = _connectionManager.connection;
+			nc.call(
+				"participants.setParticipantRole",// Remote function name
+				responder,
+				userID,
+				role
+			); //_netConnection.call
+		}
 
 		private function queryForRecordingStatus():void {
 			var nc:NetConnection = _connectionManager.connection;

@@ -77,5 +77,4 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 	<EventHandlers type="{VoiceConfEvent.LOCK_MUTE_USER}" >
 		<MethodInvoker generator="{UsersProxy}" method="lockMuteUser" arguments="{event}" />
 	</EventHandlers>
-	
 </EventMap>

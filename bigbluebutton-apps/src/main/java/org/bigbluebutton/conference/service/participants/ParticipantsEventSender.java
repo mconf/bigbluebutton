@@ -89,6 +89,17 @@ public class ParticipantsEventSender implements IRoomListener {
 		args.add(value);
 		so.sendMessage("participantStatusChange", args);
 	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public void participantRoleChange(User p, String role) {
+		log.debug("A participant's role has changed " + p.getInternalUserID() + " " + role);
+		ArrayList args = new ArrayList();
+		args.add(p.getInternalUserID());
+		args.add(role);
+		so.sendMessage("participantRoleChange", args);
+	}
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void guestEntrance(User p) {

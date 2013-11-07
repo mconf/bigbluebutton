@@ -26,6 +26,7 @@ package org.bigbluebutton.modules.users.business
 	import org.bigbluebutton.core.UsersUtil;
 	import org.bigbluebutton.core.managers.UserManager;
 	import org.bigbluebutton.main.model.users.BBBUser;
+	import org.bigbluebutton.main.model.users.events.ChangeMyRole;
 	import org.bigbluebutton.main.model.users.events.KickUserEvent;
 	import org.bigbluebutton.modules.users.events.UsersEvent;
 	import org.bigbluebutton.modules.users.events.StartUsersModuleEvent;
@@ -111,11 +112,11 @@ package org.bigbluebutton.modules.users.business
 			_listenersService.lockMuteUser(command.userid, command.lock);		
 		}
 
-    public function kickUser(event:KickUserEvent):void {
-      var user:BBBUser = UsersUtil.getUser(event.userid);
-      _listenersService.ejectUser(user.voiceUserid);
-    }
-      
+		public function kickUser(event:KickUserEvent):void {
+			var user:BBBUser = UsersUtil.getUser(event.userid);
+			_listenersService.ejectUser(user.voiceUserid);
+		}
+
 		public function ejectUser(command:VoiceConfEvent):void
 		{
 			_listenersService.ejectUser(command.userid);			

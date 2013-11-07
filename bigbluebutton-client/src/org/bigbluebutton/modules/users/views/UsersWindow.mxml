@@ -34,6 +34,7 @@
 	<mate:Listener type="{ShortcutEvent.FOCUS_USERS_WINDOW}" method="focusWindow" />
 	<mate:Listener type="{UsersEvent.ROOM_MUTE_STATE}" method="setRoomMute" />
 	<mate:Listener type="{ShortcutEvent.MUTE_ALL_BUT_PRES}" method="remoteMuteAllButPres" />
+	<mate:Listener type="{ChangeMyRole.CHANGE_MY_ROLE_EVENT}" method="onChangeMyRole" />
 	<mx:Script>
 		<![CDATA[
 			import com.asfusion.mate.events.Dispatcher;
@@ -56,6 +57,8 @@
 			import org.bigbluebutton.main.events.ShortcutEvent;
 			import org.bigbluebutton.main.model.users.BBBUser;
 			import org.bigbluebutton.main.model.users.Conference;
+			import org.bigbluebutton.main.model.users.events.ChangeMyRole;
+			import org.bigbluebutton.main.model.users.events.ChangeRoleEvent;
 			import org.bigbluebutton.main.model.users.events.ChangeStatusEvent;
 			import org.bigbluebutton.main.model.users.events.KickUserEvent;
 			import org.bigbluebutton.main.model.users.events.RoleChangeEvent;
@@ -98,13 +101,15 @@
 			
 			private var myMenuStaticHeight:Number = 301;
 
+			private function onChangeMyRole(e:ChangeMyRole):void {
+				refreshRole(e.role == Role.MODERATOR);
+			}
+
 			private function onCreationComplete():void {
 				dispatcher = new Dispatcher();
 			
 				users = UserManager.getInstance().getConference().users;
-				amIModerator = UserManager.getInstance().getConference().amIModerator();
-				
-				settingsBtn.visible = settingsBtn.includeInLayout = partOptions.enableSettingsButton;
+				refreshRole(UserManager.getInstance().getConference().amIModerator());
 				
 				BindingUtils.bindSetter(updateNumberofUsers, users, "length");
 				
@@ -120,6 +125,14 @@
 				minimizeBtn.tabIndex = partOptions.baseTabIndex+1;
 				maximizeRestoreBtn.tabIndex = partOptions.baseTabIndex+2;
 				closeBtn.tabIndex = partOptions.baseTabIndex+3;
+			}
+			
+			private function refreshRole(moderator:Boolean = true):void {
+				amIModerator = moderator;
+
+				settingsBtn.visible = settingsBtn.includeInLayout = partOptions.enableSettingsButton && amIModerator;
+
+				if (myMenu) myMenu.hide();
 			}
 			
 			public function getPrefferedPosition():String{
