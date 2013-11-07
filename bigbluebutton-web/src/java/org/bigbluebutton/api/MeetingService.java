@@ -153,30 +153,42 @@ public class MeetingService {
 
 				ArrayList<Playback> plays=new ArrayList<Playback>();
 				
-				if (!r.getPlaybackFormat().isEmpty()) plays.add(new Playback(r.getPlaybackFormat(), r.getPlaybackLink(), getDurationRecording(r.getEndTime(), r.getStartTime())));
+				if (!r.getPlaybackFormat().isEmpty()) {
+					plays.add(new Playback(r.getPlaybackFormat(), r.getPlaybackLink(), getDurationRecording(r.getEndTime(), r.getStartTime(), r.getPlaybackDuration())));
+				}
 				r.setPlaybacks(plays);
 
 				ArrayList<Download> downloads=new ArrayList<Download>();
 				
-				if (!r.getDownloadFormat().isEmpty()) downloads.add(new Download(r.getDownloadFormat(), r.getDownloadLink(),r.getDownloadMd5(), r.getDownloadKey(), getDurationRecording(r.getEndTime(), r.getStartTime())));
+				if (!r.getDownloadFormat().isEmpty()) {
+					downloads.add(new Download(r.getDownloadFormat(), r.getDownloadLink(),r.getDownloadMd5(), r.getDownloadKey(), getDurationRecording(r.getEndTime(), r.getStartTime())));
+				}
 				r.setDownloads(downloads);
 
 				map.put(r.getId(), r);
 			}
 			else{
 				Recording rec=map.get(r.getId());
-				if (!r.getPlaybackFormat().isEmpty()) rec.getPlaybacks().add(new Playback(r.getPlaybackFormat(), r.getPlaybackLink(), getDurationRecording(r.getEndTime(), r.getStartTime())));
-				if (!r.getDownloadFormat().isEmpty()) rec.getDownloads().add(new Download(r.getDownloadFormat(), r.getDownloadLink(), r.getDownloadMd5(), r.getDownloadKey(), getDurationRecording(r.getEndTime(), r.getStartTime())));
+				if (!r.getPlaybackFormat().isEmpty()) {
+					rec.getPlaybacks().add(new Playback(r.getPlaybackFormat(), r.getPlaybackLink(), getDurationRecording(r.getEndTime(), r.getStartTime(), r.getPlaybackDuration())));
+				}
+				if (!r.getDownloadFormat().isEmpty()) {
+					rec.getDownloads().add(new Download(r.getDownloadFormat(), r.getDownloadLink(), r.getDownloadMd5(), r.getDownloadKey(), getDurationRecording(r.getEndTime(), r.getStartTime())));
+				}
 			}
 		}
 		
 		return map;
 	}
 	
-	private int getDurationRecording(String end, String start){
+	private int getDurationRecording(String end, String start, String playbackDuration = "") {
 		int duration;
 		try{
-			duration = (int)Math.ceil((Long.parseLong(end) - Long.parseLong(start))/60000.0);
+			if (!playbackDuration.equals("")) {
+				duration = (int)Math.ceil((Long.parseLong(playbackDuration))/60000.0);
+			} else {
+				duration = (int)Math.ceil((Long.parseLong(end) - Long.parseLong(start))/60000.0);
+			}
 		}catch(Exception e){
 			log.debug(e.getMessage());
 			duration = 0;

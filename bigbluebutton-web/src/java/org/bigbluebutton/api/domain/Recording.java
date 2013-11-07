@@ -41,6 +41,7 @@ public class Recording {
 	private String state;
 	private String playbackLink;
 	private String playbackFormat;
+	private String playbackDuration;
 	
 	private String downloadLink;
 	private String downloadFormat;
@@ -133,6 +134,14 @@ public class Recording {
 		this.playbackFormat = playbackFormat;
 	}
 
+	
+	public String getPlaybackDuration() {
+		return playbackDuration;
+	}
+	
+	public void setPlaybackDuration(String playbackDuration) {
+		this.playbackDuration = playbackDuration;
+	}
 	
 	public Map<String, String> getMetadata() {
 		return metadata;
