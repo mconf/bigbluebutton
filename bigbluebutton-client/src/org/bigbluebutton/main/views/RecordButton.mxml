@@ -34,18 +34,30 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 	mouseOut="onRecordButtonMouseOut(event)" >
 
 	<mate:Listener type="{BBBEvent.CHANGE_RECORDING_STATUS}" method="onRecordingStatusChanged" />
-	
+	<mate:Listener type="{ChangeMyRole.CHANGE_MY_ROLE_EVENT}" method="onChangeMyRole" />
+
 	<mx:Script>
 		<![CDATA[
 
 			import com.asfusion.mate.events.Dispatcher;
 			import mx.controls.Alert;
 			import mx.events.CloseEvent;
-			import org.bigbluebutton.main.events.BBBEvent;
+			import org.bigbluebutton.common.Role;
 			import org.bigbluebutton.core.managers.UserManager;
+			import org.bigbluebutton.main.events.BBBEvent;
+			import org.bigbluebutton.main.model.users.events.ChangeMyRole;
 			import org.bigbluebutton.util.i18n.ResourceUtil;
 
 			private var recordingFlag:Boolean;
+
+			private function onChangeMyRole(e:ChangeMyRole):void {
+				refreshRole(e.role == Role.MODERATOR);
+			}
+
+			private function refreshRole(moderator:Boolean = true):void {
+				this.enabled = moderator;
+				updateTooltip(this.selected, moderator);
+			}
 
 			private function confirmChangeRecordingStatus():void {
 				// need to save the flag in case of any remote update on the recording status
@@ -90,25 +102,34 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				trace("RecordButton:doChangeRecordingStatus changing record status to " + event.payload.recording);
 			}
 
+			private function updateTooltip(recording:Boolean, amIModerator:Boolean):void {
+				if (amIModerator) {
+					if (recording) {
+						this.toolTip = ResourceUtil.getInstance().getString('bbb.mainToolbar.recordBtn.toolTip.stop');
+					} else {
+						this.toolTip = ResourceUtil.getInstance().getString('bbb.mainToolbar.recordBtn.toolTip.start');
+					}
+				} else {
+					if (recording) {
+						this.toolTip = ResourceUtil.getInstance().getString('bbb.mainToolbar.recordBtn.toolTip.recording');
+					} else {
+						this.toolTip = ResourceUtil.getInstance().getString('bbb.mainToolbar.recordBtn.toolTip.notRecording');
+					}
+				}
+			}
+
 			private function onRecordingStatusChanged(event:BBBEvent):void {
 				if (event.payload.remote) {
 					this.selected = event.payload.recording;
 					this.styleName = this.selected? "recordButtonStyleStart": "recordButtonStyleNormal";
 
-					if (UserManager.getInstance().getConference().amIModerator()) {
+					var amIModerator:Boolean = UserManager.getInstance().getConference().amIModerator();
+
+					if (amIModerator) {
 						this.enabled = true;
-						if (event.payload.recording) {
-							this.toolTip = ResourceUtil.getInstance().getString('bbb.mainToolbar.recordBtn.toolTip.stop');
-						} else {
-							this.toolTip = ResourceUtil.getInstance().getString('bbb.mainToolbar.recordBtn.toolTip.start');
-						}
-					} else {
-						if (event.payload.recording) {
-							this.toolTip = ResourceUtil.getInstance().getString('bbb.mainToolbar.recordBtn.toolTip.recording');
-						} else {
-							this.toolTip = ResourceUtil.getInstance().getString('bbb.mainToolbar.recordBtn.toolTip.notRecording');
-						}
 					}
+
+					updateTooltip(event.payload.recording, amIModerator);
 
 					trace("RecordButton:onRecordingStatusChanged changing record status to " + event.payload.recording);
 				}
