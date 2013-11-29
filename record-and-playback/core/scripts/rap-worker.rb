@@ -101,7 +101,10 @@ def process_archived_meeting(recording_dir)
 	     timestamp_stop = Time.now
 	     processing_time = ((timestamp_stop-timestamp_start).to_f * 1000).truncate
 	     processing_time_file = "#{recording_dir}/process/#{process_type}/#{meeting_id}/processing_time"
-	     File.open(processing_time_file, 'w') { |file| file.write("#{processing_time}") }
+
+	     if FileTest.directory? File.dirname(processing_time_file)
+		     File.open(processing_time_file, 'w') { |file| file.write("#{processing_time}") }
+	     end
 	  end
 
 	end

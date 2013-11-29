@@ -49,6 +49,7 @@ if $RECORDING_SERVER ; then
     sudo cp mconf/scripts/mconf-god-conf.rb /etc/bigbluebutton/god/conf/
     sudo cp mconf/scripts/mconf-decrypt.rb /usr/local/bigbluebutton/core/scripts/
     deploy_format "presentation"
+    deploy_format "presentation_export"
 else
     deploy_format "mconf"
 fi
