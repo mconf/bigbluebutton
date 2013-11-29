@@ -46,6 +46,7 @@ function deploy_format() {
 
 # deploy_format "slides"
 deploy_format "presentation"
+deploy_format "presentation_export"
 
 sudo mkdir -p /var/bigbluebutton/playback/
 sudo mkdir -p /var/bigbluebutton/recording/raw/
