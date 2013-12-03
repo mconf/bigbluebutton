@@ -109,6 +109,9 @@
 				dispatcher = new Dispatcher();
 			
 				users = UserManager.getInstance().getConference().users;
+
+				settingsBtn.visible = settingsBtn.includeInLayout = partOptions.enableSettingsButton;
+
 				refreshRole(UserManager.getInstance().getConference().amIModerator());
 				
 				BindingUtils.bindSetter(updateNumberofUsers, users, "length");
@@ -129,8 +132,6 @@
 			
 			private function refreshRole(moderator:Boolean = true):void {
 				amIModerator = moderator;
-
-				settingsBtn.visible = settingsBtn.includeInLayout = partOptions.enableSettingsButton && amIModerator;
 
 				if (myMenu) myMenu.hide();
 			}
@@ -188,7 +189,7 @@
 				// everyone can see the audio settings
 				var myMenuData:Array = [];
 				
-				if(UserManager.getInstance().getConference().amIModerator()) {
+				if(amIModerator) {
 					myMenuData.push( {label: ResourceUtil.getInstance().getString('bbb.users.settings.clearAllStatus'), icon: images.delete_icon, callback: clearAllStatus} );
 					if (!roomMuted) {
 						myMenuData.push( {label: ResourceUtil.getInstance().getString('bbb.users.settings.muteAll'), icon: images.audio_muted, callback: muteAll} );
