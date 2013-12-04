@@ -2,8 +2,6 @@
 
 var bbbAudioConference;
 var currentSession;
-var freeswitchPassword = "secret123";
-var freeswitchUser = "bbbuser123";
 
 // Hang Up webrtc call
 function webrtc_hangup(callback) {
@@ -28,12 +26,12 @@ function webrtc_call(username, voiceBridge, server, callback) {
     console.log("user " + username + " calling to " +  voiceBridge);
     
     var configuration = {
-         uri: 'sip:' + freeswitchUser + '@' + server,
-         password: freeswitchPassword,
+         uri: 'sip:' + username + '@' + server,
+      //   password: freeswitchPassword,
          ws_servers: 'wss://' + server + ':7443',
          display_name: username,
-         authorization_user: freeswitchUser,
-      //   register: null,
+      //   authorization_user: freeswitchUser,
+         register: false,
       //   register_expires: null,
       //   no_answer_timeout: null,
          trace_sip: true,
