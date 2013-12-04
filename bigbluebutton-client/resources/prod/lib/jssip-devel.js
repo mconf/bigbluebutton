@@ -3392,6 +3392,7 @@ RTCMediaHandler.prototype = {
     this.peerConnection.onicecandidate = function(e) {
       if (e.candidate) {
         console.log(LOG_PREFIX +'ICE candidate received: '+ e.candidate.candidate);
+        self.onIceCompleted();
       } else if (self.onIceCompleted !== undefined) {
         self.onIceCompleted();
       }
