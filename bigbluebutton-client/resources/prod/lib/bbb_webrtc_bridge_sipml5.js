@@ -86,11 +86,9 @@ var makeCall = function(callback) {
 function webrtc_hangup(callback) {
     if (sipStack) {
         var onStoppedCallback = function(e) {
-//            if (connected) {
-//                connected = false;
-                callback();
-                sipStack.removeEventListener('stopped', onStoppedCallback);
-//            }
+            sipStack.removeEventListener('stopped', onStoppedCallback);
+            connected = false;
+            callback();
         }
         sipStack.addEventListener('stopped', onStoppedCallback);
         sipStack.stop(); // shutdown all sessions
@@ -99,16 +97,6 @@ function webrtc_hangup(callback) {
 
 // Call 
 function webrtc_call(username, voiceBridge, server, callback) {
-    var sayswho = navigator.sayswho,
-        browser = sayswho[0],
-        version = +(sayswho[1].split('.')[0]);
-
-    console.log("Browser: " + browser + ", version: " + version);
-    if (browser != "Chrome" || version < 28) {
-        callback("Browser version not supported");
-        return;
-    }
-
     voicebridge = voiceBridge;
     server = server || window.document.location.host;
     console.log("user " + username + " calling to " +  voicebridge);
@@ -121,19 +109,15 @@ function webrtc_call(username, voiceBridge, server, callback) {
         console.error('Failed to initialize the engine: ' + e.message);
         callback('Failed to initialize the engine: ' + e.message);
     }
-    // You must call this function before any other.        
-    SIPml.init(readyCallback, errorCallback);
+
+    if (!SIPml.isInitialized) {
+        // You must call this function before any other
+        SIPml.init(readyCallback, errorCallback);
+    } else {
+        // restart the SIP stack just if it was the first time
+        readyCallback(null);
+    }
+
     sipStack.start();
     //makeCall(voicebridge);
 }
-
-// http://stackoverflow.com/questions/5916900/detect-version-of-browser
-navigator.sayswho= (function(){
-    var ua= navigator.userAgent, 
-        N= navigator.appName, 
-        tem, 
-        M= ua.match(/(opera|chrome|safari|firefox|msie|trident)\/?\s*([\d\.]+)/i) || [];
-    M= M[2]? [M[1], M[2]]:[N, navigator.appVersion, '-?'];
-    if(M && (tem= ua.match(/version\/([\.\d]+)/i))!= null) M[2]= tem[1];
-    return M;
-})();

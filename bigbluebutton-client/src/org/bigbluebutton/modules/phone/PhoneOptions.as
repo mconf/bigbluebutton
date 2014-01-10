@@ -32,6 +32,9 @@ package org.bigbluebutton.modules.phone
 		
 		[Bindable]
 		public var enabledEchoCancel:Boolean = false;
+		
+		[Bindable]
+		public var useWebrtcIfAvailable:Boolean = true;
 
 		public function PhoneOptions() {
 			parseOptions();
@@ -51,6 +54,9 @@ package org.bigbluebutton.modules.phone
 				}
 				if (vxml.@enabledEchoCancel != undefined) {
 					enabledEchoCancel = (vxml.@enabledEchoCancel.toString().toUpperCase() == "TRUE") ? true : false;
+				}
+				if (vxml.@useWebrtcIfAvailable != undefined) {
+					useWebrtcIfAvailable = (vxml.@useWebrtcIfAvailable.toString().toUpperCase() == "TRUE");
 				}
 			}
 		}		
