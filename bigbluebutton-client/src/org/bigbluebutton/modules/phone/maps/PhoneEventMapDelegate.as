@@ -24,10 +24,10 @@ package org.bigbluebutton.modules.phone.maps
 	
 	import org.bigbluebutton.common.events.ToolbarButtonEvent;
 	import org.bigbluebutton.core.BBB;
-	import org.bigbluebutton.modules.phone.PhoneOptions;
-	import org.bigbluebutton.modules.phone.views.components.ToolbarButton;
-	import org.bigbluebutton.modules.phone.views.components.MuteButton;
 	import org.bigbluebutton.main.events.BBBEvent;
+	import org.bigbluebutton.modules.phone.PhoneOptions;
+	import org.bigbluebutton.modules.phone.views.components.MuteButton;
+	import org.bigbluebutton.modules.phone.views.components.ToolbarButton;
 	
 	public class PhoneEventMapDelegate {
 		private var phoneOptions:PhoneOptions;
@@ -37,21 +37,18 @@ package org.bigbluebutton.modules.phone.maps
 		private var globalDispatcher:Dispatcher;
 				
 		public function PhoneEventMapDelegate() {
-			phoneOptions = new PhoneOptions();
 			phoneButton = new ToolbarButton();
-			if(phoneOptions.showSpeakerButton == true) {
-				soundButton = new MuteButton();
-			}
-			else
-				soundButton = null;
 			globalDispatcher = new Dispatcher();
-			
+			phoneOptions = new PhoneOptions();
+			if(phoneOptions.showSpeakerButton) {
+				soundButton = new MuteButton();
+			} else {
+				soundButton = null;
+			}
 		}
 
 		public function addToolbarButton():void {
 		   	phoneButton.toggle = true;
-			if(phoneButton.noMicrophone())
-				phoneButton.disableButton();
 			
 		   	if (phoneOptions.showButton) {
 			   	// Use the GLobal Dispatcher so that this message will be heard by the
@@ -61,16 +58,12 @@ package org.bigbluebutton.modules.phone.maps
 				globalDispatcher.dispatchEvent(event);		   	
 			   	buttonOpen = true;		   		
 		   	}
-
-		   	if(phoneOptions.showSpeakerButton == true) {
-				var event2:ToolbarButtonEvent = new ToolbarButtonEvent(ToolbarButtonEvent.ADD);
-				event2.button = soundButton;
-				globalDispatcher.dispatchEvent(event2);
+			
+			if(phoneOptions.showSpeakerButton) {
+				var soundButtonEvent:ToolbarButtonEvent = new ToolbarButtonEvent(ToolbarButtonEvent.ADD);
+				soundButtonEvent.button = soundButton;
+				globalDispatcher.dispatchEvent(soundButtonEvent);
 			}
-
-			
-
-			
 		}
 		
 		public function removeToolbarButton():void {
@@ -91,14 +84,15 @@ package org.bigbluebutton.modules.phone.maps
 		}
 
 		public function enableMuteButton():void {
-			if(soundButton != null)
-				soundButton.enabled = true;		
+			if(soundButton != null) {
+				soundButton.enabled = true;
+			}
 		}
 		
 		public function enableToolbarButton(event:BBBEvent = null):void {
 			phoneButton.selected = false;
 			phoneButton.enabled = true;
-			if(event != null && event.payload.leaveVoiceConference == true)
+			if(event != null && event.payload.leaveVoiceConference)
 				phoneButton.userJoinedConference(false);
 		}
 

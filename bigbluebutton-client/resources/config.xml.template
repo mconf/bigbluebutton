@@ -53,6 +53,7 @@
 			showButton="true"
 			showSpeakerButton="false"
 			enabledEchoCancel="true"
+			useWebrtcIfAvailable="true"
 			dependsOn="UsersModule"
 		/>
 

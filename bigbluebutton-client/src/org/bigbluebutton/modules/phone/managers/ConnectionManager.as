@@ -62,6 +62,7 @@ package org.bigbluebutton.modules.phone.managers {
 		}
 		
 		public function connect(uid:String, externUID:String, username:String, room:String, uri:String):void {
+			trace("[ConnectionManager::connect]");
 			if (isConnected) return;
 			isConnected = true;
 			
@@ -73,11 +74,13 @@ package org.bigbluebutton.modules.phone.managers {
 		}
 		
 		private function connectToServer(externUID:String, username:String):void {			
+			trace("[ConnectionManager::connectToServer]");
 			NetConnection.defaultObjectEncoding = flash.net.ObjectEncoding.AMF0;	
 			netConnection = new NetConnection();
 			netConnection.client = this;
 			netConnection.addEventListener( NetStatusEvent.NET_STATUS , netStatus );
 			netConnection.addEventListener(SecurityErrorEvent.SECURITY_ERROR, securityErrorHandler);
+			netConnection.addEventListener(AsyncErrorEvent.ASYNC_ERROR, asyncErrorHandler);
 			netConnection.connect(uri, externUID, username);
 		}
 
@@ -86,6 +89,7 @@ package org.bigbluebutton.modules.phone.managers {
 		}
 		
 		private function netStatus (evt:NetStatusEvent ):void {		 
+			trace("[ConnectionManager::netStatus] " + evt.info.code);
 			if (evt.info.code == "NetConnection.Connect.Success") {
 				var event:ConnectionStatusEvent = new ConnectionStatusEvent();
 				LogUtil.debug("Successfully connected to voice application.");
@@ -101,13 +105,13 @@ package org.bigbluebutton.modules.phone.managers {
 		} 
 		
 		private function asyncErrorHandler(event:AsyncErrorEvent):void {
-           LogUtil.debug("AsyncErrorEvent: " + event);
-        }
+			trace("AsyncErrorEvent: " + event);
+		}
 		
 		private function securityErrorHandler(event:SecurityErrorEvent):void {
-            LogUtil.debug("securityErrorHandler: " + event);
-        }
-        
+			trace("securityErrorHandler: " + event);
+		}
+		
      	public function call():void {
      		LogUtil.debug("in call - Calling " + room);
 			doCall(room);
@@ -119,21 +123,21 @@ package org.bigbluebutton.modules.phone.managers {
 		//
 		//********************************************************************************************		
 		public function failedToJoinVoiceConferenceCallback(msg:String):* {
-			LogUtil.debug("failedToJoinVoiceConferenceCallback " + msg);
+			trace("failedToJoinVoiceConferenceCallback " + msg);
 			var event:CallDisconnectedEvent = new CallDisconnectedEvent();
 			dispatcher.dispatchEvent(event);	
 			isConnected = false;
 		}
 		
 		public function disconnectedFromJoinVoiceConferenceCallback(msg:String):* {
-			LogUtil.debug("disconnectedFromJoinVoiceConferenceCallback " + msg);
+			trace("disconnectedFromJoinVoiceConferenceCallback " + msg);
 			var event:CallDisconnectedEvent = new CallDisconnectedEvent();
 			dispatcher.dispatchEvent(event);	
 			isConnected = false;
 		}	
 				
         public function successfullyJoinedVoiceConferenceCallback(publishName:String, playName:String, codec:String):* {
-        	LogUtil.debug("successfullyJoinedVoiceConferenceCallback " + publishName + " : " + playName + " : " + codec);
+        	trace("successfullyJoinedVoiceConferenceCallback " + publishName + " : " + playName + " : " + codec);
 			isConnected = true;
 			var event:CallConnectedEvent = new CallConnectedEvent();
 			event.publishStreamName = publishName;
@@ -147,16 +151,11 @@ package org.bigbluebutton.modules.phone.managers {
 		//			SIP Actions
 		//
 		//********************************************************************************************		
-		public function doCall(dialStr:String):void {
-			LogUtil.debug("in doCall - Calling " + dialStr);
-			netConnection.call("voiceconf.call", null, "default", username, dialStr, "false");
+		public function doCall(dialStr:String, listenOnly:Boolean = false):void {
+			trace("in doCall - Calling " + dialStr + ", listen only = " + listenOnly.toString());
+			netConnection.call("voiceconf.call", null, "default", username, dialStr, listenOnly.toString());
 		}
 
-		public function doCallGlobal(dialStr:String):void {
-			LogUtil.debug("in doCallGlobal - Calling " + dialStr + " " + username);
-			netConnection.call("voiceconf.call", null, "default", username, dialStr, "true");
-		}
-				
 		public function doHangUp():void {			
 			if (isConnected) {
 				netConnection.call("voiceconf.hangup", null, "default");
