@@ -111,8 +111,12 @@ package org.bigbluebutton.main.model.users
 		}
 
 		private var _mood:String = ChangeStatusEvent.CLEAR_STATUS;
+		[Bindable]
 		public function get hasMood():Boolean {
 			return _mood != ChangeStatusEvent.CLEAR_STATUS;
+		}
+		public function set hasMood(m:Boolean):void {
+			throw("hasMood cannot be set directly, use setter mood to modify it");
 		}
 		[Bindable]
 		public function get mood():String {

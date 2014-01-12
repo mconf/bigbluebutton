@@ -82,6 +82,10 @@ package org.bigbluebutton.modules.present.managers
 			return _thumbUri;
 		}
 		
+		public function set thumb(value:String):void {
+			throw("thumb cannot be set");
+		}
+
 		public function get slideNumber():Number {
 			return _slideNum;
 		}
