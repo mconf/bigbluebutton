@@ -78,14 +78,11 @@ package org.bigbluebutton.modules.present.managers
 			}		
 		}
 		
+		[Bindable(event="thumbChangedEvent")]
 		public function get thumb():String {
 			return _thumbUri;
 		}
 		
-		public function set thumb(value:String):void {
-			throw("thumb cannot be set");
-		}
-
 		public function get slideNumber():Number {
 			return _slideNum;
 		}
