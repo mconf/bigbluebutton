@@ -69,10 +69,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       
 			private function initDefaultMic():void {
 				if (webrtcCapable && useWebrtcIfAvailable) {
-					settingBtn.label = "Test Webrtc call";
 					settingBtn.addEventListener(MouseEvent.CLICK, webrtcTestCall);
-					settingBtn.toolTip = "Test Webrtc call";
-					settingTxt.text =  ResourceUtil.getInstance().getString('bbb.micSettings.speakIntoMic') + " You should hear yourself.";
 				} else {
 					settingBtn.addEventListener(MouseEvent.CLICK, showMicSettingsPanel);
 
