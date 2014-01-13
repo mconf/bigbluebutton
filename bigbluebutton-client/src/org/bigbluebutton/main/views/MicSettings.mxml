@@ -280,18 +280,18 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
         </mx:HBox>
         
         <mx:VBox width="100%" visible="{useWebrtcIfAvailable}" includeInLayout="{useWebrtcIfAvailable}">
-            <mx:Label id="webrtcSupportLabel" text="WebRTC Support" styleName="micSettingsWindowTestSpeakersLabelStyle" paddingTop="5" tabIndex="{baseIndex+8}"/>
+            <mx:Label id="webrtcSupportLabel" text="{ResourceUtil.getInstance().getString('bbb.micSettings.webrtc.title')}" styleName="micSettingsWindowTestSpeakersLabelStyle" paddingTop="5" tabIndex="{baseIndex+8}"/>
 
             <mx:HBox width="100%">
                 <mx:HBox width="100%" visible="{webrtcCapable}" includeInLayout="{webrtcCapable}">
-                    <mx:Text width="100%" text="Your browser supports WebRTC." styleName="micSettingsWindowHearFromHeadsetLabelStyle" tabIndex="{baseIndex+9}"/>
-                    <mx:Button id="dontUseWebrtcBtn" label="Don't use WebRTC"
+                    <mx:Text width="100%" text="{ResourceUtil.getInstance().getString('bbb.micSettings.webrtc.capableBrowser')}" styleName="micSettingsWindowHearFromHeadsetLabelStyle" tabIndex="{baseIndex+9}"/>
+                    <mx:Button id="dontUseWebrtcBtn" label="{ResourceUtil.getInstance().getString('bbb.micSettings.webrtc.capableBrowser.dontuseit')}"
                                click="dontUseWebrtc()" styleName="micSettingsWindowPlaySoundButtonStyle"
-                               toolTip="Click here if you don't want to use the WebRTC technology."
+                               toolTip="{ResourceUtil.getInstance().getString('bbb.micSettings.webrtc.capableBrowser.dontuseit.toolTip')}"
                                tabIndex="{baseIndex+10}" />
                 </mx:HBox>
                 <mx:HBox width="100%" visible="{!webrtcCapable}" includeInLayout="{!webrtcCapable}">
-                    <mx:Text width="100%" text="Currently this system only supports WebRTC on Google Chrome. You will still be able to join the voice conference using Flash." styleName="micSettingsWindowHearFromHeadsetLabelStyle" tabIndex="{baseIndex+11}"/>
+                    <mx:Text width="100%" text="{ResourceUtil.getInstance().getString('bbb.micSettings.webrtc.notCapableBrowser')}" styleName="micSettingsWindowHearFromHeadsetLabelStyle" tabIndex="{baseIndex+11}"/>
                 </mx:HBox>
             </mx:HBox>
         </mx:VBox>
