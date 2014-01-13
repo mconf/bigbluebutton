@@ -22,7 +22,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 
 <mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" 
 	xmlns:mate="http://mate.asfusion.com/"
-      x="168" y="86" layout="absolute" width="700" height="410" styleName="presentationFileUploadWindowStyle"
+      layout="absolute" width="700" styleName="presentationFileUploadWindowStyle"
       initialize="initData();">
 
     <mate:Dispatcher id="globalDispatch" />
@@ -58,7 +58,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       import org.bigbluebutton.util.i18n.ResourceUtil;
 
             	
-      [Bindable] public var presentationNamesAC:ArrayCollection;
+      [Bindable] public var presentationInfosAC:ArrayCollection;
 	  [BIndable] public var maxFileSize:Number;
 
       private var images:Images = new Images();
@@ -78,7 +78,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       }
       
       private function initData():void {
-        if (presentationNamesAC.length <= 0) {
+        if (presentationInfosAC.length <= 0) {
           selectFile();
         }
       }
@@ -148,9 +148,13 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
           presentationName = presentationName.replace(/[^0-9a-zA-Z_\.]/g, "-");
           trace("Uploadling presentation name: " + presentationName);
 
+          var isDownloadable:Boolean = new Boolean(letUserDownload.selected);	  
+
           var uploadEvent:UploadEvent = new UploadEvent(UploadEvent.START_UPLOAD);
           uploadEvent.presentationName = presentationName;
           uploadEvent.fileToUpload = fileToUpload;
+          uploadEvent.isDownloadable = isDownloadable;
+          trace("uploadEvent.isDownloadable = " + uploadEvent.isDownloadable);
           globalDispatch.dispatchEvent(uploadEvent);
 
           progBarLbl.visible = true;
@@ -159,6 +163,8 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
           selectBtn.enabled = false;
           uploadBtn.enabled = false;
           fileTxtInput.enabled = false;
+
+          letUserDownload.visible = false;
 
           presentationNamesLb.visible = false;
 
@@ -239,7 +245,8 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
         okCancelBtn.visible = true;
         selectBtn.enabled = true;
         uploadBtn.enabled = true;
-        fileTxtInput.enabled = true;			
+        fileTxtInput.enabled = true;	
+        letUserDownload.visible = true;
       }
 
       private function convertUpdate(e:UploadEvent):void{
@@ -270,12 +277,12 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 
   </mx:Script>
 
-  <mx:VBox width="100%" height="100%">
+  <mx:VBox width="100%" height="100%" paddingBottom="5" >
     <mx:Label text="{ResourceUtil.getInstance().getString('bbb.fileupload.title')}" styleName="presentationUploadTitleStyle" paddingBottom="12"/>
     <mx:HBox width="100%" paddingTop="5">
       <mx:Label id="fileLbl" text="{ResourceUtil.getInstance().getString('bbb.fileupload.fileLbl')}" styleName="presentationUploadChooseFileLabelStyle"/>
     </mx:HBox>
-    <mx:HBox width="100%" paddingLeft="5" paddingTop="5"> 
+    <mx:HBox width="100%" verticalAlign="middle" paddingLeft="5" paddingTop="5"> 
       <mx:TextInput id="fileTxtInput" width="328" editable="false"/>
 	  <mx:Button label="{ResourceUtil.getInstance().getString('bbb.fileupload.selectBtn.label')}" id="selectBtn" 
 				   toolTip="{ResourceUtil.getInstance().getString('bbb.fileupload.selectBtn.toolTip')}" 
@@ -283,6 +290,9 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       <mx:Button id="uploadBtn" label="{ResourceUtil.getInstance().getString('bbb.fileupload.uploadBtn')}" 
                  toolTip="{ResourceUtil.getInstance().getString('bbb.fileupload.uploadBtn.toolTip')}"  click="startUpload()"
                  enabled="false" icon="{bulletGoIcon}"/>
+    </mx:HBox>
+    <mx:HBox paddingLeft="3">
+      <mx:CheckBox id="letUserDownload" label="{ResourceUtil.getInstance().getString('bbb.fileupload.letUserDownload')}" selected="true" toolTip="{ResourceUtil.getInstance().getString('bbb.fileupload.letUserDownload.tooltip')}"/>
     </mx:HBox>
     <mx:HBox width="100%" paddingLeft="10" paddingTop="5" paddingBottom="10">
       <mx:Label id="progBarLbl" text="{ResourceUtil.getInstance().getString('bbb.fileupload.progBarLbl')}" 
@@ -296,7 +306,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
     <mx:Canvas width="90%" height="140" verticalScrollPolicy="off">
       <mx:List id="presentationNamesList" width="90%" height="120" left="5" top="5" alternatingItemColors="[#EFEFEF, #FEFEFE]" allowMultipleSelection="false"
                itemRenderer="org.bigbluebutton.modules.present.ui.views.UploadedPresentationRenderer"
-               dragEnabled="false" dataProvider="{presentationNamesAC}">
+               dragEnabled="false" dataProvider="{presentationInfosAC}">
       </mx:List>
     </mx:Canvas>
     <mx:Canvas width="100%">
@@ -304,7 +314,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
                  styleName="presentationUploadCancelButtonStyle" right="5" top="5"
                  click="globalDispatch.dispatchEvent(new UploadEvent(UploadEvent.CLOSE_UPLOAD_WINDOW))"
                  toolTip="{ResourceUtil.getInstance().getString('bbb.fileupload.okCancelBtn.toolTip')}"/>
-    </mx:Canvas>	
+    </mx:Canvas>
   </mx:VBox>
 
 </mx:TitleWindow> 
