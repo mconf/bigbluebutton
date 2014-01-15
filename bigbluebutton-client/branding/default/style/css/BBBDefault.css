@@ -701,12 +701,12 @@ MDIWindow { /*None of the following properties are overridden by the MDIWindow c
 }
 
 Alert {
-	borderColor: #DFDFDF;
-	backgroundColor: #EFEFEF;
-	borderAlpha: 1;
-	shadowDistance: 1;
-	dropShadowColor: #FFFFFF;
-	color: #000000;
+  borderColor: #DFDFDF;
+  backgroundColor: #EFEFEF;
+  borderAlpha: 1;
+  shadowDistance: 1;
+  dropShadowColor: #FFFFFF;
+  color: #000000;
 }
 
 .recordButtonStyleNormal {
