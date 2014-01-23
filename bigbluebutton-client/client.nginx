@@ -1,0 +1,20 @@
+        set $custom_root /var/www/bigbluebutton;
+
+        # BigBlueButton.html is here so we can expire it every 1 minute to
+        # prevent caching.
+        location /client/MconfLive.html {
+                rewrite ^ /conference permanent;
+        }
+
+        location /conference {
+                alias    $custom_root/client;
+                index  MconfLive.html;
+                expires 1m;
+        }
+
+        # BigBlueButton Flash client.
+        location /client {
+                root    $custom_root;
+                index  index.html index.htm;
+        }
+
