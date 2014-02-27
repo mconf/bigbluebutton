@@ -87,8 +87,10 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
                 removeEventListener(MouseEvent.MOUSE_DOWN, doMouseDown);
                 removeEventListener(MouseEvent.MOUSE_UP, doMouseUp);
                 removeEventListener(MouseEvent.MOUSE_MOVE, doMouseMove);
-                stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
-                stage.removeEventListener(KeyboardEvent.KEY_UP, onKeyUp);
+                if (stage) {
+                    stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+                    stage.removeEventListener(KeyboardEvent.KEY_UP, onKeyUp);
+                }
             }
             
             private function onKeyDown(event:KeyboardEvent):void {
