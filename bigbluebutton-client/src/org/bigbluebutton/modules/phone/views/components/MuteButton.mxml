@@ -24,6 +24,7 @@
 	icon="{phoneIcon}" click="startSound()"
 	mouseOver = "mouseOverHandler(event)"
 	mouseOut = "mouseOutHandler(event)"
+	height="24"
 	creationComplete = "initMuteButton()"
 	toolTip="{ResourceUtil.getInstance().getString('bbb.toolbar.phone.toolTip.mute')}"
 	implements="org.bigbluebutton.common.IBbbToolbarComponent">
