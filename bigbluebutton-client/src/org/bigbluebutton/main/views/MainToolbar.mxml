@@ -99,7 +99,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			private var xml:XML;
 			private var settingsComponents:Array = new Array();
 			private var settingsPopup:BBBSettings = null;
-
+			
 			private function init():void{
 				if (Capabilities.hasAccessibility) {
 					AlertAccImpl.enableAccessibility();
@@ -112,8 +112,6 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
                 var timer:Timer = new Timer(3000, 1);
                 timer.addEventListener(TimerEvent.TIMER, checkAccessiblity);
                 timer.start();
-
-
 
 			}
       
@@ -301,6 +299,12 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				langSelector.visible = e.config.languageEnabled;
 				shortcutKeysBtn.includeInLayout = shortcutKeysBtn.visible = e.config.shortcutKeysShowButton; 
 				DEFAULT_HELP_URL = e.config.helpURL;
+
+				if (e.config.logo == "") {
+					hideLogo();
+				} else {
+					logo.source = e.config.logo;
+				}
 			}
 			
 			private function onDisconnectTest():void{
@@ -356,9 +360,15 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				settingsPopup.pushComponents(settingsComponents);
 			}
 
+			private function hideLogo():void {
+				logoHolder.visible = logoHolder.includeInLayout = false;
+			}
+
 		]]>
 	</mx:Script>
-    
+    <mx:HBox id="logoHolder" paddingRight="12" >
+        <mx:Image id="logo" ioError="hideLogo()" />
+    </mx:HBox>
     <mx:HBox id="quickLinks" width="1" includeInLayout="false">
         <mx:LinkButton id="usersLinkBtn" click="onQuickLinkClicked('users')" label="{ResourceUtil.getInstance().getString('bbb.users.quickLink.label')}"
                        accessibilityDescription="{usersLinkBtn.label}" toolTip="{usersLinkBtn.label}"
