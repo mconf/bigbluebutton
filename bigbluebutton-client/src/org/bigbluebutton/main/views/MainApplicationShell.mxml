@@ -622,7 +622,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				id="lblNetworkStats"
 				visible="{layoutOptions.showNetworkMonitor}"
 				includeInLayout="{layoutOptions.showNetworkMonitor}"
-				width="200"
+				width="250"
 				textAlign="right" />
 		<mx:Button
 				id="btnNetwork"
