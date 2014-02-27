@@ -285,6 +285,7 @@ package org.bigbluebutton.modules.phone.managers {
 				var showMicSettings:BBBEvent = new BBBEvent("SHOW_MIC_SETTINGS");
 				showMicSettings.payload['webrtcCapable'] = webrtcCapable;
 				showMicSettings.payload['useWebrtcIfAvailable'] = phoneOptions.useWebrtcIfAvailable;
+				showMicSettings.payload['listenOnlyMode'] = phoneOptions.listenOnlyMode;
 				dispatcher.dispatchEvent(showMicSettings);
 			}
 		}

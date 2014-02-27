@@ -385,7 +385,6 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 
 			private function showMicSettings(event:BBBEvent):void {
 				var micSettings:MicSettings = MicSettings(PopUpManager.createPopUp(mdiCanvas, MicSettings, true));				
-				micSettings.listenOnlyMode = event.payload.listenOnlyMode;
 				micSettings.addEventListener(FlexEvent.CREATION_COMPLETE, function(e:Event):void {
 					var point1:Point = new Point();
 					// Calculate position of TitleWindow in Application's coordinates. 
@@ -395,10 +394,9 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 					micSettings.y = point1.y - (micSettings.height/2);
 				});
 
-				if (event.payload != null && event.payload.hasOwnProperty('webrtcCapable')) {
+				if (event.payload != null) {
+					micSettings.listenOnlyMode = event.payload.listenOnlyMode;
 					micSettings.webrtcCapable = event.payload.webrtcCapable;
-				}
-				if (event.payload != null && event.payload.hasOwnProperty('useWebrtcIfAvailable')) {
 					micSettings.useWebrtcIfAvailable = event.payload.useWebrtcIfAvailable;
 				}
 			}

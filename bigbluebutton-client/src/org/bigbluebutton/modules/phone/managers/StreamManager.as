@@ -204,23 +204,26 @@ package org.bigbluebutton.modules.phone.managers {
 		}
 
 		public function saveAudio():void {
+			trace("[StreamManager::saveAudio]");
 			if(incomingStream != null && muted == false) {	
 				savedAudio = true;
 				incomingStream.togglePause();
-				LogUtil.debug("SAVED");
+				trace("[StreamManager::saveAudio] saved");
 			}	
 			else {
 				savedAudio = false;
-			}	
+				trace("[StreamManager::saveAudio] not saved");
+			}
 		}
 		
 
 		public function restoreAudio():void {
+			trace("[StreamManager::restoreAudio]");
 			setupMicrophone();
-			if(savedAudio) {	
-				LogUtil.debug("RESTORED");
+			if(savedAudio) {
 				incomingStream.togglePause();
-			}	
+				trace("[StreamManager::restoreAudio] restored");
+			}
 		}
 
 		private function setupOutgoingStream():void {

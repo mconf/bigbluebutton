@@ -171,6 +171,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			}	
 			
 			private function onCancelClicked():void {
+				trace("[MicSettings::onCancelClicked] listen only = " + listenOnlyMode);
 				cleanUp();
 				if (listenOnlyMode) {
 					dispatchEvent(new BBBEvent("RESTORE_TO_ADJUST"));
