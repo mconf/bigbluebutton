@@ -239,10 +239,10 @@
 		]]>
 	</mx:Script>
 	<mx:Image id="roleImg" visible="true" width="16" height="16" includeInLayout="{roleImg.visible}" />
-	<mx:Button id="roleBtn" visible="false" enabled="false" width="16" height="16" click="roleBtnClicked()" includeInLayout="{roleBtn.visible}" />
+	<mx:Button id="roleBtn" visible="false" enabled="false" width="20" height="20" click="roleBtnClicked()" includeInLayout="{roleBtn.visible}" />
 	
 	<mx:Image id="statusImg" visible="true" width="16" height="16" includeInLayout="{statusImg.visible}" />
-	<mx:Button id="statusBtn" visible="false" enabled="false" width="16" height="16" click="statusBtnClicked()" includeInLayout="{statusBtn.visible}" />
+	<mx:Button id="statusBtn" visible="false" enabled="false" width="20" height="20" click="statusBtnClicked()" includeInLayout="{statusBtn.visible}" />
 	
 	<!-- Helper objects because direct bindings to data break when the itemRenderer is recycled -->
 	<mx:Image id="presenterInd" includeInLayout="false" visible="{data.presenter}" />
