@@ -28,6 +28,8 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
            height="24"
 		   toolTip="{this.selected ? ResourceUtil.getInstance().getString('bbb.toolbar.video.toolTip.stop') : ResourceUtil.getInstance().getString('bbb.toolbar.video.toolTip.start')}"
 		   visible="false"
+		   enabled="true"
+		   selected="false"
 		   implements="org.bigbluebutton.common.IBbbToolbarComponent">
 
 	<mate:Listener type="{ShortcutEvent.SHARE_WEBCAM}" method="remoteClick" />
@@ -38,19 +40,19 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 		<![CDATA[
 			import com.asfusion.mate.events.Dispatcher;
 			
+			import mx.controls.Menu;
+			import mx.collections.ArrayList;
+			import mx.events.MenuEvent;
+			
 			import org.bigbluebutton.common.Images;
 			import org.bigbluebutton.main.events.BBBEvent;
 			import org.bigbluebutton.main.events.ShortcutEvent;
 			import org.bigbluebutton.main.views.MainToolbar;
 			import org.bigbluebutton.modules.videoconf.events.ClosePublishWindowEvent;
 			import org.bigbluebutton.modules.videoconf.events.ShareCameraRequestEvent;
-			import org.bigbluebutton.modules.videoconf.events.StopShareCameraRequestEvent;
 			import org.bigbluebutton.modules.videoconf.events.StopBroadcastEvent;
+			import org.bigbluebutton.modules.videoconf.events.StopShareCameraRequestEvent;
 			import org.bigbluebutton.util.i18n.ResourceUtil;
-			import mx.controls.Menu;
-			import mx.events.MenuEvent;
-			import mx.collections.ArrayList;
-			
 			
 			private var images:Images = new Images();
 			[Bindable] public var camIcon:Class = images.webcam;
@@ -60,11 +62,10 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			
 			public const STOP_PUBLISHING:Number = 0;
 			public const START_PUBLISHING:Number = 1;
-						
+
 			private var _currentState:Number = OFF_STATE;
 
-			
-			private var dispatcher:Dispatcher;
+			private var dispatcher:Dispatcher = new Dispatcher;
 
 			private var dp:Object = [];
 			private var dataMenu:Menu;
@@ -82,8 +83,6 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				dataMenu.addEventListener("mouseOut", mouseOutHandler);
 				
 				this.popUp = dataMenu;
-				dispatcher = new Dispatcher();
-				this.enabled = true;
 				switchStateToNormal();
 			}
 
@@ -94,10 +93,10 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				_currentState = OFF_STATE;
 			}
 			
-      public function set isPresenter(presenter:Boolean):void {
-        visible = includeInLayout = presenter;
-      }
-      
+			public function set isPresenter(presenter:Boolean):void {
+				visible = includeInLayout = presenter;
+			}
+
 			public function remoteClick(e:ShortcutEvent):void{
 				openPublishWindow();
 				dispatchEvent(new ShortcutEvent(ShortcutEvent.REMOTE_FOCUS_WEBCAM));
@@ -133,7 +132,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			private function openPublishWindow():void{
 				this.enabled = false;
 				if(_currentState == ON_STATE) {
-					trace("Close window");
+					trace("[ToolbarPopupButton:openPublishWindow] Close window");
 					switchStateToNormal();
 					var stopShareCameraRequestEvent:StopShareCameraRequestEvent = new StopShareCameraRequestEvent(StopShareCameraRequestEvent.STOP_SHARE_ALL_CAMERA_REQUEST);
 					dispatchEvent(stopShareCameraRequestEvent);
@@ -149,7 +148,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 					var shareCameraRequestEvent:ShareCameraRequestEvent = new ShareCameraRequestEvent();
 					shareCameraRequestEvent.camerasArray = dp;
 					dispatchEvent(shareCameraRequestEvent);
-				}			
+				}
 			}
 			
 			private function handleCamSettingsClosedEvent(e:BBBEvent):void {
