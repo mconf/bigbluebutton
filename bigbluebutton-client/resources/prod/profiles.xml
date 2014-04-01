@@ -1,5 +1,35 @@
 <?xml version="1.0"?>
 <profiles fallbackLocale="en_US">
+    <profile id="low">
+        <locale>
+            <en_US>Low quality</en_US>
+            <pt_BR>Baixa qualidade</pt_BR>
+        </locale>
+        <width>160</width>
+        <height>120</height>
+        <keyFrameInterval>5</keyFrameInterval>
+        <modeFps>10</modeFps>
+        <qualityBandwidth>0</qualityBandwidth>
+        <qualityPicture>90</qualityPicture>
+        <enableH264>true</enableH264>
+        <h264Level>2.1</h264Level>
+        <h264Profile>main</h264Profile>
+    </profile>
+    <profile id="medium" default="true">
+        <locale>
+            <en_US>Medium quality</en_US>
+            <pt_BR>Média qualidade</pt_BR>
+        </locale>
+        <width>320</width>
+        <height>240</height>
+        <keyFrameInterval>5</keyFrameInterval>
+        <modeFps>10</modeFps>
+        <qualityBandwidth>0</qualityBandwidth>
+        <qualityPicture>90</qualityPicture>
+        <enableH264>true</enableH264>
+        <h264Level>2.1</h264Level>
+        <h264Profile>main</h264Profile>
+    </profile>
     <profile id="hd">
         <locale>
             <en_US>High definition</en_US>
@@ -15,57 +45,15 @@
         <h264Level>2.1</h264Level>
         <h264Profile>main</h264Profile>
     </profile>
-    <profile id="vga">
+    <profile id="ios">
         <locale>
-            <en_US>VGA</en_US>
-        </locale>
-        <width>640</width>
-        <height>480</height>
-        <keyFrameInterval>5</keyFrameInterval>
-        <modeFps>10</modeFps>
-        <qualityBandwidth>0</qualityBandwidth>
-        <qualityPicture>90</qualityPicture>
-        <enableH264>true</enableH264>
-        <h264Level>2.1</h264Level>
-        <h264Profile>main</h264Profile>
-    </profile>
-    <profile id="low1" default="true">
-        <locale>
-            <en_US>Low bandwidth</en_US>
-            <pt_BR>Baixa banda</pt_BR>
+            <en_US>iOS compatible</en_US>
+            <pt_BR>Compatível com iOS</pt_BR>
         </locale>
         <width>320</width>
         <height>240</height>
         <keyFrameInterval>5</keyFrameInterval>
         <modeFps>10</modeFps>
-        <qualityBandwidth>0</qualityBandwidth>
-        <qualityPicture>90</qualityPicture>
-        <enableH264>true</enableH264>
-        <h264Level>2.1</h264Level>
-        <h264Profile>main</h264Profile>
-    </profile>
-    <profile id="low2">
-        <locale>
-            <en_US>Low latency + low CPU</en_US>
-            <pt_BR>Baixa banda + baixo CPU</pt_BR>
-        </locale>
-        <width>320</width>
-        <height>240</height>
-        <keyFrameInterval>5</keyFrameInterval>
-        <modeFps>5</modeFps>
-        <qualityBandwidth>0</qualityBandwidth>
-        <qualityPicture>90</qualityPicture>
-        <enableH264>false</enableH264>
-    </profile>
-    <profile id="pic">
-        <locale>
-            <en_US>One frame per second</en_US>
-            <pt_BR>Um quadro por segundo</pt_BR>
-        </locale>
-        <width>320</width>
-        <height>240</height>
-        <keyFrameInterval>5</keyFrameInterval>
-        <modeFps>1</modeFps>
         <qualityBandwidth>0</qualityBandwidth>
         <qualityPicture>90</qualityPicture>
         <enableH264>false</enableH264>
