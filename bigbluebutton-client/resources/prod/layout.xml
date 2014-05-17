@@ -30,7 +30,6 @@
     <window name="UsersWindow" hidden="true" />
     <window name="PresentationWindow" width="0.34008683068017365" height="0.4601063829787234" x="0.658465991316932" y="0.535904255319149" order="1" />
     <window name="DesktopViewWindow" width="0.34008683068017365" height="0.4601063829787234" x="0.658465991316932" y="0.535904255319149" order="0" />
-    <window name="DesktopViewWindow" width="0.34008683068017365" height="0.4601063829787234" x="0.658465991316932" y="0.535904255319149" />
   </layout>
   <layout name="Webinar">
     <window name="NotesWindow" hidden="true" />
