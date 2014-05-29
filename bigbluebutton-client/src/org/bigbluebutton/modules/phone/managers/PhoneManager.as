@@ -114,14 +114,15 @@ package org.bigbluebutton.modules.phone.managers {
 		}
 				
 		public function joinVoice(autoJoin:Boolean):void {
+			var dispatcher:Dispatcher = new Dispatcher();
+			dispatcher.dispatchEvent(new BBBEvent(BBBEvent.LEAVE_FULL_SCREEN_MODE));
 			userHangup = false;
 			setupMic(autoJoin);
 			var uid:String = String(Math.floor(new Date().getTime()));
 			var uname:String = encodeURIComponent(UsersUtil.getMyExternalUserID() + "-bbbID-" + attributes.username);
 			connectionManager.connect(uid, attributes.internalUserID, uname , attributes.room, attributes.uri);
-			var dispatcher:Dispatcher = new Dispatcher();
 			dispatcher.dispatchEvent(new BBBEvent(BBBEvent.JOIN_VOICE_FOCUS_HEAD));
-		}		
+		}
 		
 		public function rejoin():void {
 			if (!rejoining && !userHangup) {

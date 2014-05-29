@@ -18,6 +18,8 @@
 */
 package org.bigbluebutton.modules.layout.model
 {
+	import com.asfusion.mate.events.Dispatcher;
+
 	import flash.events.EventDispatcher;
 	import flash.events.Event;
 	import flash.events.ProgressEvent;
@@ -31,6 +33,7 @@ package org.bigbluebutton.modules.layout.model
 	import org.bigbluebutton.common.LogUtil;
 	import org.bigbluebutton.core.EventBroadcaster;
 	import org.bigbluebutton.core.model.Config;
+	import org.bigbluebutton.main.events.BBBEvent;
 	import org.bigbluebutton.modules.layout.events.LayoutsLoadedEvent;
 	import org.bigbluebutton.modules.layout.model.LayoutDefinition;
 	import org.bigbluebutton.util.i18n.ResourceUtil;
@@ -51,6 +54,9 @@ package org.bigbluebutton.modules.layout.model
 		}
 		
 		public function loadFromLocalFile():void {
+			var dispatcher:Dispatcher = new Dispatcher();
+			dispatcher.dispatchEvent(new BBBEvent(BBBEvent.LEAVE_FULL_SCREEN_MODE));
+
 			_fileRef = new FileReference();
 			_fileRef.addEventListener(Event.SELECT, onFileSelected); 
 			_fileRef.addEventListener(Event.CANCEL, onCancel); 

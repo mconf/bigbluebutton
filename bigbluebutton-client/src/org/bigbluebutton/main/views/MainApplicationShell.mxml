@@ -46,6 +46,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 	<mate:Listener type="{ToolbarButtonEvent.REMOVE}" method="handleRemoveToolbarComponent"/>
 	<mate:Listener type="{ShortcutEvent.OPEN_SHORTCUT_WIN}" method="openShortcutHelpWindow" />
   	<mate:Listener type="{BBBEvent.OPEN_WEBCAM_PREVIEW}" method="openVideoPreviewWindow" />
+	<mate:Listener type="{BBBEvent.LEAVE_FULL_SCREEN_MODE}" method="handlerLeaveFullScreenModeEvent" />
 	  
 	<mx:Script>
 		<![CDATA[
@@ -352,7 +353,13 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				} catch (err:SecurityError) {
 					// ignore
 				}
-	   		}	
+	   		}
+
+			private function handlerLeaveFullScreenModeEvent(e:BBBEvent):void {
+				if (isFullScreen()) {
+					toggleFullScreen();
+				}
+			}
 	   		
 	   		private function handleOpenWindowEvent(event:OpenWindowEvent):void {
           isTunneling = BBB.initConnectionManager().isTunnelling;

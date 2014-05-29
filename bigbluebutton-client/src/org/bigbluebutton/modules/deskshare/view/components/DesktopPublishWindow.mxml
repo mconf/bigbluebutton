@@ -170,6 +170,8 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			}
 			
 			private function startSharing(connection:NetConnection, uri:String, room:String, fullScreen:Boolean):void {
+				globalDispatcher.dispatchEvent(new BBBEvent(BBBEvent.LEAVE_FULL_SCREEN_MODE));
+
 				var captureX:Number = 0;
 				var captureY:Number = 0;				
 				sharingFullScreen = fullScreen;
@@ -190,15 +192,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			}
 
 			public function stopSharingEvent(evt:StopSharingButtonEvent):void{
-				if (streaming) {
-					stopStream();
-					var streamEvent:StreamEvent = new StreamEvent(StreamEvent.STOP);
-					dispatchEvent(streamEvent);					
-				}
-				sharingFullScreen = false;
-				streaming = false;
-									
-				closeWindow();
+				stopSharing();
 			}
 			
 			private function onUpdateCursorEvent(event:CursorEvent):void {	
@@ -316,6 +310,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			}
 
 			private function closeWindow():void {			
+				globalDispatcher.dispatchEvent(new BBBEvent(BBBEvent.LEAVE_FULL_SCREEN_MODE));
 				ExternalInterface.call("stopApplet");	
 				dispatchEvent(new ShareWindowEvent(ShareWindowEvent.CLOSE));				
 			}		

@@ -29,10 +29,12 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 	
 	<mx:Script>
 		<![CDATA[
+      import com.asfusion.mate.events.Dispatcher;
+
       import flash.system.Security;
       import flash.system.SecurityPanel;
       import flash.ui.Keyboard;
-      
+
       import mx.events.CloseEvent;
       import mx.events.ItemClickEvent;
       import mx.managers.PopUpManager;
@@ -63,6 +65,9 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       }
       
 			private function initDefaultMic():void {
+				var dispatcher:Dispatcher = new Dispatcher();
+				dispatcher.dispatchEvent(new BBBEvent(BBBEvent.LEAVE_FULL_SCREEN_MODE));
+
 				mic = Microphone.getMicrophone();
 				
 				if (mic != null) {
