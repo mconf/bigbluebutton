@@ -29,6 +29,8 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 	
 	<mx:Script>
 		<![CDATA[
+      import com.asfusion.mate.events.Dispatcher;
+
       import flash.system.Security;
       import flash.system.SecurityPanel;
       import flash.ui.Keyboard;
@@ -68,6 +70,9 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       }
       
 			private function initDefaultMic():void {
+				var dispatcher:Dispatcher = new Dispatcher();
+				dispatcher.dispatchEvent(new BBBEvent(BBBEvent.LEAVE_FULL_SCREEN_MODE));
+
 				if (webrtcCapable && useWebrtcIfAvailable) {
 					settingBtn.addEventListener(MouseEvent.CLICK, webrtcTestCall);
 				} else {

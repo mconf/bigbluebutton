@@ -137,6 +137,8 @@ package org.bigbluebutton.modules.phone.managers {
 
 		private function joinVoice(useMicrophone:Boolean):void {
 			trace("[PhoneManager::joinVoice]");
+			var dispatcher:Dispatcher = new Dispatcher();
+			dispatcher.dispatchEvent(new BBBEvent(BBBEvent.LEAVE_FULL_SCREEN_MODE));
 
 			listenOnlyCall = false;
 			if (webrtcCapable && useWebrtcIfAvailable) {
@@ -147,7 +149,6 @@ package org.bigbluebutton.modules.phone.managers {
 				joinVoiceHelper(listenOnlyCall);
 			}
 
-			var dispatcher:Dispatcher = new Dispatcher();
 			dispatcher.dispatchEvent(new BBBEvent(BBBEvent.JOIN_VOICE_FOCUS_HEAD));
 		}
 		
