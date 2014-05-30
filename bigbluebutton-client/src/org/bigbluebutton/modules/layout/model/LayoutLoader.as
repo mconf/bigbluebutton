@@ -25,8 +25,8 @@ package org.bigbluebutton.modules.layout.model
 	import flash.events.ProgressEvent;
 	import flash.events.IOErrorEvent;
 	import flash.events.SecurityErrorEvent;
+	import flash.external.ExternalInterface;
 	import flash.net.FileReference;
-
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
 	
@@ -54,8 +54,10 @@ package org.bigbluebutton.modules.layout.model
 		}
 		
 		public function loadFromLocalFile():void {
-			var dispatcher:Dispatcher = new Dispatcher();
-			dispatcher.dispatchEvent(new BBBEvent(BBBEvent.LEAVE_FULL_SCREEN_MODE));
+			if (ExternalInterface.call("isMac")) {
+				var dispatcher:Dispatcher = new Dispatcher();
+				dispatcher.dispatchEvent(new BBBEvent(BBBEvent.LEAVE_FULL_SCREEN_MODE));
+			}
 
 			_fileRef = new FileReference();
 			_fileRef.addEventListener(Event.SELECT, onFileSelected); 
