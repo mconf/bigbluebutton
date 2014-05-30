@@ -126,3 +126,9 @@ function determineBrowser()
 	
 	return browserName;
 }
+
+function isMac()
+{
+	// http://stackoverflow.com/a/11752084/1006288
+	return navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+}

@@ -46,6 +46,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
     <![CDATA[
       import org.bigbluebutton.common.LogUtil;
       import com.asfusion.mate.events.Dispatcher;			
+      import flash.external.ExternalInterface;
       import mx.collections.*;
       import mx.events.FlexEvent;
       import mx.events.ValidationResultEvent;
@@ -112,7 +113,9 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       }
 
       private function selectFile():void{
-        globalDispatch.dispatchEvent(new BBBEvent(BBBEvent.LEAVE_FULL_SCREEN_MODE));
+        if (ExternalInterface.call("isMac")) {
+	        globalDispatch.dispatchEvent(new BBBEvent(BBBEvent.LEAVE_FULL_SCREEN_MODE));
+        }
 
         fileToUpload.addEventListener(Event.SELECT, onSelectFile);	
         fileToUpload.browse([
