@@ -28,7 +28,7 @@ sudo cp -r core/scripts /usr/local/bigbluebutton/core/
 sudo rm -rf /etc/bigbluebutton/god
 sudo cp -r core/god/god /etc/bigbluebutton/
 sudo rm -f /etc/init.d/bbb-record-core
-sudo cp core/god/initd.god /etc/init.d/bbb-record-core
+sudo cp core/bbb-record-core /etc/init.d/bbb-record-core
 sudo chmod 0755 /etc/init.d/bbb-record-core
 sudo rm -rf /var/bigbluebutton/playback/*
 
@@ -57,7 +57,7 @@ sudo mkdir -p /var/bigbluebutton/recording/status/processed/
 sudo mkdir -p /var/bigbluebutton/recording/status/sanity/
 
 sudo mv /usr/local/bigbluebutton/core/scripts/*.nginx /etc/bigbluebutton/nginx/
-sudo chown -R tomcat6:tomcat6 /var/bigbluebutton/ /var/log/bigbluebutton/
+sudo chown -R tomcat7:tomcat7 /var/bigbluebutton/ /var/log/bigbluebutton/
 sudo chown -R red5:red5 /var/bigbluebutton/deskshare/
 sudo chown -R freeswitch:daemon /var/bigbluebutton/meetings/
 
