@@ -1,11 +1,11 @@
-usePlugin 'scala'
-usePlugin 'java'
-usePlugin 'eclipse'
+apply plugin: 'scala'
+apply plugin: 'java'
+apply plugin: 'eclipse'
 
-task resolveDeps(dependsOn: configurations.default.buildArtifacts, type: Copy) {
+task resolveDeps(type: Copy) {
     into('lib')
     from configurations.default
-    from configurations.default.allArtifacts*.file
+    from configurations.default.allArtifacts.file
 }
 
 /*
@@ -49,7 +49,13 @@ repositories {
             m2compatible = true
             addArtifactPattern "http://repository.springsource.com/maven/bundles/external/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]"
             addArtifactPattern "http://repository.springsource.com/maven/bundles/release/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]"
-        }        
+        }    
+		add(new org.apache.ivy.plugins.resolver.URLResolver()) {
+			name = "Red5"
+			m2compatible = true
+			addArtifactPattern "http://red5.googlecode.com/svn/repository/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]"
+			addArtifactPattern "http://red5.googlecode.com/svn/repository/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]"
+		}
    	}
 }
 
@@ -58,13 +64,13 @@ repositories {
  *  1. You cannot use provideCompile here as gradle will complain. But you can use it in the sub-projects.
  */
 dependencies {
-	// Servlet
-	compile 'javax.servlet:servlet-api:2.5@jar'
+  // Servlet
+  compile 'javax.servlet:servlet-api:2.5@jar'
 	
-	// Mina
-	compile 'org.apache.mina:mina-core:2.0.7@jar'
-	compile 'org.apache.mina:mina-integration-beans:2.0.7@jar'
-	compile 'org.apache.mina:mina-integration-jmx:2.0.7@jar'
+  // Mina
+  compile 'org.apache.mina:mina-core:2.0.7@jar'
+  compile 'org.apache.mina:mina-integration-beans:2.0.7@jar'
+  compile 'org.apache.mina:mina-integration-jmx:2.0.7@jar'
 	
 	// Spring 
 	compile 'org.springframework:spring-web:3.1.1.RELEASE@jar' 
@@ -96,7 +102,7 @@ dependencies {
     compile 'org.easymock:easymock:2.4@jar'
 	
 	compile project(':common')
-    compile 'commons-fileupload:commons-fileupload:1.2.2@jar'
+  compile 'commons-fileupload:commons-fileupload:1.2.2@jar'
 	compile 'commons-io:commons-io:2.1@jar' 
 	
 	// Java Concurrency In Practice
@@ -121,8 +127,8 @@ test {
 }
 
 subprojects {
-    usePlugin 'java'
-    usePlugin 'eclipse'
+    apply plugin: 'java'
+    apply plugin: 'eclipse'
 
 	repositories {
 	   	add(new org.apache.ivy.plugins.resolver.ChainResolver()) {

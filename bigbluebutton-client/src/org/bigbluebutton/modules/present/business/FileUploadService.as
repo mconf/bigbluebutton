@@ -120,8 +120,10 @@ package org.bigbluebutton.modules.present.business
 		 * 
 		 */
 		private function onUploadIoError(event:IOErrorEvent):void {
-			dispatcher.dispatchEvent(new UploadEvent(UploadEvent.UPLOAD_IO_ERROR));
-			LogUtil.error("An error occured while uploading the file. " + event.toString()); 
+			if(event["text"].indexOf("Error #2038") == -1){ //upload works despite of this error.
+				dispatcher.dispatchEvent(new UploadEvent(UploadEvent.UPLOAD_IO_ERROR));
+				LogUtil.error("An error occured while uploading the file. " + event.toString()); 
+			}
 		}
 		
 		/**

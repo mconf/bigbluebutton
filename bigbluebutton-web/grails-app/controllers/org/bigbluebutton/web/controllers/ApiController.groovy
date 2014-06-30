@@ -685,9 +685,11 @@ class ApiController {
   /************************************
    *	GETMEETINGS API
    ************************************/
-  def getMeetings = {
+  def getMeetingsHandler = {
     String API_CALL = "getMeetings"
     log.debug CONTROLLER_NAME + "#${API_CALL}"
+    
+    println("##### GETMEETINGS API CALL ####")
     
   	// BEGIN - backward compatibility
   	if (StringUtils.isEmpty(params.checksum)) {
@@ -715,7 +717,7 @@ class ApiController {
     
     // Do we agree on the checksum? If not, complain.		
     if (! paramsProcessorUtil.isChecksumSame(API_CALL, params.checksum, request.getQueryString())) {
-      	errors.checksumError()
+      errors.checksumError()
     	respondWithErrors(errors)
     	return
     }
@@ -729,42 +731,42 @@ class ApiController {
           render(contentType:"text/xml") {
             response() {
               returncode(RESP_CODE_SUCCESS)
-              meetings(null)
+              meetings()
               messageKey("noMeetings")
               message("no meetings were found on this server")
             }
           }
         }
       }
-      return;
-    }
-    
-    response.addHeader("Cache-Control", "no-cache")
-    withFormat {	
-      xml {
-        render(contentType:"text/xml") {
-          response() {
-            returncode(RESP_CODE_SUCCESS)
-            meetings() {
-              mtgs.each { m ->
-                meeting() {
-                  meetingID(m.getExternalId())
-                  meetingName(m.getName())
-                  createTime(m.getCreateTime())
-                  voiceBridge(m.getTelVoice())
-                  dialNumber(m.getDialNumber())
-                  attendeePW(m.getViewerPassword())
-                  moderatorPW(m.getModeratorPassword())
-                  hasBeenForciblyEnded(m.isForciblyEnded() ? "true" : "false")
-                  running(m.isRunning() ? "true" : "false")
-                  participantCount(m.getNumUsers())
-                  listenerCount(m.getNumListeners())
-                  videoCount(m.getNumVideos())
+    } else {
+      println("#### Has running meetings [" + mtgs.size() + "] #####")
+      response.addHeader("Cache-Control", "no-cache")
+      withFormat {	
+        xml {
+          render(contentType:"text/xml") {
+            response() {
+              returncode(RESP_CODE_SUCCESS)
+                meetings {
+                  for (m in mtgs) {
+                    meeting {
+                      meetingID(m.getExternalId())
+				              meetingName(m.getName())
+				              createTime(m.getCreateTime())
+                      voiceBridge(m.getTelVoice())
+                      dialNumber(m.getDialNumber())
+                      attendeePW(m.getViewerPassword())
+                      moderatorPW(m.getModeratorPassword())
+                      hasBeenForciblyEnded(m.isForciblyEnded() ? "true" : "false")
+                      running(m.isRunning() ? "true" : "false")
+                      participantCount(m.getNumUsers())
+                      listenerCount(m.getNumListeners())
+                      videoCount(m.getNumVideos())
+                    }
+                  }
                 }
               }
             }
           }
-        }
       }
     }
   }
@@ -1092,7 +1094,7 @@ class ApiController {
   /******************************************************
    * GET_RECORDINGS API
    ******************************************************/
-  def getRecordings = {
+  def getRecordingsHandler = {
     String API_CALL = "getRecordings"
     log.debug CONTROLLER_NAME + "#${API_CALL}"
     
@@ -1173,7 +1175,7 @@ class ApiController {
 						 }
 					 }
 				  }
-		  playback() {
+				  playback() {
 					  r.getPlaybacks().each { item ->
 						  format{
 							  type(item.getFormat())
