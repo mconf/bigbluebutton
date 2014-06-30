@@ -1,5 +1,5 @@
-usePlugin 'eclipse'
-usePlugin 'java'
+apply plugin: 'java'
+apply plugin: 'eclipse'
 
 version = '0.8.2'
 jar.enabled = true
@@ -21,6 +21,12 @@ sourceSets {
             	srcDir 'src/resources'
         	}
         }
+}
+
+task resolveDeps(type: Copy) {
+    into('lib')
+    from configurations.default
+    from configurations.default.allArtifacts.file
 }
 
 repositories {
@@ -54,7 +60,6 @@ repositories {
 }
 
 dependencies {
-
     // Logging
     compile ':slf4j-api:1.6.1@jar'
     compile ':logback-core:0.9.18@jar'
@@ -73,8 +78,4 @@ uploadArchives {
     }
 }
 
-task resolveDeps(dependsOn: configurations.default.buildArtifacts, type: Copy) {
-    into('lib')
-    from configurations.default
-    from configurations.default.allArtifacts*.file
-}
+

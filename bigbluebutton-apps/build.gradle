@@ -1,7 +1,7 @@
-usePlugin 'scala'
-usePlugin 'java'
-usePlugin 'war'
-usePlugin 'eclipse'
+apply plugin: 'scala'
+apply plugin: 'java'
+apply plugin: 'war'
+apply plugin: 'eclipse'
 
 version = '0.8'
 jar.enabled = true
@@ -10,10 +10,10 @@ def appName = 'bigbluebutton'
 
 archivesBaseName = appName 
 
-task resolveDeps(dependsOn: configurations.default.buildArtifacts, type: Copy) {
+task resolveDeps(type: Copy) {
     into('lib')
     from configurations.default
-    from configurations.default.allArtifacts*.file
+    from configurations.default.allArtifacts.file
 }
 
 repositories {
@@ -81,7 +81,7 @@ dependencies {
 	providedCompile 'org.slf4j:log4j-over-slf4j:1.7.2@jar' 
 	providedCompile 'org.slf4j:jcl-over-slf4j:1.7.2@jar'
 	providedCompile 'org.slf4j:jul-to-slf4j:1.7.2@jar'
-    providedCompile 'org.slf4j:slf4j-api:1.7.2@jar'
+	providedCompile 'org.slf4j:slf4j-api:1.7.2@jar'
 
 	// Needed for the JVM shutdown hook but needs to be put into red5/lib dir.
 	// Otherwise we get exception on aop utils class not found.
