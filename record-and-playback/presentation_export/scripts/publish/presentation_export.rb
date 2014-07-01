@@ -23,7 +23,7 @@ require File.expand_path('../../../lib/recordandplayback', __FILE__)
 require 'rubygems'
 require 'trollop'
 require 'yaml'
-require 'zip/zip'
+require 'zip'
 
 opts = Trollop::options do
   opt :meeting_id, "Meeting id to archive", :default => '58f4a6b3-cd07-444d-8564-59116cb53974', :type => String
@@ -74,7 +74,7 @@ if ($playback == "presentation_export")
     BigBlueButton.logger.info("Creating the .zip file")
 
     zipped_file = "#{package_dir}/#{$meeting_id}.zip"
-    Zip::ZipFile.open(zipped_file, Zip::ZipFile::CREATE) do |zipfile|
+    Zip::File.open(zipped_file, Zip::File::CREATE) do |zipfile|
       Dir["#{zipped_directory}/**/**"].reject{|f|f==zipped_file}.each do |file|
         zipfile.add(file.sub(zipped_directory+'/', ''), file)
       end
