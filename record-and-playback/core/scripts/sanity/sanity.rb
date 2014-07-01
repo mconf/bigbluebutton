@@ -111,6 +111,8 @@ raw_archive_dir = "#{recording_dir}/raw"
 redis_host = props['redis_host']
 redis_port = props['redis_port']
 
+FFMPEG.ffmpeg_binary=("/usr/local/bin/ffmpeg")
+
 begin
 	BigBlueButton.logger.info("Starting sanity check for recording #{meeting_id}.")
 	BigBlueButton.logger.info("Checking events.xml")
