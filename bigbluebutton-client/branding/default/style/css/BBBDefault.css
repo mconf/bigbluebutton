@@ -764,3 +764,15 @@ Alert {
   dropShadowColor: #FFFFFF;
   color: #000000;
 }
+
+.recordButtonStyleNormal {
+  icon:   Embed('assets/images/control-record.png');
+}
+
+.recordButtonStyleStart {
+  icon:   Embed('assets/images/control-record-start.png');
+}
+
+.recordButtonStyleStop {
+  icon:   Embed('assets/images/control-record-stop.png');
+}
