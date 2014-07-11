@@ -1,3 +1,4 @@
+#!/usr/bin/ruby
 # Set encoding to utf-8
 # encoding: UTF-8
 #
@@ -26,11 +27,11 @@ require 'rexml/document'
 require 'open-uri'
 require 'digest/md5'
 
-BigBlueButton.logger = Logger.new("/var/log/bigbluebutton/decrypt.log",'daily' )
+BigBlueButton.logger = Logger.new("/var/log/bigbluebutton/mconf_decrypter.log",'daily' )
 #BigBlueButton.logger = Logger.new(STDOUT)
 
 bbb_props = YAML::load(File.open('../../core/scripts/bigbluebutton.yml'))
-mconf_props = YAML::load(File.open('mconf.yml'))
+mconf_props = YAML::load(File.open('mconf_decrypter.yml'))
 
 # these properties must be global variables (starting with $)
 $private_key = mconf_props['private_key']
