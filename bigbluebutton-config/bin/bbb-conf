@@ -1034,7 +1034,7 @@ check_state() {
 			fi
 
 			SIP_IP=$(netstat -ant | grep 5060 | head -n1 | awk -F" " '{print $4}' | cut -d: -f1)
-			if [ $BBB_SIP_APP_IP != $SIP_IP ]; then
+			if [ "$BBB_SIP_APP_IP" != "$SIP_IP" ]; then
 				echo "# Error: FreeSWITCH is listening on IP address $SIP_IP for SIP calls, but "
 				echo "# The IP address ($BBB_SIP_APP_IP) set bbb.sip.app.ip."
 				echo "#"
