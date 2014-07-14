@@ -31,7 +31,7 @@ BigBlueButton.logger = Logger.new("/var/log/bigbluebutton/mconf_decrypter.log",'
 #BigBlueButton.logger = Logger.new(STDOUT)
 
 bbb_props = YAML::load(File.open('../../core/scripts/bigbluebutton.yml'))
-mconf_props = YAML::load(File.open('mconf_decrypter.yml'))
+mconf_props = YAML::load(File.open('mconf-decrypter.yml'))
 
 # these properties must be global variables (starting with $)
 $private_key = mconf_props['private_key']
