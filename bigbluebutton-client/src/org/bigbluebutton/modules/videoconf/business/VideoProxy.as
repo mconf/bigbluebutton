@@ -30,14 +30,14 @@ package org.bigbluebutton.modules.videoconf.business
 	import flash.net.NetStream;
 	import flash.system.Capabilities;
 	import flash.utils.Dictionary;
+	import flash.net.Responder;
 
 	import mx.collections.ArrayCollection;
 	
 	import org.bigbluebutton.common.LogUtil;
 	import org.bigbluebutton.core.BBB;
+	import org.bigbluebutton.core.managers.ConnectionManager;
 	import org.bigbluebutton.core.managers.UserManager;
-	import org.bigbluebutton.main.model.users.BBBUser;
-	import org.bigbluebutton.main.model.users.events.StreamStartedEvent;
 	import org.bigbluebutton.modules.videoconf.events.ConnectedEvent;
 	import org.bigbluebutton.modules.videoconf.events.StartBroadcastEvent;
 	import org.bigbluebutton.modules.videoconf.model.VideoConfOptions;
@@ -144,9 +144,24 @@ package org.bigbluebutton.modules.videoconf.business
 		}
 
 		public function createPlayConnectionFor(streamName:String):void {
-			LogUtil.debug("VideoProxy::createPlayConnectionFor:: Creating connection for stream [" + streamName + "]");
-			// TODO: Ask LB for path to current user
-			var connectionPath:String = "10.0.3.203/10.0.3.254/10.0.3.79";
+			LogUtil.debug("VideoProxy::createPlayConnectionFor:: Requesting path for stream [" + streamName + "]");
+
+			// Ask red5 the path to stream
+			var _nc:NetConnection = BBB.initConnectionManager().connection;
+			_nc.call("video.getStreamPath", new Responder(handleStreamPathResponse), streamName);
+		}
+
+		private function handleStreamPathResponse(msg:String):void {
+			trace("handleStreamPathResponse [" + msg + "]");
+			var temp:Array = msg.split(",");
+			if(temp.length == 2)
+				handleStreamPathReceived(temp[0], temp[1]);
+			else
+				handleStreamPathReceived(temp[0], "");
+		}
+
+		public function handleStreamPathReceived(streamName:String, connectionPath:String):void {
+			LogUtil.debug("VideoProxy::handleStreamPathReceived:: Path for stream [" + streamName + "]: [" + connectionPath + "]");
 			var serverIp:String = connectionPath.split("/")[0];
 			var ipRegex:RegExp = /([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/;
 			var newUrl:String = _url.replace(ipRegex, serverIp);
@@ -177,7 +192,7 @@ package org.bigbluebutton.modules.videoconf.business
 				connection.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityError);
 				connection.connect(newUrl);
 				// TODO change to trace
-				LogUtil.debug("VideoProxy::createPlayConnectionFor:: Creating NetConnection for [" + newUrl + "]");
+				LogUtil.debug("VideoProxy::handleStreamPathReceived:: Creating NetConnection for [" + newUrl + "]");
 				playConnectionDict[newUrl] = connection;
 			}
 			else {
@@ -187,7 +202,7 @@ package org.bigbluebutton.modules.videoconf.business
 					dispatcher.dispatchEvent(new PlayConnectionReady(streamName, playConnectionDict[newUrl], streamPrefix));
 				}
 				// TODO change to trace
-				LogUtil.debug("VideoProxy::createPlayConnectionFor:: Found NetConnection for [" + newUrl + "]");
+				LogUtil.debug("VideoProxy::handleStreamPathReceived:: Found NetConnection for [" + newUrl + "]");
 			}
 		}
 
