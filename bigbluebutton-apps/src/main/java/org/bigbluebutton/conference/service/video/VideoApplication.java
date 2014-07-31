@@ -34,12 +34,13 @@ public class VideoApplication  extends ApplicationAdapter implements IApplicatio
 	private static Logger log = Red5LoggerFactory.getLogger(VideoService.class, "bigbluebutton");
 
 	private static final String APP = "VIDEO";
+	private String defaultStreamPath;
 
 	public String getStreamPath(String streamName) {
 		// XXX: This is properly implemented in bigbluebutton 0.9 @ branch multivideo
 		//      This methods will simply return streamName,path
 		// TODO: Make this path configurable
-		return streamName + "," + "10.0.3.213/10.0.3.225"; 
+		return streamName + "," + defaultStreamPath;
 	}
 
 	@Override
@@ -110,5 +111,9 @@ public class VideoApplication  extends ApplicationAdapter implements IApplicatio
 
 	private BigBlueButtonSession getBbbSession() {
 		return (BigBlueButtonSession) Red5.getConnectionLocal().getAttribute(Constants.SESSION);
+	}
+
+	public void setDefaultStreamPath(String path) {
+		this.defaultStreamPath = path;
 	}
 }

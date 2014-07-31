@@ -162,15 +162,25 @@ package org.bigbluebutton.modules.videoconf.business
 
 		public function handleStreamPathReceived(streamName:String, connectionPath:String):void {
 			LogUtil.debug("VideoProxy::handleStreamPathReceived:: Path for stream [" + streamName + "]: [" + connectionPath + "]");
-			var serverIp:String = connectionPath.split("/")[0];
-			var ipRegex:RegExp = /([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/;
-			var newUrl:String = _url.replace(ipRegex, serverIp);
 
+			var newUrl:String;
 			var streamPrefix:String;
-			if(connectionPath != serverIp) // More than one server -> has prefix
-				streamPrefix = connectionPath.replace(serverIp + "/", "") + "/";
-			else
+
+			// Check whether the is through proxy servers or not
+			if(connectionPath == "") {
+				newUrl = _url;
 				streamPrefix = "";
+			}
+			else {
+				var ipRegex:RegExp = /([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/;
+				var serverIp:String = connectionPath.split("/")[0];
+				newUrl = _url.replace(ipRegex, serverIp);
+				streamPrefix = connectionPath.replace(serverIp + "/", "") + "/";
+			}
+
+			// Store URL for this stream
+			streamUrlDict[streamName] = newUrl;
+
 			// Set current streamPrefix to use the current path
 			streamNamePrefixDict[streamName] = streamPrefix;
 
@@ -179,7 +189,6 @@ package org.bigbluebutton.modules.videoconf.business
 				urlStreamsDict[streamPrefix+streamName] = urlStreamsDict[newUrl];
 			}
 			urlStreamsDict[newUrl].push(streamName);
-			streamUrlDict[streamPrefix+streamName] = newUrl;
 
 			// If connection with this URL does not exist
 			if(!playConnectionDict[newUrl]){
@@ -212,10 +221,10 @@ package org.bigbluebutton.modules.videoconf.business
 		}
 
 		public function closePlayConnectionFor(streamName:String):void {
-			var streamUrl:String = streamUrlDict[streamName];
-			var streams:Array = urlStreamsDict[streamUrl];
 			var temp:Array = streamName.split("/");
 			var stream:String = temp[temp.length-1];
+			var streamUrl:String = streamUrlDict[stream];
+			var streams:Array = urlStreamsDict[streamUrl];
 			if(streams != null) {
 				removeFromArray(stream, streams);
 			}
@@ -228,10 +237,10 @@ package org.bigbluebutton.modules.videoconf.business
 				if(connection != null) connection.close();
 				delete playConnectionDict[streamUrl];
 				delete urlStreamsDict[streamUrl];
-				delete streamUrlDict[streamName];
+				delete streamUrlDict[stream];
 			}
 			else {
-				trace("VideoProxy:: closePlayConnectionFor:: stream: [" + streamName + "], URL: [" + streamUrl + "], new streamCount: [" + streams.length + "]");
+				trace("VideoProxy:: closePlayConnectionFor:: stream: [" + stream + "], URL: [" + streamUrl + "], new streamCount: [" + streams.length + "]");
 			}
 		}
 
