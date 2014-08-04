@@ -122,14 +122,16 @@ package org.bigbluebutton.modules.videoconf.maps
     private function displayToolbarButton():void {
       button.isPresenter = true;
       
-      if (options.presenterShareOnly) {
-        if (UsersUtil.amIPresenter()) {
-          button.isPresenter = true;
-        } else { 
-          button.isPresenter = false;
-        }
-      }
-            
+      if (options.presenterShareOnly && !UsersUtil.amIPresenter()) {
+        button.isPresenter = false;      
+      
+      //if (options.presenterShareOnly) {
+      //  if (UsersUtil.amIPresenter()) {
+      //    button.isPresenter = true;
+      //  } else { 
+      //    button.isPresenter = false;
+      //  }
+      //}
     }
     
     private function addToolbarButton():void{
