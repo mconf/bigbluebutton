@@ -20,6 +20,7 @@ package org.bigbluebutton.app.video;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -73,8 +74,7 @@ public class VideoApplication extends MultiThreadedApplicationAdapter {
     @Override
 	public boolean appConnect(IConnection conn, Object[] params) {
 		log.info("oflaDemo appConnect"); 
-       
-        return super.appConnect(conn, params);
+		return super.appConnect(conn, params);
 	}
 
     @Override
@@ -107,21 +107,7 @@ public class VideoApplication extends MultiThreadedApplicationAdapter {
     	IConnection conn = Red5.getConnectionLocal();  
     	super.streamBroadcastStart(stream);
     	log.info("streamBroadcastStart " + stream.getPublishedName() + " " + System.currentTimeMillis() + " " + conn.getScope().getName());
-        
 
-
-        /*String sourceServer = "143.54.10.63";
-        String sourceStreamName = stream.getPublishedName();
-        String destinationServer = "143.54.10.63";
-        String destinationStreamName = "320x240-teste";
-        String app = "video/"+Red5.getConnectionLocal().getScope().getName();
-        
-        CustomStreamRelay remoteRelay = new CustomStreamRelay();
-        remoteRelay.initRelay(new String[]{sourceServer, app, sourceStreamName, destinationServer, "video", destinationStreamName, "live"});
-        remoteRelay.startRelay();
-                
-        */
-        
         if (recordVideoStream &&  stream.getPublishedName().contains("/") == false) {
 	    	recordStream(stream);
 	    	VideoStreamListener listener = new VideoStreamListener(); 
@@ -131,6 +117,10 @@ public class VideoApplication extends MultiThreadedApplicationAdapter {
         }
     }
 
+    private Long genTimestamp() {
+    	return TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
+    }
+    
     @Override
     public void streamBroadcastClose(IBroadcastStream stream) {
     	IConnection conn = Red5.getConnectionLocal();  
@@ -142,11 +132,11 @@ public class VideoApplication extends MultiThreadedApplicationAdapter {
     			stream.removeStreamListener(listener);
     		}
     		
-        	long publishDuration = (System.currentTimeMillis() - stream.getCreationTime()) / 1000;
-        	log.info("streamBroadcastClose " + stream.getPublishedName() + " " + System.currentTimeMillis() + " " + conn.getScope().getName());
+       	long publishDuration = (System.currentTimeMillis() - stream.getCreationTime()) / 1000;
+        log.info("streamBroadcastClose " + stream.getPublishedName() + " " + System.currentTimeMillis() + " " + conn.getScope().getName());
     		Map<String, String> event = new HashMap<String, String>();
     		event.put("module", "WEBCAM");
-    		event.put("timestamp", new Long(System.currentTimeMillis()).toString());
+    		event.put("timestamp", genTimestamp().toString());
     		event.put("meetingId", conn.getScope().getName());
     		event.put("stream", stream.getPublishedName());
     		event.put("duration", new Long(publishDuration).toString());

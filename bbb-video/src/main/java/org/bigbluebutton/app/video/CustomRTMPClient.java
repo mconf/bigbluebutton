@@ -18,9 +18,9 @@
 
 package org.bigbluebutton.app.video;
 
-import com.mconf.red5.client.net.rtmp.RTMPClient;
-import com.mconf.red5.server.service.PendingCall;
-import com.mconf.red5.server.net.rtmp.event.Ping;
+import org.red5.client.net.rtmp.RTMPClient;
+import org.red5.server.service.PendingCall;
+import org.red5.server.net.rtmp.event.Ping;
 
 /**
  * Custom RTMP Client
