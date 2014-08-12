@@ -127,7 +127,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
   </EventHandlers>
   
 	<EventHandlers type="{PlayConnectionReady.PLAY_CONNECTION_READY}">
-		<MethodInvoker generator="{VideoEventMapDelegate}" method="handlePlayConnectionReady" />
+		<MethodInvoker generator="{VideoEventMapDelegate}" method="handlePlayConnectionReady" arguments="{event}" />
 	</EventHandlers>
   <!-- ~~~~~~~~~~~~~~~~~~    INJECTORS     ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
   

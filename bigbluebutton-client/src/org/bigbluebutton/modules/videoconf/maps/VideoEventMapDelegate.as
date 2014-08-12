@@ -87,7 +87,7 @@ package org.bigbluebutton.modules.videoconf.maps
     private var streamList:ArrayList = new ArrayList();
     private var numberOfWindows:Object = new Object();
 
-	// Store userID of windows waiting for a NetConnection
+	// Store userID waiting for a NetConnection to view a stream
 	private var pendingVideoWindowsList:Object = new Object();
     
     public function VideoEventMapDelegate(dispatcher:IEventDispatcher)
@@ -267,31 +267,43 @@ package org.bigbluebutton.modules.videoconf.maps
     private function closeWindow(userID:String):void {
       _graphics.removeGraphicsFor(userID);
 		var bbbUser:BBBUser = UsersUtil.getUser(userID);
-		proxy.closePlayConnectionFor(bbbUser.streamName);
+		var streams:Array = getUserStreamNames(bbbUser);
+		for each(var stream:String in streams) {
+			proxy.closePlayConnectionFor(stream);
+		}
     }
 
     private function closePublishWindowWithStream(userID:String, stream:String):int {
       return _graphics.removeVideoByStreamName(userID, stream);
     }
 
+    private function getUserStreamNames(user:BBBUser):Array {
+        if (user.streamName == null || user.streamName == "") {
+            return new Array();
+        } else {
+            return user.streamName.split("|");
+        }
+    }
+
 	private function initPlayConnectionFor(userID:String):void {
-		//TODO: Change to trace
-		LogUtil.debug("VideoEventMapDelegate:: initPlayConnectionFor : [" + userID + "]");
-		// Store the userID
-		pendingVideoWindowsList[userID] = true;
-		// Request the connection
+		trace("VideoEventMapDelegate:: initPlayConnectionFor : [" + userID + "]");
 		var bbbUser:BBBUser = UsersUtil.getUser(userID);
-		proxy.createPlayConnectionFor(bbbUser.streamName);
+		var streams:Array = getUserStreamNames(bbbUser);
+		for each(var stream:String in streams) {
+			// Store the userID
+			pendingVideoWindowsList[stream] = userID;
+			// Request the connection
+			proxy.createPlayConnectionFor(stream);
+		}
 	}
 
-	public function handlePlayConnectionReady():void {
-		// Iterate through all pending windows
-		for(var userID:String in pendingVideoWindowsList) {
-			var bbbUser:BBBUser = UsersUtil.getUser(userID);
-			if(proxy.playConnectionIsReadyFor(bbbUser.streamName)) {
-				delete pendingVideoWindowsList[userID];
-				openViewWindowFor(userID);
-			}
+	public function handlePlayConnectionReady(e:PlayConnectionReady):void {
+		var userID:String = pendingVideoWindowsList[e.streamName];
+		trace("VideoEventMapDelegate:: handlePlayConnectionReady : stream:[" + e.streamName + "] conn:["+e.connection.uri+"] prefix:["+e.prefix+"] userID:["+userID+"]");
+		if(userID) {
+			openViewWindowFor(userID);
+			_graphics.addVideoFor(userID, e.connection, e.prefix + e.streamName);
+			delete pendingVideoWindowsList[e.streamName];
 		}
 	}
     
@@ -302,8 +314,6 @@ package org.bigbluebutton.modules.videoconf.maps
       if (bbbUser.streamName != "") {
         closeAllAvatarWindows(userID);
       }
-      _graphics.addVideoFor(userID, proxy.getPlayConnectionFor(bbbUser.streamName));
-      
     }
 
     public function connectToVideoApp():void {
@@ -531,6 +541,7 @@ package org.bigbluebutton.modules.videoconf.maps
 
     private function closeViewWindowWithStream(userID:String, stream:String):void {
       _graphics.removeVideoByStreamName(userID, stream);
+      proxy.closePlayConnectionFor(stream);
     }
     
     public function handleStoppedViewingWebcamEvent(event:StoppedViewingWebcamEvent):void {

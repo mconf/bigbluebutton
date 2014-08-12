@@ -58,8 +58,8 @@ package org.bigbluebutton.modules.videoconf.business
 
 		// Dictionary<url,NetConnection> used for stream playing
 		private var playConnectionDict:Dictionary;
-		// Dictionary<url,int> used to keep track of how many streams use a URL
-		private var playConnectionCountDict:Dictionary;
+		// Dictionary<url,Array<streamName>> used to keep track of streams using a URL
+		private var urlStreamsDict:Dictionary;
 		// Dictionary<streamName,streamNamePrefix> used for stream playing
 		private var streamNamePrefixDict:Dictionary;
 		// Dictionary<streamName,url>
@@ -81,7 +81,7 @@ package org.bigbluebutton.modules.videoconf.business
 			nc.addEventListener(NetStatusEvent.NET_STATUS, onNetStatus);
 			nc.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityError);
 			playConnectionDict = new Dictionary();
-			playConnectionCountDict = new Dictionary();
+			urlStreamsDict = new Dictionary();
 			streamNamePrefixDict = new Dictionary();
 			streamUrlDict = new Dictionary();
 		}
@@ -89,7 +89,7 @@ package org.bigbluebutton.modules.videoconf.business
     public function connect():void {
     	nc.connect(_url);
 		playConnectionDict[_url] = nc;
-		playConnectionCountDict[_url] = 0;
+		urlStreamsDict[_url] = new Array();
     }
     
 		private function onAsyncError(event:AsyncErrorEvent):void{
@@ -128,7 +128,14 @@ package org.bigbluebutton.modules.videoconf.business
 			switch(event.info.code){
 				case "NetConnection.Connect.Success":
 					var dispatcher:Dispatcher = new Dispatcher();
-					dispatcher.dispatchEvent(new PlayConnectionReady(PlayConnectionReady.PLAY_CONNECTION_READY));
+					// Notify streams from this connection
+					var url:String = event.target.uri;
+					var streams:Array = urlStreamsDict[url];
+					var conn:NetConnection = playConnectionDict[url];
+					for each (var stream:String in streams) {
+						var prefix:String = streamNamePrefixDict[stream];
+						dispatcher.dispatchEvent(new PlayConnectionReady(stream, conn, prefix));
+					}
 					break;
 				default:
 					LogUtil.debug("[" + event.info.code + "] for a play connection");
@@ -144,9 +151,6 @@ package org.bigbluebutton.modules.videoconf.business
 			var ipRegex:RegExp = /([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/;
 			var newUrl:String = _url.replace(ipRegex, serverIp);
 
-			// Store URL for this stream
-			streamUrlDict[streamName] = newUrl;
-
 			var streamPrefix:String;
 			if(connectionPath != serverIp) // More than one server -> has prefix
 				streamPrefix = connectionPath.replace(serverIp + "/", "") + "/";
@@ -154,6 +158,13 @@ package org.bigbluebutton.modules.videoconf.business
 				streamPrefix = "";
 			// Set current streamPrefix to use the current path
 			streamNamePrefixDict[streamName] = streamPrefix;
+
+			if(urlStreamsDict[newUrl] == null) {
+				urlStreamsDict[newUrl] = new Array();
+				urlStreamsDict[streamPrefix+streamName] = urlStreamsDict[newUrl];
+			}
+			urlStreamsDict[newUrl].push(streamName);
+			streamUrlDict[streamPrefix+streamName] = newUrl;
 
 			// If connection with this URL does not exist
 			if(!playConnectionDict[newUrl]){
@@ -168,63 +179,44 @@ package org.bigbluebutton.modules.videoconf.business
 				// TODO change to trace
 				LogUtil.debug("VideoProxy::createPlayConnectionFor:: Creating NetConnection for [" + newUrl + "]");
 				playConnectionDict[newUrl] = connection;
-				playConnectionCountDict[newUrl] = 0;
 			}
 			else {
 				if(playConnectionDict[newUrl].connected) {
 					// Connection is ready, send event
 					var dispatcher:Dispatcher = new Dispatcher();
-					dispatcher.dispatchEvent(new PlayConnectionReady(PlayConnectionReady.PLAY_CONNECTION_READY));
+					dispatcher.dispatchEvent(new PlayConnectionReady(streamName, playConnectionDict[newUrl], streamPrefix));
 				}
 				// TODO change to trace
 				LogUtil.debug("VideoProxy::createPlayConnectionFor:: Found NetConnection for [" + newUrl + "]");
 			}
 		}
 
-		public function playConnectionIsReadyFor(streamName:String):Boolean {
-			var streamUrl:String = streamUrlDict[streamName];
-			if(playConnectionDict[streamUrl].connected)
-				return true;
-			return false;
-		}
-
-		public function getPlayConnectionFor(streamName:String):NetConnection {
-			var streamUrl:String = streamUrlDict[streamName];
-			playConnectionCountDict[streamUrl] = playConnectionCountDict[streamUrl] + 1;
-			// TODO: change to trace
-			LogUtil.debug("VideoProxy:: getPlayConnection:: URL: [" + streamUrl + "], count: [" + playConnectionCountDict[streamUrl] + "]");
-			return playConnectionDict[streamUrl];
-		}
-
-		public function getStreamNamePrefixFor(streamName:String):String{
-			// If does not exist
-			if(streamNamePrefixDict[streamName] == null){
-				// TODO: change LogUtil.debug(); to trace();
-				LogUtil.debug("VideoProxy:: getStreamNamePrefixFor:: streamPrefix not found. NetConnection might not exist for stream [" + streamName + "]");
-				return "";
-			}
-			else{
-				return streamNamePrefixDict[streamName];
-			}
+		private function removeFromArray(item:String, array:Array):void {
+			var index:int = array.indexOf(item);
+			array.splice(index,1);
 		}
 
 		public function closePlayConnectionFor(streamName:String):void {
 			var streamUrl:String = streamUrlDict[streamName];
+			var streams:Array = urlStreamsDict[streamUrl];
+			var temp:Array = streamName.split("/");
+			var stream:String = temp[temp.length-1];
+			if(streams != null) {
+				removeFromArray(stream, streams);
+			}
 			// Do not close publish connection, no matter what
 			if(playConnectionDict[streamUrl] == nc)
 				return;
-			if(streamUrl != null) {
-				var count:int = playConnectionCountDict[streamUrl] - 1;
-				// TODO: change to trace
-				LogUtil.debug("VideoProxy:: closePlayConnectionFor:: stream: [" + streamName + "], URL: [" + streamUrl + "], new streamCount: [" + count + "]");
-				playConnectionCountDict[streamUrl] = count;
-				if(count <= 0) {
-					// No one else is using this NetConnection
-					var connection:NetConnection = playConnectionDict[streamUrl];
-					if(connection != null) connection.close();
-					delete playConnectionDict[streamUrl];
-					delete playConnectionCountDict[streamUrl];
-				}
+			if(streams == null || streams.length <= 0) {
+				// No one else is using this NetConnection
+				var connection:NetConnection = playConnectionDict[streamUrl];
+				if(connection != null) connection.close();
+				delete playConnectionDict[streamUrl];
+				delete urlStreamsDict[streamUrl];
+				delete streamUrlDict[streamName];
+			}
+			else {
+				trace("VideoProxy:: closePlayConnectionFor:: stream: [" + streamName + "], URL: [" + streamUrl + "], new streamCount: [" + streams.length + "]");
 			}
 		}
 
@@ -308,8 +300,8 @@ package org.bigbluebutton.modules.videoconf.business
 			}
 			// Reset dictionaries
 			playConnectionDict = new Dictionary();
-			playConnectionCountDict = new Dictionary();
 			streamNamePrefixDict = new Dictionary();
+			urlStreamsDict = new Dictionary();
 			streamUrlDict = new Dictionary();
 		}
 		
