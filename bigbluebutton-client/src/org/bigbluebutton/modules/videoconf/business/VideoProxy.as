@@ -144,11 +144,16 @@ package org.bigbluebutton.modules.videoconf.business
 		}
 
 		public function createPlayConnectionFor(streamName:String):void {
-			LogUtil.debug("VideoProxy::createPlayConnectionFor:: Requesting path for stream [" + streamName + "]");
-
-			// Ask red5 the path to stream
-			var _nc:NetConnection = BBB.initConnectionManager().connection;
-			_nc.call("video.getStreamPath", new Responder(handleStreamPathResponse), streamName);
+			// Check if a connection already exists
+			if(!streamUrlDict[streamName]) {
+				trace("VideoProxy::createPlayConnectionFor:: Requesting path for stream [" + streamName + "]");
+				// Ask red5 the path to stream
+				var _nc:NetConnection = BBB.initConnectionManager().connection;
+				_nc.call("video.getStreamPath", new Responder(handleStreamPathResponse), streamName);
+			}
+			else {
+				trace("VideoProxy::createPlayConnectionFor:: Found connection for stream [" + streamName + "]");
+			}
 		}
 
 		private function handleStreamPathResponse(msg:String):void {
@@ -232,15 +237,13 @@ package org.bigbluebutton.modules.videoconf.business
 			if(playConnectionDict[streamUrl] == nc)
 				return;
 			if(streams == null || streams.length <= 0) {
+				trace("VideoProxy:: closePlayConnectionFor:: Closing connection with: [" + streamUrl + "]");
 				// No one else is using this NetConnection
 				var connection:NetConnection = playConnectionDict[streamUrl];
 				if(connection != null) connection.close();
 				delete playConnectionDict[streamUrl];
 				delete urlStreamsDict[streamUrl];
 				delete streamUrlDict[stream];
-			}
-			else {
-				trace("VideoProxy:: closePlayConnectionFor:: stream: [" + stream + "], URL: [" + streamUrl + "], new streamCount: [" + streams.length + "]");
 			}
 		}
 
