@@ -125,17 +125,29 @@ package org.bigbluebutton.modules.videoconf.business
 		}
 
 		private function onPlayNetStatus(event:NetStatusEvent):void {
+			var url:String = event.target.uri;
+			var streams:Array = urlStreamsDict[url];
+			var stream:String;
 			switch(event.info.code){
 				case "NetConnection.Connect.Success":
 					var dispatcher:Dispatcher = new Dispatcher();
 					// Notify streams from this connection
-					var url:String = event.target.uri;
-					var streams:Array = urlStreamsDict[url];
 					var conn:NetConnection = playConnectionDict[url];
-					for each (var stream:String in streams) {
+					for each (stream in streams) {
 						var prefix:String = streamNamePrefixDict[stream];
 						dispatcher.dispatchEvent(new PlayConnectionReady(stream, conn, prefix));
 					}
+					break;
+				case "NetConnection.Connect.Failed":
+				case "NetConnection.Connect.Closed":
+					LogUtil.warn("[" + event.info.code + "] for a play connection at [" + url + "]");
+					for each (stream in streams) {
+						// XXX: Notify someone else?
+						delete streamNamePrefixDict[stream];
+						delete streamUrlDict[stream];
+					}
+					delete playConnectionDict[url];
+					delete urlStreamsDict[url];
 					break;
 				default:
 					LogUtil.debug("[" + event.info.code + "] for a play connection");
