@@ -140,7 +140,7 @@ package org.bigbluebutton.modules.videoconf.business
 					break;
 				case "NetConnection.Connect.Failed":
 				case "NetConnection.Connect.Closed":
-					LogUtil.warn("[" + event.info.code + "] for a play connection at [" + url + "]");
+					trace("[" + event.info.code + "] for a play connection at [" + url + "]");
 					for each (stream in streams) {
 						// XXX: Notify someone else?
 						delete streamNamePrefixDict[stream];
@@ -150,7 +150,7 @@ package org.bigbluebutton.modules.videoconf.business
 					delete urlStreamsDict[url];
 					break;
 				default:
-					LogUtil.debug("[" + event.info.code + "] for a play connection");
+					LogUtil.debug("[" + event.info.code + "] for a play connection at [" + url + "]");
 					break;
 			}
 		}
@@ -178,7 +178,7 @@ package org.bigbluebutton.modules.videoconf.business
 		}
 
 		public function handleStreamPathReceived(streamName:String, connectionPath:String):void {
-			LogUtil.debug("VideoProxy::handleStreamPathReceived:: Path for stream [" + streamName + "]: [" + connectionPath + "]");
+			trace("VideoProxy::handleStreamPathReceived:: Path for stream [" + streamName + "]: [" + connectionPath + "]");
 
 			var newUrl:String;
 			var streamPrefix:String;
@@ -217,8 +217,7 @@ package org.bigbluebutton.modules.videoconf.business
 				connection.addEventListener(NetStatusEvent.NET_STATUS, onPlayNetStatus);
 				connection.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityError);
 				connection.connect(newUrl);
-				// TODO change to trace
-				LogUtil.debug("VideoProxy::handleStreamPathReceived:: Creating NetConnection for [" + newUrl + "]");
+				trace("VideoProxy::handleStreamPathReceived:: Creating NetConnection for [" + newUrl + "]");
 				playConnectionDict[newUrl] = connection;
 			}
 			else {
@@ -227,20 +226,38 @@ package org.bigbluebutton.modules.videoconf.business
 					var dispatcher:Dispatcher = new Dispatcher();
 					dispatcher.dispatchEvent(new PlayConnectionReady(streamName, playConnectionDict[newUrl], streamPrefix));
 				}
-				// TODO change to trace
-				LogUtil.debug("VideoProxy::handleStreamPathReceived:: Found NetConnection for [" + newUrl + "]");
+				trace("VideoProxy::handleStreamPathReceived:: Found NetConnection for [" + newUrl + "]");
 			}
+		}
+
+		public function getConnectionForStream(stream:String):NetConnection {
+			var url:String = streamUrlDict[stream];
+			return playConnectionDict[url];
+		}
+
+		public function getPrefixForStream(stream:String):String {
+			if(streamNamePrefixDict[stream])
+				return streamNamePrefixDict[stream];
+			else
+				return "";
 		}
 
 		private function removeFromArray(item:String, array:Array):void {
 			var index:int = array.indexOf(item);
-			array.splice(index,1);
+			if(index >= 0) {
+				array.splice(index,1);
+			}
 		}
 
 		public function closePlayConnectionFor(streamName:String):void {
 			var temp:Array = streamName.split("/");
 			var stream:String = temp[temp.length-1];
 			var streamUrl:String = streamUrlDict[stream];
+
+			// Remove the url entry for this stream
+			delete streamUrlDict[stream];
+
+			// Check if the connection should be closed
 			var streams:Array = urlStreamsDict[streamUrl];
 			if(streams != null) {
 				removeFromArray(stream, streams);
@@ -255,7 +272,9 @@ package org.bigbluebutton.modules.videoconf.business
 				if(connection != null) connection.close();
 				delete playConnectionDict[streamUrl];
 				delete urlStreamsDict[streamUrl];
-				delete streamUrlDict[stream];
+			}
+			else {
+				trace("VideoProxy:: closePlayConnectionFor:: Connection with: [" + streamUrl + "] has [" + streams.length + "] streams");
 			}
 		}
 
