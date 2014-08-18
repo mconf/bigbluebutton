@@ -192,8 +192,11 @@ package org.bigbluebutton.modules.videoconf.business
 				var ipRegex:RegExp = /([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/;
 				var serverIp:String = connectionPath.split("/")[0];
 				newUrl = _url.replace(ipRegex, serverIp);
-				streamPrefix = connectionPath.replace(serverIp + "/", "") + "/";
+				streamPrefix = connectionPath.replace(serverIp, "");
 			}
+
+			if(streamPrefix != "")
+				streamPrefix = streamPrefix + "/";
 
 			// Store URL for this stream
 			streamUrlDict[streamName] = newUrl;

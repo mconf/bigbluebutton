@@ -117,7 +117,12 @@ package org.bigbluebutton.modules.videoconf.maps
       if (!_ready) return;
       trace("VideoEventMapDelegate:: [" + me + "] Viewing [" + userID + " stream [" + stream + "]");
       if (! UserManager.getInstance().getConference().amIThisUser(userID)) {
-        initPlayConnectionFor(userID, stream);
+        // Check whether is one stream or all of them
+        if(stream.indexOf("|") > 0) {
+          initAllPlayConnectionsFor(userID);
+        } else {
+          initPlayConnectionFor(userID, stream);
+        }
       }
     }
 
