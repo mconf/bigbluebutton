@@ -102,6 +102,9 @@ dependencies {
   compile 'org.testng:testng:5.8@jar' 
   compile 'org.easymock:easymock:2.4@jar'
 	
+    // Java Concurrency In Practice
+    providedCompile 'net.jcip:jcip-annotations:1.0@jar'
+        
   // Testing
   testRuntime 'org/testng:testng:5.8@jar'
   testRuntime 'org.easymock:easymock:2.4@jar'
