@@ -22,13 +22,16 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+
+import org.red5.codec.IStreamCodecInfo;
+import org.red5.codec.IVideoStreamCodec;
+import org.red5.codec.StreamCodecInfo;
 import org.red5.logging.Red5LoggerFactory;
 import org.red5.server.api.event.IEvent;
 import org.red5.server.api.scope.IScope;
 import org.red5.server.api.stream.IBroadcastStream;
-import org.red5.server.api.stream.IStreamCodecInfo;
 import org.red5.server.api.stream.IStreamListener;
-import org.red5.server.api.stream.IVideoStreamCodec;
+import org.red5.server.api.stream.IStreamPacket;
 import org.red5.server.api.stream.ResourceExistException;
 import org.red5.server.api.stream.ResourceNotFoundException;
 import org.red5.server.messaging.IMessageComponent;
@@ -40,11 +43,8 @@ import org.red5.server.messaging.PipeConnectionEvent;
 import org.red5.server.net.rtmp.event.IRTMPEvent;
 import org.red5.server.net.rtmp.event.Notify;
 import org.red5.server.net.rtmp.event.VideoData;
-import org.red5.server.stream.codec.StreamCodecInfo;
 import org.red5.server.stream.message.RTMPMessage;
 import org.slf4j.Logger;
-
-import org.red5.server.api.stream.IStreamPacket;;
 
 public class ScreenVideoBroadcastStream implements IBroadcastStream, IProvider, IPipeConnectionListener {
 	/** Listeners to get notified about received packets. */

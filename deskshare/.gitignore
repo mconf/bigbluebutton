@@ -13,3 +13,4 @@ common/build/ivy.xml
 common/build/libs/
 lib/
 build
+.settings
