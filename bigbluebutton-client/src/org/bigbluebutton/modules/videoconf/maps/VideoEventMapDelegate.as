@@ -312,7 +312,6 @@ package org.bigbluebutton.modules.videoconf.maps
 		trace("VideoEventMapDelegate:: handlePlayConnectionReady : stream:[" + e.streamName + "] conn:["+e.connection.uri+"] prefix:["+e.prefix+"] userID:["+userID+"]");
 		if(userID) {
 			openViewWindowFor(userID, e.streamName);
-			delete pendingVideoWindowsList[e.streamName];
 		}
 	}
     
@@ -558,6 +557,11 @@ package org.bigbluebutton.modules.videoconf.maps
 		// Since the stream used to create the window includes de prefix, we should include it here too
 		var stream:String = proxy.getPrefixForStream(streamName) + streamName;
 		handleStoppedViewingWebcamEvent(userID, stream);
+	}
+
+	public function handlePlayConnectionClosed(stream:String, prefix:String):void {
+		var userID:String = pendingVideoWindowsList[stream];
+		closeViewWindowWithStream(userID, prefix + stream);
 	}
 
     public function handleStoppedViewingWebcamEvent(userID:String, streamName:String):void {

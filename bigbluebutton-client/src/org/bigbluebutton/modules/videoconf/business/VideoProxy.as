@@ -42,6 +42,7 @@ package org.bigbluebutton.modules.videoconf.business
 	import org.bigbluebutton.modules.videoconf.events.StartBroadcastEvent;
 	import org.bigbluebutton.modules.videoconf.model.VideoConfOptions;
 	import org.bigbluebutton.modules.videoconf.events.PlayConnectionReady;
+	import org.bigbluebutton.modules.videoconf.events.PlayConnectionClosedEvent;
 
 	
 	public class VideoProxy
@@ -127,24 +128,27 @@ package org.bigbluebutton.modules.videoconf.business
 		private function onPlayNetStatus(event:NetStatusEvent):void {
 			var url:String = event.target.uri;
 			var streams:Array = urlStreamsDict[url];
+			var dispatcher:Dispatcher = new Dispatcher();
+			var prefix:String;
 			var stream:String;
 			switch(event.info.code){
 				case "NetConnection.Connect.Success":
-					var dispatcher:Dispatcher = new Dispatcher();
 					// Notify streams from this connection
 					var conn:NetConnection = playConnectionDict[url];
 					for each (stream in streams) {
-						var prefix:String = streamNamePrefixDict[stream];
+						prefix = streamNamePrefixDict[stream];
 						dispatcher.dispatchEvent(new PlayConnectionReady(stream, conn, prefix));
 					}
 					break;
 				case "NetConnection.Connect.Failed":
 				case "NetConnection.Connect.Closed":
 					trace("[" + event.info.code + "] for a play connection at [" + url + "]");
+					trace("Affected streams: ["+streams+"]");
 					for each (stream in streams) {
-						// XXX: Notify someone else?
+						prefix = streamNamePrefixDict[stream];
 						delete streamNamePrefixDict[stream];
 						delete streamUrlDict[stream];
+						dispatcher.dispatchEvent(new PlayConnectionClosedEvent(stream, prefix));
 					}
 					delete playConnectionDict[url];
 					delete urlStreamsDict[url];
