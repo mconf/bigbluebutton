@@ -21,8 +21,11 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:lang="http://www.springframework.org/schema/lang"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
-                           http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-2.0.xsd">
+       xsi:schemaLocation="
+             http://www.springframework.org/schema/beans 
+             http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+             http://www.springframework.org/schema/lang 
+             http://www.springframework.org/schema/lang/spring-lang-2.0.xsd">
 
 	<bean id="placeholderConfig" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 	    <property name="locations">
@@ -56,6 +59,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				<ref bean="sharedNotesHandler" />
 				<ref bean="voiceHandler" />
 				<ref bean="whiteboardApplication" />
+				<ref bean="videoApplication" />
     		</set>
   		</property>	  
   		<property name="recorderApplication"> <ref bean="recorderApplication"/></property>	
@@ -67,4 +71,5 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 	<import resource="bbb-apps.xml" />
 	<import resource="bbb-voice-app.xml" />
   <import resource="bbb-voice-freeswitch.xml" />
+	<import resource="bbb-app-video.xml" />
 </beans>

@@ -27,6 +27,7 @@ package org.bigbluebutton.main.model.users
 	import org.bigbluebutton.core.managers.UserManager;
 	import org.bigbluebutton.main.model.users.events.ChangeStatusEvent;
 	import org.bigbluebutton.main.model.users.events.StreamStartedEvent;
+	import org.bigbluebutton.main.model.users.events.StreamStoppedEvent;
 	import org.bigbluebutton.util.i18n.ResourceUtil;
 
 	
@@ -287,10 +288,14 @@ package org.bigbluebutton.main.model.users
 					} else {
 						hasStream = false;
 					}
-					
+
 					var streamNameInfo:Array = String(streamInfo[1]).split(/=/);
-					streamName = streamNameInfo[1]; 
-					if (hasStream) sendStreamStartedEvent();
+					/**
+					 * Check whether a new stream strarted or an old stream
+					 * stopped and propperly notify what happened
+					 */
+					handleStreamStatusChange(streamNameInfo[1]);
+					streamName = streamNameInfo[1];
 					break;
 				case "mood":
 					trace("New mood received: " + status.value);
@@ -346,10 +351,47 @@ package org.bigbluebutton.main.model.users
 
 			return n;		
 		}
-		
+
 		private function sendStreamStartedEvent():void{
 			var dispatcher:Dispatcher = new Dispatcher();
 			dispatcher.dispatchEvent(new StreamStartedEvent(userID, name, streamName));
+		}
+
+		private function sendStreamStoppedEvent():void{
+			var dispatcher:Dispatcher = new Dispatcher();
+			dispatcher.dispatchEvent(new StreamStoppedEvent(userID, name, streamName));
+		}
+
+		private function handleStreamStatusChange(newStreams:String):void {
+			var separator:String = "|";
+			var stream:String;
+			var dispatcher:Dispatcher = new Dispatcher();
+
+			var cs:Array
+			if(!streamName) { cs = new Array(); }
+			else { cs = streamName.split(separator); }
+
+			var ns:Array;
+			if(!newStreams) { ns = new Array(); }
+			else { ns = newStreams.split(separator); }
+
+			// Check for new streams
+			for each(stream in ns) {
+				if(cs.indexOf(stream) < 0) {
+					// New stream found
+					trace("User [" + userID + "] started stream [" + stream + "]");
+					dispatcher.dispatchEvent(new StreamStartedEvent(userID, name, stream));
+				}
+			}
+
+			// Check for removed streams
+			for each(stream in cs) {
+				if(ns.indexOf(stream) < 0) {
+					// Stream no longer exists
+					trace("User [" + userID + "] stopped stream [" + stream + "]");
+					dispatcher.dispatchEvent(new StreamStoppedEvent(userID, name, stream));
+				}
+			}
 		}
 	}
 }
