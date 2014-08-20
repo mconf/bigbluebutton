@@ -24,6 +24,10 @@ import java.util.List;
 public interface ISharedNotesRoomListener {
 
 	public String getName();
-	public void initClientDocument(String userid, String document);
-	public void remoteModifications(String userid, String patches, Integer beginIndex, Integer endIndex);
+
+	public void initClientDocument(String noteId, String userid);
+	public void remoteModifications(String noteId, String userid, String patches, Integer beginIndex, Integer endIndex);
+
+	public void createAdditionalNotes(String notesId);
+	public void destroyAdditionalNotes(String notesId);
 }

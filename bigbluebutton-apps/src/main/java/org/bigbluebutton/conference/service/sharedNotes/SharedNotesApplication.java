@@ -20,6 +20,7 @@
 package org.bigbluebutton.conference.service.sharedNotes;
 
 import java.util.List;
+import java.util.Map;
 
 import org.red5.logging.Red5LoggerFactory;
 import org.slf4j.Logger;
@@ -78,11 +79,19 @@ public class SharedNotesApplication {
 		roomsManager = r;
 	}
 
-	public void patchDocument(String room, String userId, String patch, Integer beginIndex, Integer endIndex) {
-		roomsManager.patchDocument(room, userId, patch, beginIndex, endIndex);
+	public void patchDocument(String room, String noteId, String userId, String patch, Integer beginIndex, Integer endIndex) {
+		roomsManager.patchDocument(room, noteId, userId, patch, beginIndex, endIndex);
 	}
 
-	public String currentDocument(String roomName, String userid) {
+	public Map<String,String> currentDocument(String roomName, String userid) {
 		return roomsManager.currentDocument(roomName, userid);
+	}
+
+	public void createAdditionalNotes(String room) {
+		roomsManager.createAdditionalNotes(room);
+	}
+
+	public void destroyAdditionalNotes(String room, String notesId) {
+		roomsManager.destroyAdditionalNotes(room, notesId);
 	}
 }

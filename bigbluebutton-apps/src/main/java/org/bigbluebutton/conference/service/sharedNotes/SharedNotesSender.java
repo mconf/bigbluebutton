@@ -44,20 +44,35 @@ public class SharedNotesSender implements ISharedNotesRoomListener {
 	}
 
 	@Override
-	public void initClientDocument(String userid, String document) {
+	public void initClientDocument(String noteId, String userid) {
 		List<Object> args = new ArrayList<Object>();
+		args.add(noteId);
 		args.add(userid);
-		args.add(document);
 		so.sendMessage("initClientDocumentCallBack", args);
 	}
 
 	@Override
-	public void remoteModifications(String userid, String patches, Integer beginIndex, Integer endIndex) {
+	public void remoteModifications(String noteId, String userid, String patches, Integer beginIndex, Integer endIndex) {
 		List<Object> args = new ArrayList<Object>();
-		args.add(userid);
+		args.add(noteId);
+        args.add(userid);
 		args.add(patches);
 		args.add(beginIndex);
 		args.add(endIndex);
 		so.sendMessage("remoteModificationsCallBack", args);
+	}
+
+	@Override
+	public void createAdditionalNotes(String notesId) {
+		List<Object> args = new ArrayList<Object>();
+		args.add(notesId);
+		so.sendMessage("createAdditionalNotesCallback", args);
+	}
+
+	@Override
+	public void destroyAdditionalNotes(String notesId) {
+		List<Object> args = new ArrayList<Object>();
+		args.add(notesId);
+		so.sendMessage("destroyAdditionalNotesCallback", args);
 	}
 }

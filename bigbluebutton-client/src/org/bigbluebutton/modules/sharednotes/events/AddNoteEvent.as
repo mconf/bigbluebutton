@@ -15,24 +15,21 @@
  * You should have received a copy of the GNU Lesser General Public License along
  * with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
  * 
- * Author: Hugo Lazzari <hslazzari@gmail.com>
  */
 package org.bigbluebutton.modules.sharednotes.events
 {
-	import flash.events.Event;
+    import flash.events.Event;
 
-	public class SendPatchEvent extends Event
-	{
-		public static const SEND_PATCH_EVENT:String = 'SEND_PATCH_EVENT';
-		public var patch:String;
-		public var beginIndex:Number;
-		public var endIndex:Number;
-		public var noteId:String;
-				
-		public function SendPatchEvent(type:String = SEND_PATCH_EVENT, bubbles:Boolean=true, cancelable:Boolean=false)
-		{
-			super(type, bubbles, cancelable);
-		}
-		
-	}
+    public class AddNoteEvent extends Event
+    {
+        public static const ADD_NOTE:String = 'ADD_NOTE';
+        public var document:String;
+        public var userid:String;
+
+        public function AddNoteEvent(type:String = CURRENT_DOCUMENT, bubbles:Boolean=true, cancelable:Boolean=false)
+        {
+            super(type, bubbles, cancelable);
+        }
+
+    }
 }

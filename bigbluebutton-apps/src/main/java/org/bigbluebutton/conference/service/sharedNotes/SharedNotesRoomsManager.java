@@ -102,22 +102,40 @@ public class SharedNotesRoomsManager {
 		log.warn("Removing listener to a non-existing room " + roomName);
 	}
 
-	public void patchDocument(String room, String userId, String patch, Integer beginIndex, Integer endIndex) {
+	public void patchDocument(String room, String noteId, String userId, String patch, Integer beginIndex, Integer endIndex) {
 		SharedNotesRoom r = getRoom(room);
 		if (r != null) {
-			r.patchDocument(userId, patch, beginIndex, endIndex);
+			r.patchDocument(noteId, userId, patch, beginIndex, endIndex);
 		} else {
 			log.warn("patchDocument: sending message to a non-existing room " + room);
 		}
 	}
 
-	public String currentDocument(String room, String userid) {
+	public Map<String,String> currentDocument(String room, String userid) {
 		SharedNotesRoom r = getRoom(room);
 		if (r != null) {
 			return r.currentDocument(userid);
 		} else {
 			log.warn("initSharedNotes: sending message to a non-existing room " + room);
 			return null;
+		}
+	}
+
+	public void createAdditionalNotes(String room) {
+		SharedNotesRoom r = getRoom(room);
+		if (r != null) {
+			r.createAdditionalNotes();
+		} else {
+			log.warn("createAdditionalNotes: sending message to a non-existing room " + room);
+		}
+	}
+
+	public void destroyAdditionalNotes(String room, String notesId) {
+		SharedNotesRoom r = getRoom(room);
+		if (r != null) {
+			r.destroyAdditionalNotes(notesId);
+		} else {
+			log.warn("destroyAdditionalNotes: sending message to a non-existing room " + room);
 		}
 	}
 }
