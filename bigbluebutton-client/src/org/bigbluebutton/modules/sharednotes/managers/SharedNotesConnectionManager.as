@@ -135,12 +135,16 @@ package org.bigbluebutton.modules.sharednotes.managers
 				function(result:Object):void {
 					trace("Success!");
 					if (result != null) {
-						trace(ObjectUtil.toString(result));
+						for (var x:Object in result) {
+							trace(x + " : " + result[x]);
+						}
 					}
 				},
 				function(status:Object):void {
 					trace("An error occurred:");
-					trace(ObjectUtil.toString(status));
+					for (var x:Object in status) { 
+						trace(x + " : " + status[x]); 
+					} 
 				}
 			);
 
