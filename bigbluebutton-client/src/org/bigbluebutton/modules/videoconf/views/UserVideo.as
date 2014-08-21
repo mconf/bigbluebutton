@@ -187,7 +187,15 @@ package org.bigbluebutton.modules.videoconf.views
     }
 
     private function onAsyncError(e:AsyncErrorEvent):void{
-      trace("UserVideo: " + e.toString());
+      trace("UserVideo onAsyncError: " + e.toString());
+    }
+
+    private function playStatus(e:Object):void {
+      trace("UserVideo playStatus: " + e.toString());
+    }
+
+    private function onMetadata(e:Object):void {
+      trace("UserVideo onMetadata: " + e.toString());
     }
 
     override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void {
