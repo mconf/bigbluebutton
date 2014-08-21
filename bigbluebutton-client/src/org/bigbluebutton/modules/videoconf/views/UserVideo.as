@@ -187,15 +187,19 @@ package org.bigbluebutton.modules.videoconf.views
     }
 
     private function onAsyncError(e:AsyncErrorEvent):void{
-      trace("UserVideo onAsyncError: " + e.toString());
+      trace("UserVideo onAsyncError");
+      trace(e.text);
     }
 
-    private function playStatus(e:Object):void {
+    private function onPlayStatus(e:Object):void {
       trace("UserVideo playStatus: " + e.toString());
     }
 
-    private function onMetadata(e:Object):void {
-      trace("UserVideo onMetadata: " + e.toString());
+    private function onMetadata(infoObject:Object):void {
+      trace("UserVideo onMetadata");
+      for (var propName:String in infoObject) {
+          trace(propName + " = " + infoObject[propName]);
+      }
     }
 
     override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void {
