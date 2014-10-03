@@ -44,16 +44,19 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 		<![CDATA[
 			import com.asfusion.mate.events.Dispatcher;
 			
+			import mx.binding.utils.BindingUtils;
 			import mx.core.UIComponent;
 			import mx.managers.PopUpManager;
 			
 			import org.bigbluebutton.common.IBbbToolbarComponent;
 			import org.bigbluebutton.common.LogUtil;
+			import org.bigbluebutton.common.Role;
 			import org.bigbluebutton.common.events.CloseWindowEvent;
 			import org.bigbluebutton.common.events.OpenWindowEvent;
 			import org.bigbluebutton.common.events.SettingsComponentEvent;
 			import org.bigbluebutton.common.events.ToolbarButtonEvent;
 			import org.bigbluebutton.core.BBB;
+			import org.bigbluebutton.core.UsersUtil;
 			import org.bigbluebutton.core.managers.UserManager;
 			import org.bigbluebutton.core.services.BandwidthMonitor;
 			import org.bigbluebutton.main.events.BBBEvent;
@@ -127,7 +130,14 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
           shortcutKeysBtn.width = 0;
           helpBtn.width = 0;          
         }
+
+        BindingUtils.bindSetter(updateRoleDependentProperties, UsersUtil.getMyself(), "role");
       }
+
+      private function updateRoleDependentProperties(role:String):void {
+        showConfigurationsButton = role == Role.MODERATOR;
+      }
+
       
             private function checkAccessiblity(e:TimerEvent):void {
                 // remove the quick links if there's no screen reader active
@@ -177,10 +187,6 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
                         meetingNameLbl.text = meetingTitle;
                     } 
                 }
-
-                // need to put it here because on init() the conference object 
-                // still doesn't have the updated information
-                showConfigurationsButton = UserManager.getInstance().getConference().amIModerator();
             }
             
 			public function addButton(name:String):Button{
