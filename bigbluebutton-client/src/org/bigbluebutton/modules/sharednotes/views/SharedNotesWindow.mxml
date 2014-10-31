@@ -85,12 +85,12 @@
 					Alert.show(ResourceUtil.getInstance().getString('bbb.sharedNotes.save.complete'), "", Alert.OK);
 				});
 
-				textArea.addEventListener(KeyboardEvent.KEY_DOWN, function(e:Event):void {
+				textArea.addEventListener(TextEvent.TEXT_INPUT, function(e:Event):void {
 					if (!sendUpdateTimer.running) {
-						sendUpdateTimer.reset();
-						sendUpdateTimer.start();
-					}
-				});
+                                                sendUpdateTimer.reset();
+                                                sendUpdateTimer.start();
+                                        }
+				}); 
 
 				sendUpdateTimer.addEventListener(TimerEvent.TIMER, function(e:Event):void {
 					sendPatch();
@@ -124,6 +124,7 @@
 			private function sendPatch():void {
 				var clientText:String = new String(textArea.textFieldText); // a snapshot of the client text
                 LogUtil.debug("SEND PATCH" + clientText + "::" + _document);
+				 LogUtil.debug("asodjaosidjaosijdaosijaosidj");
 				if (_document != clientText) {
 					textArea.editable = false;
 					onSyncing();
