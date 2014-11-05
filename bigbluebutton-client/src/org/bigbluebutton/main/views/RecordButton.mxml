@@ -28,6 +28,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 	height="24"
 	toolTip="{UserManager.getInstance().getConference().amIModerator()? ResourceUtil.getInstance().getString('bbb.mainToolbar.recordBtn.toolTip.start'): ResourceUtil.getInstance().getString('bbb.mainToolbar.recordBtn.toolTip.notRecording')}"
 	enabled="false"
+	creationComplete="onCreationComplete()"
 	visible="{UserManager.getInstance().getConference().record}"
 	includeInLayout="{UserManager.getInstance().getConference().record}" 
 	mouseOver="onRecordButtonMouseOver(event)"
@@ -57,6 +58,10 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			private function refreshRole(moderator:Boolean = true):void {
 				this.enabled = moderator;
 				updateTooltip(this.selected, moderator);
+			}
+
+			private function onCreationComplete():void {
+				ResourceUtil.getInstance().addEventListener(Event.CHANGE, localeChanged); // Listen for locale changing
 			}
 
 			private function confirmChangeRecordingStatus():void {
@@ -121,7 +126,8 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			private function onRecordingStatusChanged(event:BBBEvent):void {
 				if (event.payload.remote) {
 					this.selected = event.payload.recording;
-					this.styleName = this.selected? "recordButtonStyleStart": "recordButtonStyleNormal";
+
+					resourcesChanged();
 
 					var amIModerator:Boolean = UserManager.getInstance().getConference().amIModerator();
 
@@ -145,6 +151,30 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				if (UserManager.getInstance().getConference().amIModerator()) {
 					this.styleName = this.selected? "recordButtonStyleStart": "recordButtonStyleNormal";
 				}
+			}
+
+			override protected function resourcesChanged():void{
+				super.resourcesChanged();
+
+				this.styleName = this.selected? "recordButtonStyleStart": "recordButtonStyleNormal";
+
+				if (UserManager.getInstance().getConference().amIModerator() && MeetingModel.getInstance().meeting.allowStartStopRecording) {
+					if (this.selected) {
+						this.toolTip = ResourceUtil.getInstance().getString('bbb.mainToolbar.recordBtn.toolTip.stop');
+					} else {
+						this.toolTip = ResourceUtil.getInstance().getString('bbb.mainToolbar.recordBtn.toolTip.start');
+					}
+				} else {
+					if (this.selected) {
+						this.toolTip = ResourceUtil.getInstance().getString('bbb.mainToolbar.recordBtn.toolTip.recording');
+					} else {
+						this.toolTip = ResourceUtil.getInstance().getString('bbb.mainToolbar.recordBtn.toolTip.notRecording');
+					}
+				}
+			}
+
+			private function localeChanged(e:Event):void{
+				resourcesChanged();
 			}
 		]]>
 	</mx:Script>
