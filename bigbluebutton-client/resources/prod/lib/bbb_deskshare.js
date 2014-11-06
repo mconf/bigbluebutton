@@ -8,7 +8,7 @@ function startApplet(IP, roomNumber, fullScreen, useSVC2)
 
         div.innerHTML =
                 "<applet code=\"org.bigbluebutton.deskshare.client.DeskShareApplet.class\"" +
-                        "id=\"DeskShareApplet\" width=\"100\" height=\"10\" archive=\"bbb-deskshare-applet-0.8.1.jar\">" +
+                        "id=\"DeskShareApplet\" width=\"100\" height=\"10\" archive=\"bbb-deskshare-applet-0.9.0.jar\">" +
                         "<param name=\"ROOM\" value=\"" + roomNumber  + "\"/>" +
                         "<param name=\"IP\" value=\"" + IP + "\"/>" +
                         "<param name=\"PORT\" value=\"9123\"/>" +
@@ -25,7 +25,7 @@ function startApplet(IP, roomNumber, fullScreen, useSVC2)
             id: 'DeskShareApplet',
             width: '100',
             height: '10',
-            archive: 'bbb-deskshare-applet-0.8.1.jar' };
+            archive: 'bbb-deskshare-applet-0.9.0.jar' };
     var parameters = {
             ROOM: roomNumber,
             IP: IP,
@@ -39,7 +39,12 @@ function startApplet(IP, roomNumber, fullScreen, useSVC2)
 
 function removeFrame () {
         var div = document.getElementById("deskshare");
-        div.parentNode.removeChild(div);
+        if (div.parentNode) {
+          // Need to set the innerHTML otherwise the applet will restart in IE.
+          // see https://code.google.com/p/bigbluebutton/issues/detail?id=1776
+          div.innerHTML = "";
+          div.parentNode.removeChild(div);
+        }
 }
 
 function setScreenCoordinates(x, y) {
