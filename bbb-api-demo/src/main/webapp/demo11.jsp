@@ -84,7 +84,7 @@ if (request.getParameterMap().isEmpty()) {
 	// Got an action=create
 	//
 	
-	String url = BigBlueButtonURL.replace("bigbluebutton/","demo/");
+	String url = BigBlueButtonURL.replace("bigbluebutton/","client/");
 	// String preUploadPDF = "<?xml version='1.0' encoding='UTF-8'?><modules><module name='presentation'><document url='"+url+"pdfs/sample.pdf'/></module></modules>";
 	//java.util.Random testIDGen = new java.util.Random();
 	//int userID = testIDGen.nextInt(99999);
@@ -93,7 +93,7 @@ if (request.getParameterMap().isEmpty()) {
 
         String meeting_ID = createMeeting( "Demo Meeting", null, null, null, null, null, null);
 
-	String clientURL = BigBlueButtonURL.replace("bigbluebutton/","client/demo11.html");
+	String clientURL = BigBlueButtonURL.replace("bigbluebutton/","demo/demo11.html");
         String joinURL = getJoinMeetingURL(request.getParameter("username"), "Demo Meeting", "mp", clientURL );
 
 

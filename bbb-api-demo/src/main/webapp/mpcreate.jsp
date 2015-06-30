@@ -327,7 +327,7 @@ if (request.getParameterMap().isEmpty()) {
 </div>
 
 <%
-	} else if (request.getParameter("action").equals("create")) {
+	} else if ((request.getParameter("action").equals("create")) || (request.getParameter("action").equals("join"))) {
 		//
 		// Got an action=create
 		//
@@ -427,7 +427,7 @@ Invalid Password, please <a href="javascript:history.go(-1)">try again</a>.
         		}
 
 			// Get request parameters to edit config.xml
-			String param_Skin = "BBBBlack";
+			String param_Skin = "BBBDefault";
 			if (request.getParameter("skin") != null)
 				param_Skin = request.getParameter("skin");
 
@@ -445,6 +445,27 @@ Invalid Password, please <a href="javascript:history.go(-1)">try again</a>.
 			//Set layout
 			Element layoutElement = (Element)  docConfig.getElementsByTagName("layout").item(0);
 			layoutElement.setAttribute("defaultLayout", param_Layout );
+
+			if (request.getParameter("audio") != null)
+			{
+				if (request.getParameter("audio").equals("true"))
+				{
+					NodeList modulesXml = docConfig.getElementsByTagName("module");
+
+					for (int i = 0; i < modulesXml.getLength(); i++) {
+        				Element module = (Element) modulesXml.item(i);
+        				
+        				if (module.getAttribute("name").equals("PhoneModule"))
+        				{
+        					module.setAttribute("autoJoin", "true" );
+        					module.setAttribute("listenOnlyMode", "false" );
+        					module.setAttribute("skipCheck", "true" );
+        					module.setAttribute("useWebRTCIfAvailable", "false" );
+        					
+        				}
+    				}
+    			}
+			}
 
 			//Create new config.xml
 			TransformerFactory tf = TransformerFactory.newInstance();
@@ -465,7 +486,7 @@ Invalid Password, please <a href="javascript:history.go(-1)">try again</a>.
 		            <h2>Customized sessions using a dynamic config.xml, submit</h2>
 
 		            <script language="javascript" type="text/javascript">
-		            alert ("<%=joinURL%>");
+		            	//alert ("<%=joinURL%>");
 		                //window.location.href="<%=joinURL%>";
 		            </script>
 

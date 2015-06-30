@@ -142,6 +142,7 @@
 	}
 
 	var switchLayout = function(newLayout) {
+		alert(newLayout);
 	  log_message( "switchLayout: " + newLayout );
 	  BBB.switchLayout(newLayout);
 	}
@@ -252,10 +253,10 @@
 
   </p>
       Layout: <select name="Layout" onChange="switchLayout(this.options[this.selectedIndex].value);return false">
-        <option value="Default">Default</option>
-        <option value="Video Chat">Video Chat</option>
-        <option value="Meeting">Meeting</option>
-        <option value="Webinar">Webinar</option>
+        <option value="bbb.layout.name.defaultlayout">Default</option>
+        <option value="bbb.layout.name.videochat">Video Chat</option>
+        <option value="bbb.layout.name.webcamsfocus">Meeting</option>
+        <option value="bbb.layout.name.presentfocus">Webinar</option>
       </select>
   </p>
   Chat: <FORM NAME="chat" onsubmit='BBB.sendPublicChatMessage("0x7A7A7A", "en", this.elements["chat-message"].value); return false;'>
@@ -276,7 +277,7 @@
 
     <div id="client" style="background-color:#EEEEEE;height:900px;width:1200px;float:left;">
         <object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="100%" height="90%" id="BigBlueButton" name="BigBlueButton" align="middle">
-          <param name="movie" value="http://192.168.0.36/client/BigBlueButton.swf?v=VERSION" />
+          <param name="movie" value="http://143.54.12.180/client/BigBlueButton.swf?v=VERSION" />
           <param name="quality" value="high" />
           <param name="allowfullscreen" value="true" />
           <param name="bgcolor" value="#869ca7" />
