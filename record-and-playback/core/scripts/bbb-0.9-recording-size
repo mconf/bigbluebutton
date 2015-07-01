@@ -40,11 +40,8 @@ def do_recording_size_update(recording_dir, raw_recording_dir, format_dir)
 
   BigBlueButton.logger.info("Processing #{format} recording #{meeting_id}")
 
-  if format.eql?("presentation")
-    BigBlueButton.logger.info("Adding raw size to recording #{meeting_id}")
-    raw_dir = raw_recording_dir + "/#{meeting_id}"
-    BigBlueButton.add_raw_size_to_metadata(recording_dir, raw_dir)
-  end
+  raw_dir = raw_recording_dir + "/#{meeting_id}"
+  BigBlueButton.add_raw_size_to_metadata(recording_dir, raw_dir)
   
   BigBlueButton.add_size_to_metadata(recording_dir)
 end

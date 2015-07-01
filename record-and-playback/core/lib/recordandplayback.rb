@@ -210,10 +210,13 @@ module BigBlueButton
       size_node.content = size
 
       doc.at("//recording/playback") << size_node
-
-      metadata_xml = File.new(metadata_file, "w")
-      metadata_xml.write(doc.to_xml(:indent => 2))
-      metadata_xml.close
+    else
+      # As we copy the presentation to other formats, this may be just a change of content
+      doc.at("size").content = size
     end
+
+    metadata_xml = File.new(metadata_file, "w")
+    metadata_xml.write(doc.to_xml(:indent => 2))
+    metadata_xml.close
   end
 end
