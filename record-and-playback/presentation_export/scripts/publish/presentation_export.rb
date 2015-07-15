@@ -107,6 +107,10 @@ if ($playback == "presentation_export")
     if not FileTest.directory?(publish_dir)
       FileUtils.mkdir_p publish_dir
     end
+
+    # After all the processing we'll add the published format size to the metadata file
+    BigBlueButton.add_size_to_metadata(package_dir)
+
     FileUtils.cp_r(package_dir, publish_dir) # Copy all the files.
     BigBlueButton.logger.info("Finished publishing script presentation.rb successfully.")
 
