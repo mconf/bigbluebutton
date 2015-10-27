@@ -44,10 +44,10 @@ ToolTip {
   cornerRadius: 5;
   borderStyle: solid;
   borderThickness: 1;
-  paddingBottom: 3;
-  paddingTop: 3;
-  paddingLeft: 3;
-  paddingRight: 3;
+  paddingBottom: 2;
+  paddingTop: 2;
+  paddingLeft: 2;
+  paddingRight: 2;
 }
 
 .meetingNameLabelStyle {
@@ -1018,4 +1018,44 @@ Alert {
 
 .moodSadStyle {
   icon:   Embed('assets/images/icon-7-sad-face.png');
+}
+
+.saveButtonIconStyle{
+  icon:   Embed('assets/images/ic_save_16px.png');
+}
+
+.copyButtonIconStyle{
+  icon:   Embed('assets/images/ic_content_copy_black_16px.png');
+}
+
+.noteAddIconStyle{
+  icon:   Embed('assets/images/ic_note_add_16px.png');
+}
+
+.noteFormatIconStyle{
+  icon:   Embed('assets/images/ic_note_format_16px.png');
+}
+
+.actionRefreshGreenIconStyle{
+  icon:   Embed('assets/images/action_refresh.gif');
+}
+
+.arrowLeftGreenIconStyle{
+  icon:   Embed('assets/images/arrow_left.png');
+}
+
+.diskSaveBlueIconStyle{
+  icon:   Embed('assets/images/disk.png');
+}
+
+.noteEditYellowIconStyle{
+  icon:   Embed('assets/images/note_edit.png');
+}
+
+.playArrowBlueIconStyle{
+  icon:   Embed('assets/images/play-icon.png');
+}
+
+.tickCheckGreenIconStyle{
+  icon:   Embed('assets/images/tick.png');
 }
