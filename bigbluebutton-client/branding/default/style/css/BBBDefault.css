@@ -1014,3 +1014,27 @@ EmojiGrid {
 .moodSadStyle {
   icon:   Embed('assets/images/icon-7-sad-face.png');
 }
+
+.actionRefreshGreenIconStyle {
+  icon:   Embed('assets/images/action_refresh.gif');
+}
+
+.arrowLeftGreenIconStyle {
+  icon:   Embed('assets/images/arrow_left.png');
+}
+
+.diskSaveBlueIconStyle {
+  icon:   Embed('assets/images/disk.png');
+}
+
+.noteEditYellowIconStyle {
+  icon:   Embed('assets/images/note_edit.png');
+}
+
+.playArrowBlueIconStyle {
+  icon:   Embed('assets/images/play-icon.png');
+}
+
+.tickCheckGreenIconStyle {
+  icon:   Embed('assets/images/tick.png');
+}
