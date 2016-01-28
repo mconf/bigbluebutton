@@ -180,6 +180,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			
       private function webRTCEchoTestStarted():void {
         setCurrentState("started");
+        userClosed = false;
         stopTimers();
       }
       
@@ -188,15 +189,16 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			}
       
       private function webRTCEchoTestEnded():void {
-        setCurrentState("connecting");
-        lblConnectMessage.text = lblConnectMessageMock.text = ResourceUtil.getInstance().getString('bbb.micSettings.webrtc.endedecho');
-        startTimers();
-        
-        if (!userClosed) {
+        var state:String = PhoneModel.getInstance().webRTCModel.state;
+        if (!userClosed || (state == Constants.ECHO_TEST_FAILED) ) {
           onCancelClicked();
 		      var dispatcher:Dispatcher = new Dispatcher();
 		      dispatcher.dispatchEvent(new WebRTCEchoTestEvent(WebRTCEchoTestEvent.WEBRTC_ECHO_TEST_ENDED_UNEXPECTEDLY));
-        }
+        } else {
+            setCurrentState("connecting");
+            lblConnectMessage.text = lblConnectMessageMock.text = ResourceUtil.getInstance().getString('bbb.micSettings.webrtc.endedecho');
+            startTimers();
+		}
       }
 			
 			private function handleWebRTCEchoTestFailedEvent(e:WebRTCEchoTestEvent):void {
