@@ -195,6 +195,16 @@ package org.bigbluebutton.modules.present.model
       
       return presos;
     }
+
+    public function isAnyDownloadablePresentation():Boolean {
+      var presos:ArrayCollection = getDownloadablePresentations();
+
+      if (presos.length > 0) {
+        return true;
+      } else {
+        return false;
+      }
+    }
   }
 }
 
