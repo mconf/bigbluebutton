@@ -75,12 +75,12 @@
 				
 				this.addEventListener(FlexEvent.DATA_CHANGE, dataChangeHandler);
 				
-        BindingUtils.bindSetter(updateButtons, listenOnlyInd, "visible");
+				BindingUtils.bindSetter(updateButtons, listenOnlyInd, "visible");
 				BindingUtils.bindSetter(updateButtons, voiceJoinedInd, "visible");
 				BindingUtils.bindSetter(updateButtons, muteInd, "visible");
 				BindingUtils.bindSetter(updateButtons, userLockedInd, "visible");
 				BindingUtils.bindSetter(updateButtons, hasStreamInd, "visible");
-        BindingUtils.bindSetter(updateButtons, viewingStreamInd, "visible");
+				BindingUtils.bindSetter(updateButtons, viewingStreamInd, "visible");
                 
 				options = new UsersOptions();
 			}
@@ -210,20 +210,19 @@
 						}
 					}
 					
-					if ( data.role == BBBUser.MODERATOR ){
+					if ( data.role == BBBUser.MODERATOR || !ls.isAnythingLocked() ){
 						lockImg.visible = false;
 						lockImg.includeInLayout = false;
 						lockBtn.visible = false;
 						lockBtn.includeInLayout = false;
 					} else if( moderator && ls.isAnythingLocked() ) {
-						lockImg.visible = !rolledOver;
-						lockImg.includeInLayout = !rolledOver;
+						lockImg.visible = !rolledOver && data.userLocked;
+						lockImg.includeInLayout = !rolledOver && data.userLocked;
 						lockBtn.visible = rolledOver;
 						lockBtn.includeInLayout = rolledOver;
-					} else {
-						//If it can't be clicked, only show image
-						lockImg.visible = true;
-						lockImg.includeInLayout = true;
+					} else if(data.role == BBBUser.VIEWER && ls.isAnythingLocked() ){
+						lockImg.visible = data.userLocked;
+						lockImg.includeInLayout = data.userLocked;
 						lockBtn.visible = false;
 						lockBtn.includeInLayout = false;
 					}
@@ -258,13 +257,6 @@
 								muteImg.source = images.audio_20;              
 						}
 						
-						
-						if ( data.userLocked && !data.presenter && ls.isAnythingLocked() ) {
-							lockImg.source = images.locked_20;
-						}
-						else {
-							lockImg.source = null;
-						}
 					} else {
 						if (data.voiceMuted == rolledOverMute)
 							muteBtn.setStyle("icon", images.audio);
@@ -359,7 +351,7 @@
 				mouseOver="muteMouseOverHandler()"
 				mouseOut="muteMouseOutHandler()"
 				toolTip="{data.voiceMuted ? ResourceUtil.getInstance().getString('bbb.users.usersGrid.mediaItemRenderer.pushToTalk',[data.name]) : ResourceUtil.getInstance().getString('bbb.users.usersGrid.mediaItemRenderer.pushToMute',[data.name])}" />
-	<mx:Image id="lockImg" visible="false" includeInLayout="false" width="20" height="20" />
+	<mx:Image id="lockImg" visible="false" source="{images.locked_20}" includeInLayout="false" width="20" height="20" />
 	<mx:Button id="lockBtn" visible="false" includeInLayout="false" enabled="false"
 				width="20" height="20" click="toggleLockState()"
 				mouseOver="lockMouseOverHandler()"

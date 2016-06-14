@@ -65,6 +65,11 @@ package org.bigbluebutton.main.model.users
 			throw new Error("hasStream cannot be set. It is derived directly from streamName");
 		}
 
+		[Bindable] private var _viewingAllStreams:Boolean; //this bindable was created to ensure the updating of the icons and buttons on Users Window
+		private function updateViewingAllStreams():void {  //this function causes the MediaItemRenderer to handle a DATA_CHANGE and redraw the window, therefore adding the buttons and icons accordingly
+			_viewingAllStreams = _viewingStream.length == streamNames.length;
+		}
+
         [Bindable] private var _viewingStream:Array = new Array();
 
         [Bindable]
@@ -82,6 +87,7 @@ package org.bigbluebutton.main.model.users
 
             _viewingStream.push(streamName);
             trace("After adding the stream " + streamName + ": " + _viewingStream);
+            updateViewingAllStreams(); //called to update the buttons/icons by changing the value of the related bindable variable _viewingAllStreams
             return true;
         }
         public function removeViewingStream(streamName:String):Boolean {
@@ -91,6 +97,7 @@ package org.bigbluebutton.main.model.users
             }
 
             _viewingStream = _viewingStream.filter(function(item:*, index:int, array:Array):Boolean { return item != streamName; });
+            updateViewingAllStreams(); //called to update the buttons/icons by changing the value of the related bindable variable _viewingAllStreams
             trace("After removing the stream " + streamName + ": " + _viewingStream);
             return true;
         }
@@ -340,7 +347,7 @@ package org.bigbluebutton.main.model.users
 		applyLockSettings();
 		buildStatus();
     }
-    
+
 		public function changeStatus(status:Status):void {
 			trace("changeStatus -> " + status.name);
 			//_status.changeStatus(status);
@@ -382,6 +389,7 @@ package org.bigbluebutton.main.model.users
 					break;
 			}
 			buildStatus();
+
 		}
 		
 		public function removeStatus(name:String):void {
@@ -433,6 +441,8 @@ package org.bigbluebutton.main.model.users
 			dispatcher.dispatchEvent(new StreamStoppedEvent(userID, name, stream));
 		}
 
+		[Bindable] private var _isAnythingLocked:Boolean; //this bindable was created to ensure the updating of the icons and buttons on Users Window
+
 		public function applyLockSettings():void {
 			var lockSettings:LockSettingsVO = UserManager.getInstance().getConference().getLockSettings();
 			var lockAppliesToMe:Boolean = me && role != MODERATOR && !presenter && userLocked;
@@ -459,6 +469,7 @@ package org.bigbluebutton.main.model.users
 					dispatcher.dispatchEvent(e);
 				}
 			}
+			_isAnythingLocked = lockSettings.isAnythingLocked(); //this function causes the MediaItemRenderer to handle a DATA_CHANGE and redraw the window, therefore adding the buttons and icons accordingly
 		}
 	}
 }

@@ -112,12 +112,21 @@
 							roleImg.visible = false;
 							roleBtn.visible = true;
 							roleBtn.enabled = true;
+						} else if (data.presenter) {  //this condition was added in order to remove the button from the interface as soon as the user is set to presenter, instead of waiting for rolledOut or mouse movement if already rolledOut, this affects only the moderator that is changing the status of a user to presenter
+							roleImg.source = images.presenter_new;
+							roleImg.toolTip = ResourceUtil.getInstance().getString('bbb.users.usersGrid.statusItemRenderer.presenter');
+
+							roleImg.visible = true;
+							roleBtn.visible = false;
+							roleBtn.enabled = false;
 						}
 					} else {
 						//updating which role to show: presenter or moderator
-						if (data.presenter) {
+						if (data.presenter) {  //similar to the condition above, but updates the icon to everyone else
 							roleImg.source = images.presenter_new;
-							roleImg.toolTip = ResourceUtil.getInstance().getString('bbb.users.usersGrid.statusItemRenderer.presenter')
+							roleImg.toolTip = ResourceUtil.getInstance().getString('bbb.users.usersGrid.statusItemRenderer.presenter');
+							roleBtn.visible = false;
+							roleBtn.enabled = false;
 						} else if(data.role == Role.MODERATOR) {
 							roleImg.source = images.moderator;
 							roleImg.toolTip = ResourceUtil.getInstance().getString('bbb.users.usersGrid.statusItemRenderer.moderator');
