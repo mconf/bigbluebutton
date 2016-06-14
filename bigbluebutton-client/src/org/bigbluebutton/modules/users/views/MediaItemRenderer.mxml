@@ -216,14 +216,13 @@
 						lockBtn.visible = false;
 						lockBtn.includeInLayout = false;
 					} else if( moderator && ls.isAnythingLocked() ) {
-						lockImg.visible = !rolledOver;
-						lockImg.includeInLayout = !rolledOver;
+						lockImg.visible = !rolledOver && data.userLocked;
+						lockImg.includeInLayout = !rolledOver && data.userLocked;
 						lockBtn.visible = rolledOver;
 						lockBtn.includeInLayout = rolledOver;
 					} else if(data.role == BBBUser.VIEWER && ls.isAnythingLocked() ){
-						//If it can't be clicked, only show image
-						lockImg.visible = true;
-						lockImg.includeInLayout = true;
+						lockImg.visible = data.userLocked;
+						lockImg.includeInLayout = data.userLocked;
 						lockBtn.visible = false;
 						lockBtn.includeInLayout = false;
 					} else if(!ls.isAnythingLocked()){
