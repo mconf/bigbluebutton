@@ -210,7 +210,7 @@
 						}
 					}
 					
-					if ( data.role == BBBUser.MODERATOR ){
+					if ( data.role == BBBUser.MODERATOR || !ls.isAnythingLocked() ){
 						lockImg.visible = false;
 						lockImg.includeInLayout = false;
 						lockBtn.visible = false;
@@ -223,11 +223,6 @@
 					} else if(data.role == BBBUser.VIEWER && ls.isAnythingLocked() ){
 						lockImg.visible = data.userLocked;
 						lockImg.includeInLayout = data.userLocked;
-						lockBtn.visible = false;
-						lockBtn.includeInLayout = false;
-					} else if(!ls.isAnythingLocked()){
-						lockImg.visible = false;
-						lockImg.includeInLayout = false;
 						lockBtn.visible = false;
 						lockBtn.includeInLayout = false;
 					}
