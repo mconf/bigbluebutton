@@ -38,6 +38,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       import org.bigbluebutton.modules.videoconf.events.StartBroadcastEvent;
       import org.bigbluebutton.modules.videoconf.events.StopBroadcastEvent;
       import org.bigbluebutton.modules.videoconf.events.StopShareCameraRequestEvent;
+      import org.bigbluebutton.modules.videoconf.events.VideoDockEvent;
       import org.bigbluebutton.modules.videoconf.events.VideoModuleStartEvent;
       import org.bigbluebutton.modules.videoconf.events.VideoModuleStopEvent;
       import org.bigbluebutton.modules.videoconf.events.PlayConnectionReady;
@@ -132,6 +133,14 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
     <MethodInvoker generator="{VideoEventMapDelegate}" method="handleCamSettingsClosedEvent"  arguments="{event}"/>
   </EventHandlers>
   
+  <EventHandlers type="{VideoDockEvent.EXPAND_VIDEOS}">
+    <MethodInvoker generator="{VideoEventMapDelegate}" method="handleExpandVideosEvent"/>
+  </EventHandlers>
+
+  <EventHandlers type="{VideoDockEvent.CONTRACT_VIDEOS}">
+    <MethodInvoker generator="{VideoEventMapDelegate}" method="handleContractVideosEvent"/>
+  </EventHandlers>
+
 	<EventHandlers type="{PlayConnectionReady.PLAY_CONNECTION_READY}">
 		<MethodInvoker generator="{VideoEventMapDelegate}" method="handlePlayConnectionReady" arguments="{event}" />
 	</EventHandlers>

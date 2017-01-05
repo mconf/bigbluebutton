@@ -13,6 +13,7 @@ package org.bigbluebutton.modules.videoconf.views
         protected var _origWidth:Number = 320;
         protected var _origHeight:Number = 240;
         protected var _background:Canvas;
+        protected var _expand:Boolean = false;
 
         protected const BORDER_THICKNESS:int = 0;
 
@@ -42,6 +43,14 @@ package org.bigbluebutton.modules.videoconf.views
             invalidateDisplayList();
         }
 
+        public function get expand():Boolean {
+            return _expand;
+        }
+
+        public function set expand(value:Boolean):void {
+            _expand = value;
+        }
+
         public function get aspectRatio():Number {
             return _origWidth / _origHeight;
         }
@@ -59,7 +68,7 @@ package org.bigbluebutton.modules.videoconf.views
             unscaledHeight -= BORDER_THICKNESS * 2;
             unscaledWidth -= BORDER_THICKNESS * 2;
 
-            if (unscaledWidth / unscaledHeight > aspectRatio) {
+            if (unscaledWidth / unscaledHeight > aspectRatio || expand) {
                 object_height = unscaledHeight;
                 object_width = Math.ceil(unscaledHeight * aspectRatio);
                 object_y = BORDER_THICKNESS;

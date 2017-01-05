@@ -348,5 +348,11 @@ package org.bigbluebutton.common
 
 		[Embed(source="assets/images/status/icon-7-sad-face.png")]
 		public var mood_sad:Class;
+
+		[Embed(source="assets/images/expand.png")]
+		public var expand:Class;
+
+		[Embed(source="assets/images/contract.png")]
+		public var contract:Class;
 	}
 }

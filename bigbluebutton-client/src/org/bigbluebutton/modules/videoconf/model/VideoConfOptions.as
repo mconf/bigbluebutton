@@ -83,6 +83,9 @@ package org.bigbluebutton.modules.videoconf.model
 		[Bindable]
 		public var priorityRatio:Number = 2/3;
 		
+		[Bindable]
+		public var showExpandVideosButton:Boolean = true;
+
 		public function VideoConfOptions() {
 			parseOptions();
 		}
@@ -167,6 +170,10 @@ package org.bigbluebutton.modules.videoconf.model
 				}
 				if (vxml.@priorityRatio != undefined) {
 					priorityRatio = Number(vxml.@priorityRatio.toString());
+				}
+
+				if (vxml.@showExpandVideosButton != undefined) {
+					showExpandVideosButton = (vxml.@showExpandVideosButton.toString().toUpperCase() == "TRUE") ? true : false;
 				}
 			}
 		}
