@@ -24,9 +24,21 @@ package org.bigbluebutton.modules.videoconf.views
         private var priorityMode:Boolean = false;
         private var priorityItem:DisplayObject = null;
         private var _minContentAspectRatio:Number=4/3;
+        private var _expand:Boolean = false;
+
+        public function set expand(value:Boolean):void {
+            _expand = value;
+            _minContentAspectRatio = minContentAspectRatio();
+            invalidateDisplayList();
+        }
+
+        public function isExpand():Boolean {
+            return _expand;
+        }
 
         public function GraphicsWrapper() {
             percentWidth = percentHeight = 100;
+            horizontalScrollPolicy = verticalScrollPolicy= "off";
         }
 
         override public function addChild(child:DisplayObject):DisplayObject {
@@ -42,7 +54,7 @@ package org.bigbluebutton.modules.videoconf.views
                     result = item.contentAspectRatio;
                 }
             }
-            return result;
+            return isExpand() ? 1.0 : result;
         }
 
         private function calculateCellDimensions(canvasWidth:int, canvasHeight:int, numColumns:int, numRows:int):Object {
@@ -90,8 +102,8 @@ package org.bigbluebutton.modules.videoconf.views
             var bestConfiguration:Object = findBestConfiguration(unscaledWidth, unscaledHeight, numChildren);
             var numColumns:int = bestConfiguration.numColumns;
             var numRows:int = bestConfiguration.numRows;
-            var cellWidth:int = bestConfiguration.width;
-            var cellHeight:int = bestConfiguration.height;
+            var cellWidth:int = isExpand() ? Math.floor(unscaledWidth / numColumns) : bestConfiguration.width;
+            var cellHeight:int = isExpand() ? Math.floor(unscaledHeight / numRows) : bestConfiguration.height;
             var cellAspectRatio:Number = bestConfiguration.cellAspectRatio;
 
             var blockX:int = Math.floor((unscaledWidth - cellWidth * numColumns) / 2);
@@ -107,16 +119,17 @@ package org.bigbluebutton.modules.videoconf.views
                 var cellOffsetY:int = 0;
                 if (item.contentAspectRatio > cellAspectRatio) {
                     itemWidth = cellWidth;
-                    itemHeight = Math.floor(cellWidth / item.contentAspectRatio);
+                    itemHeight = isExpand() ? cellHeight : Math.floor(cellWidth / item.contentAspectRatio);
                     cellOffsetY = (cellHeight - itemHeight) / 2;
                 } else {
-                    itemWidth = Math.floor(cellHeight * item.contentAspectRatio);
+                    itemWidth = isExpand() ? cellWidth : Math.floor(cellHeight * item.contentAspectRatio);
                     itemHeight = cellHeight;
                     cellOffsetX = (cellWidth - itemWidth) / 2;
                 }
                 itemX = (i % numColumns) * cellWidth + blockX + cellOffsetX;
                 itemY = Math.floor(i / numColumns) * cellHeight + blockY + cellOffsetY;
 
+                item.setExpand(isExpand());
                 item.setActualSize(itemWidth, itemHeight);
                 item.move(itemX, itemY);
             }
@@ -157,10 +170,29 @@ package org.bigbluebutton.modules.videoconf.views
             var bestConf:Object = findPriorityConfiguration(unscaledWidth, unscaledHeight);
             var numColumns:int = bestConf.otherConf.numColumns;
             var numRows:int = bestConf.otherConf.numRows;
-            var oWidth:int = bestConf.otherConf.width;
-            var oHeight:int = bestConf.otherConf.height;
-            var pWidth:int = bestConf.priorConf.width;
-            var pHeight:int = bestConf.priorConf.height;
+            var oWidth:int,
+                oHeight:int,
+                pWidth:int,
+                pHeight:int;
+            if (isExpand()) {
+                oWidth = bestConf.isVertSplit ?
+                        Math.floor((1 - priorityWeight) * unscaledWidth / numColumns) :
+                        Math.floor(unscaledWidth / numColumns);
+                oHeight = bestConf.isVertSplit ?
+                        Math.floor(unscaledHeight / numRows) :
+                        Math.floor((1 - priorityWeight) * unscaledHeight / numRows);
+                pWidth = bestConf.isVertSplit ?
+                        Math.floor(priorityWeight * unscaledWidth) :
+                        unscaledWidth;
+                pHeight = bestConf.isVertSplit ?
+                        unscaledHeight :
+                        Math.floor(priorityWeight * unscaledHeight);
+            } else {
+                oWidth = bestConf.otherConf.width;
+                oHeight = bestConf.otherConf.height;
+                pWidth = bestConf.priorConf.width;
+                pHeight = bestConf.priorConf.height;
+            }
 
             var blockX:int = 0;
             var blockY:int = 0;
@@ -176,10 +208,10 @@ package org.bigbluebutton.modules.videoconf.views
             // set size and position of the prioritized video
             if (item.contentAspectRatio > _minContentAspectRatio) {
                 itemWidth = pWidth;
-                itemHeight = Math.floor(pWidth / item.contentAspectRatio);
+                itemHeight = isExpand() ? pHeight : Math.floor(pWidth / item.contentAspectRatio);
             } else {
                 itemHeight = pHeight;
-                itemWidth = Math.floor(pHeight * item.contentAspectRatio);
+                itemWidth = isExpand() ? pWidth : Math.floor(pHeight * item.contentAspectRatio);
             }
 
             if (bestConf.isVertSplit) {
@@ -193,6 +225,7 @@ package org.bigbluebutton.modules.videoconf.views
                 itemX = Math.floor((unscaledWidth - itemWidth)/2);
                 itemY = Math.floor((unscaledHeight - itemHeight - oHeight*numRows)/2);
             }
+            item.setExpand(isExpand());
             item.setActualSize(itemWidth, itemHeight);
             item.move(itemX, itemY);
 
@@ -204,10 +237,10 @@ package org.bigbluebutton.modules.videoconf.views
 
                     if (item.contentAspectRatio > _minContentAspectRatio) {
                         itemWidth = oWidth;
-                        itemHeight = Math.floor(oWidth / item.contentAspectRatio);
+                        itemHeight = isExpand() ? oHeight : Math.floor(oWidth / item.contentAspectRatio);
                     } else {
                         itemHeight = oHeight;
-                        itemWidth = Math.floor(oHeight * item.contentAspectRatio);
+                        itemWidth = isExpand() ? oWidth : Math.floor(oHeight * item.contentAspectRatio);
                     }
                     cellOffsetX = (oWidth - itemWidth)/2;
                     cellOffsetY = (oHeight - itemHeight)/2;
@@ -216,6 +249,7 @@ package org.bigbluebutton.modules.videoconf.views
                     itemY = Math.floor(nonPriorityIndex / numColumns) * oHeight + blockY + cellOffsetY;
                     nonPriorityIndex++;
 
+                    item.setExpand(isExpand());
                     item.setActualSize(itemWidth, itemHeight);
                     item.move(itemX, itemY);
                 }

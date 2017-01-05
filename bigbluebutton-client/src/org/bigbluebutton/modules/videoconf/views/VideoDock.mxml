@@ -35,15 +35,89 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 
 	<mx:Script>
 		<![CDATA[
+			import com.asfusion.mate.events.Dispatcher;
+			import mx.controls.Button;
+
+			import org.bigbluebutton.common.Images;
 			import org.bigbluebutton.main.views.MainCanvas;
 			import org.bigbluebutton.util.i18n.ResourceUtil;
+			import org.bigbluebutton.modules.videoconf.events.VideoDockEvent;
+			import org.bigbluebutton.modules.videoconf.model.VideoConfOptions;
+
+			public var expandVideosBtn:Button;
+			public var contractVideosBtn:Button;
+
+			private var _dispatcher:Dispatcher = new Dispatcher();
+			private var _showExpandVideosButton:Boolean = false;
+			private var _images:Images = new Images();
+			private var _options:VideoConfOptions = new VideoConfOptions();
+
+			public function get showExpandVideosButton():Boolean {
+				return _showExpandVideosButton;
+			}
+
+			public function set showExpandVideosButton(value:Boolean):void {
+				_showExpandVideosButton = value;
+
+				if (expandVideosBtn && expandVideosBtn.visible != value) {
+					expandVideosBtn.visible = expandVideosBtn.includeInLayout = value;
+					this.windowControls.invalidateDisplayList();
+				}
+			}
 
 			private function init():void {
+				if(!expandVideosBtn) {
+					expandVideosBtn = new Button();
+					expandVideosBtn.setStyle("upSkin", _images.expand);
+					expandVideosBtn.setStyle("overSkin", _images.expand);
+					expandVideosBtn.setStyle("downSkin", _images.expand);
+					expandVideosBtn.setStyle("disabledSkin", _images.expand);
+					expandVideosBtn.buttonMode = true;
+					expandVideosBtn.toolTip = ResourceUtil.getInstance().getString('bbb.videodock.expandVideos');
+					expandVideosBtn.visible = false;
+					expandVideosBtn.includeInLayout = false;
+					this.windowControls.addChild(expandVideosBtn);
+					this.windowControls.setChildIndex(expandVideosBtn, 0);
 
+					expandVideosBtn.addEventListener(MouseEvent.CLICK, onExpandVideosBtnClicked);
+				}
+
+				if(!contractVideosBtn) {
+					contractVideosBtn = new Button();
+					contractVideosBtn.setStyle("upSkin", _images.contract);
+					contractVideosBtn.setStyle("overSkin", _images.contract);
+					contractVideosBtn.setStyle("downSkin", _images.contract);
+					contractVideosBtn.setStyle("disabledSkin", _images.contract);
+					contractVideosBtn.buttonMode = true;
+					contractVideosBtn.toolTip = ResourceUtil.getInstance().getString('bbb.videodock.contractVideos');
+					contractVideosBtn.visible = false;
+					contractVideosBtn.includeInLayout = false;
+					this.windowControls.addChild(contractVideosBtn);
+					this.windowControls.setChildIndex(contractVideosBtn, 0);
+
+					contractVideosBtn.addEventListener(MouseEvent.CLICK, onContractVideosBtnClicked);
+				}
+			}
+
+			private function refreshButtons():void {
+				expandVideosBtn.visible = expandVideosBtn.includeInLayout = !expandVideosBtn.visible;
+				contractVideosBtn.visible = contractVideosBtn.includeInLayout = !contractVideosBtn.visible;
+				this.windowControls.invalidateDisplayList();
+			}
+
+			private function onExpandVideosBtnClicked(event:MouseEvent):void {
+				refreshButtons();
+				_dispatcher.dispatchEvent(new VideoDockEvent(VideoDockEvent.EXPAND_VIDEOS));
+			}
+
+			private function onContractVideosBtnClicked(event:MouseEvent):void {
+				refreshButtons();
+				_dispatcher.dispatchEvent(new VideoDockEvent(VideoDockEvent.CONTRACT_VIDEOS));
 			}
 
 			private function onCreationComplete():void {
 				this.showCloseButton = false;
+				this.showExpandVideosButton = _options.showExpandVideosButton;
 			}
 
 			public function getPrefferedPosition():String {

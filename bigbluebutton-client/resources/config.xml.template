@@ -88,6 +88,7 @@
 			glowColor = "0x4A931D"
 			glowBlurSize = "30.0"	
 			priorityRatio = "0.67"
+			showExpandVideosButton = "true"
 		/>
 		
 		<module name="WhiteboardModule" url="http://HOST/client/WhiteboardModule.swf?v=VERSION" 

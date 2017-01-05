@@ -138,6 +138,10 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
                 video.shutdown();
             }
 
+            public function setExpand(value:Boolean):void {
+                video.expand = value;
+            }
+
             private function set avatarVisibility(value:Boolean):void {
                 avatar.visible = avatar.includeInLayout = value;
                 video.visible = video.includeInLayout = !value;

@@ -536,5 +536,13 @@ package org.bigbluebutton.modules.videoconf.maps
         openAvatarWindowFor(userID);
       }
     }
+
+    public function handleExpandVideosEvent():void {
+      _graphics.expand = true;
+    }
+
+    public function handleContractVideosEvent():void {
+      _graphics.expand = false;
+    }
   }
 }
