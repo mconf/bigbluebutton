@@ -35,13 +35,13 @@ public class MessagePublisher {
 		this.sender = sender;
 	}
 
-	public void startH264ToH263TranscoderRequest(String meetingId, String streamName, String ipAddress) {
+	public void startH264ToH263TranscoderRequest(String meetingId, String ipAddress) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put(Constants.TRANSCODER_TYPE, Constants.TRANSCODE_H264_TO_H263);
 		params.put(Constants.MODULE, "deskShare");
 		params.put(Constants.LOCAL_IP_ADDRESS, ipAddress);
 		params.put(Constants.DESTINATION_IP_ADDRESS, ipAddress);
-		params.put(Constants.INPUT, streamName);
+		params.put(Constants.INPUT, meetingId);
 		// TODO: transcoderId is getting meetingId, this may have to change
 		StartTranscoderRequestMessage msg = new StartTranscoderRequestMessage(meetingId, meetingId, params);
 		sender.send(MessagingConstants.TO_BBB_TRANSCODE_SYSTEM_CHAN, msg.toJson());
