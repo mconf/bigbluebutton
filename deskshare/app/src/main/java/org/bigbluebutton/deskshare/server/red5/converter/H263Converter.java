@@ -58,7 +58,7 @@ public class H263Converter {
 		this.numListeners++;
 		log.debug("Adding listener to [{}] ; [{}] current listeners ", origin, this.numListeners);
 
-		if(this.numListeners.equals(1)) {
+		if (this.numListeners.equals(1)) {
 			log.debug("First listener just joined, must start H263Converter for [{}]", origin);
 			startConverter();
 		}
@@ -68,7 +68,7 @@ public class H263Converter {
 		this.numListeners--;
 		log.debug("Removing listener from [{}] ; [{}] current listeners ", origin, this.numListeners);
 
-		if(this.numListeners <= 0) {
+		if (this.numListeners <= 0) {
 			log.debug("No more listeners, may close H263Converter for [{}]", origin);
 			this.stopConverter();
 		}

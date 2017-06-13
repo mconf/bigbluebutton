@@ -258,11 +258,7 @@ class DeskshareApplication(streamManager: StreamManager, deskShareServer: DeskSh
 
 	override def streamSubscriberClose(stream:ISubscriberStream) {
 		var streamName:String = stream.getBroadcastStreamPublishName()
-		streamName = streamName.replaceAll(H263VideoHandler.H263PREFIX, "")
 		logger.debug("DeskshareApplication: Handling streamSubscriberClose for [ %s ]", streamName)
-
-		if (H263VideoHandler.isH263Stream(streamName)) {
-			h263VideoHandler.streamSubscriberClose(stream)
-		}
+		h263VideoHandler.streamSubscriberClose(stream)
 	}
 }
