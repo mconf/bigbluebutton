@@ -249,7 +249,7 @@ class DeskshareApplication(streamManager: StreamManager, deskShareServer: DeskSh
 	}
 
 	override def streamPlayItemPlay(stream:ISubscriberStream, item:IPlayItem, isLive:Boolean) {
-		logger.debug("DeskshareApplication: Handling streamPlayItemPlay for stream [ %s ] item [ %s ]", stream.toString(), item.toString())
+		logger.debug("DeskshareApplication: Handling streamPlayItemPlay for stream item [ %s ]", item.toString())
 		val streamName:String = item.getName()
 		if (H263VideoHandler.isH263Stream(streamName)) {
 			h263VideoHandler.streamPlayItem(stream, item)

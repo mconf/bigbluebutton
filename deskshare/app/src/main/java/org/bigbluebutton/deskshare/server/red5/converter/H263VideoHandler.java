@@ -78,18 +78,19 @@ public class H263VideoHandler {
 
 	public void streamSubscriberClose(ISubscriberStream stream) {
 		String streamName = stream.getBroadcastStreamPublishName();
-		log.debug("Detected H263 stream close [{}]", streamName);
 
 		synchronized (h263Converters) {
 			if (isH263Stream(streamName)) {
 				streamName = streamName.replaceAll(H263PREFIX, "");
 				if (h263Converters.containsKey(streamName)) {
+					log.debug("Detected H263 stream close [{}]", streamName);
 					H263Converter converter = h263Converters.get(streamName);
 					converter.removeListener();
 				} else {
 					log.warn("Converter not found for H263 stream [{}]. This may has been closed already", streamName);
 				}
 			} else if (h263Converters.containsKey(streamName)) {
+				log.debug("Detected H263 source stream close [{}]", streamName);
 				clearH263Converter(streamName);
 			}
 		}
