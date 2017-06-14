@@ -12,9 +12,7 @@ import java.util.concurrent.TimeUnit
 import org.bigbluebutton.SystemConfiguration
 import org.bigbluebutton.core.util._
 import scala.concurrent.duration._
-import org.bigbluebutton.core.apps.{ PollApp, UsersApp, PresentationApp, LayoutApp, ChatApp, WhiteboardApp, SharedNotesApp }
-import org.bigbluebutton.core.apps.{ ChatModel, LayoutModel, UsersModel, PollModel, WhiteboardModel, SharedNotesModel }
-import org.bigbluebutton.core.apps.PresentationModel
+import org.bigbluebutton.core.apps._
 
 object MeetingActor {
   def props(mProps: MeetingProperties, outGW: OutMessageGateway): Props =
@@ -346,6 +344,7 @@ class MeetingActor(val mProps: MeetingProperties, val outGW: OutMessageGateway)
 
   private def handleEndMeeting(msg: EndMeeting) {
     meetingModel.meetingHasEnded
+    outGW.send(new StopMeetingTranscoders(msg.meetingID))
     outGW.send(new MeetingEnded(msg.meetingID, mProps.recorded, mProps.voiceBridge))
     outGW.send(new DisconnectAllUsers(msg.meetingID))
   }

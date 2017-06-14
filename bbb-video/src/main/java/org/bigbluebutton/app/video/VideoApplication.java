@@ -213,6 +213,13 @@ public class VideoApplication extends MultiThreadedApplicationAdapter {
         }
     }
 
+    private String getStreamName(String streamName) {
+        String parts[] = streamName.split("/");
+        if(parts.length > 1)
+            return parts[parts.length-1];
+        return "";
+    }
+
     @Override
     public void streamBroadcastStart(IBroadcastStream stream) {
     	IConnection conn = Red5.getConnectionLocal();  
@@ -226,7 +233,7 @@ public class VideoApplication extends MultiThreadedApplicationAdapter {
         addH263PublishedStream(streamId);
         if (streamId.contains("/")) {
             if(VideoRotator.getDirection(streamId) != null) {
-                VideoRotator rotator = new VideoRotator(streamId);
+                VideoRotator rotator = new VideoRotator(streamId, publisher);
                 videoRotators.put(streamId, rotator);
             }
         }
@@ -277,7 +284,8 @@ public class VideoApplication extends MultiThreadedApplicationAdapter {
         removeH263ConverterIfNeeded(streamId);
         if(videoRotators.containsKey(streamId)) {
           // Stop rotator
-          videoRotators.remove(streamId).stop();
+          VideoRotator rotator = videoRotators.remove(streamId);
+          rotator.stop();
         }
         removeH263PublishedStream(streamId);
       } else if (recordVideoStream) {
@@ -417,7 +425,7 @@ public class VideoApplication extends MultiThreadedApplicationAdapter {
 				// Check if a new stream converter is necessary
 				H263Converter converter;
 				if(!h263Converters.containsKey(streamName) && !isStreamPublished(streamName)) {
-					converter = new H263Converter(streamName);
+					converter = new H263Converter(streamName, publisher);
 					h263Converters.put(streamName, converter);
 				}
 				else {

@@ -33,6 +33,7 @@ import org.bigbluebutton.common.messages.UserEjectedFromMeetingMessage
 import org.bigbluebutton.common.messages.LockLayoutMessage
 import org.bigbluebutton.core.pubsub.senders.WhiteboardMessageToJsonConverter
 import org.bigbluebutton.common.converters.ToJsonEncoder
+import org.bigbluebutton.common.messages.StopMeetingTranscodersMessage
 
 object MessageSenderActor {
   def props(meetingId: String, msgSender: MessageSender): Props =
@@ -124,6 +125,7 @@ class MessageSenderActor(val meetingId: String, val service: MessageSender)
     case msg: UserLeftVoice => handleUserLeftVoice(msg)
     case msg: IsMeetingMutedReply => handleIsMeetingMutedReply(msg)
     case msg: UserListeningOnly => handleUserListeningOnly(msg)
+    case msg: StopMeetingTranscoders => handleStopMeetingTranscoders(msg)
     case msg: GetCurrentLayoutReply => handleGetCurrentLayoutReply(msg)
     case msg: BroadcastLayoutEvent => handleBroadcastLayoutEvent(msg)
     case msg: LockLayoutEvent => handleLockLayoutEvent(msg)
@@ -667,6 +669,11 @@ class MessageSenderActor(val meetingId: String, val service: MessageSender)
   private def handleUserListeningOnly(msg: UserListeningOnly) {
     val json = UsersMessageToJsonConverter.userListeningOnlyToJson(msg)
     service.send(MessagingConstants.FROM_USERS_CHANNEL, json)
+  }
+
+  private def handleStopMeetingTranscoders(msg: StopMeetingTranscoders) {
+    val smt = new StopMeetingTranscodersMessage(msg.meetingID)
+    service.send(MessagingConstants.TO_BBB_TRANSCODE_SYSTEM_CHAN, smt.toJson())
   }
 
   private def handleGetWhiteboardShapesReply(msg: GetWhiteboardShapesReply) {

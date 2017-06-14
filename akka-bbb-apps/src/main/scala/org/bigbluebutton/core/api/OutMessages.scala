@@ -146,6 +146,9 @@ case class CreateAdditionalNotesReply(meetingID: String, recorded: Boolean, requ
 case class DestroyAdditionalNotesReply(meetingID: String, recorded: Boolean, requesterID: String, noteID: String) extends IOutMessage
 case class SharedNotesSyncNoteReply(meetingID: String, recorded: Boolean, requesterID: String, noteID: String, note: NoteReport) extends IOutMessage
 
+//Transcode
+case class StopMeetingTranscoders(meetingID: String) extends IOutMessage
+
 // Value Objects
 case class MeetingVO(id: String, recorded: Boolean)
 

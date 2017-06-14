@@ -84,6 +84,7 @@ class StreamManager(record:Boolean, recordingService:RecordingService) extends A
 	def createStream(room: String, width: Int, height: Int): Option[DeskshareStream] = {	  	  
 	  try {                  
 	    log.debug("StreamManager: Creating stream for [ %s ]", room)
+		// TODO: We must not record H263 streams
 		val stream = new DeskshareStream(app, room, width, height, record, recordingService.getRecorderFor(room))
 	    log.debug("StreamManager: Initializing stream for [ %s ]", room)
 		if (stream.initializeStream) {

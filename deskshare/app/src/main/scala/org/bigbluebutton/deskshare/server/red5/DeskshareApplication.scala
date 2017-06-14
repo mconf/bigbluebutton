@@ -19,6 +19,7 @@
 package org.bigbluebutton.deskshare.server.red5
 
 import org.red5.server.api.{IContext, IConnection}
+import org.red5.server.api.stream.{IPlayItem, ISubscriberStream}
 import org.red5.server.so.SharedObjectService
 import org.red5.server.api.so.{ISharedObject, ISharedObjectService}
 import org.red5.server.stream.IProviderService
@@ -27,6 +28,8 @@ import org.bigbluebutton.deskshare.server.RtmpClientAdapter
 import org.bigbluebutton.deskshare.server.stream.StreamManager
 import org.bigbluebutton.deskshare.server.socket.DeskShareServer
 import org.bigbluebutton.deskshare.server.MultiThreadedAppAdapter
+import org.bigbluebutton.deskshare.server.red5.converter.H263VideoHandler
+import org.bigbluebutton.deskshare.server.red5.pubsub.MessagePublisher
 import scala.actors.Actor
 import scala.actors.Actor._
 import net.lag.configgy.Configgy
@@ -37,7 +40,7 @@ import org.red5.server.api.scope.{IScope}
 import org.red5.server.util.ScopeUtils
 import com.google.gson.Gson
 
-class DeskshareApplication(streamManager: StreamManager, deskShareServer: DeskShareServer) extends MultiThreadedAppAdapter {
+class DeskshareApplication(streamManager: StreamManager, deskShareServer: DeskShareServer, messagePublisher: MessagePublisher) extends MultiThreadedAppAdapter {
 	private val deathSwitch = new CountDownLatch(1)
 
 	// load our config file and configure logfiles.
@@ -45,6 +48,8 @@ class DeskshareApplication(streamManager: StreamManager, deskShareServer: DeskSh
  
 	private val logger = Logger.get 
 	var appScope: IScope = null
+
+	private val h263VideoHandler:H263VideoHandler = new H263VideoHandler(messagePublisher)
  
 	override def appStart(app: IScope): Boolean = {
 		logger.debug("deskShare appStart");
@@ -241,5 +246,19 @@ class DeskshareApplication(streamManager: StreamManager, deskShareServer: DeskSh
 		}
 
 		return true
+	}
+
+	override def streamPlayItemPlay(stream:ISubscriberStream, item:IPlayItem, isLive:Boolean) {
+		logger.debug("DeskshareApplication: Handling streamPlayItemPlay for stream item [ %s ]", item.toString())
+		val streamName:String = item.getName()
+		if (H263VideoHandler.isH263Stream(streamName)) {
+			h263VideoHandler.streamPlayItem(stream, item)
+		}
+	}
+
+	override def streamSubscriberClose(stream:ISubscriberStream) {
+		var streamName:String = stream.getBroadcastStreamPublishName()
+		logger.debug("DeskshareApplication: Handling streamSubscriberClose for [ %s ]", streamName)
+		h263VideoHandler.streamSubscriberClose(stream)
 	}
 }
