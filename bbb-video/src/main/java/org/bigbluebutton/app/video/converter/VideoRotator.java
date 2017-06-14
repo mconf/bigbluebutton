@@ -19,9 +19,11 @@ public class VideoRotator {
 	public static final String ROTATE_RIGHT = "rotate_right";
 	public static final String ROTATE_UPSIDE_DOWN = "rotate_left/rotate_left";
 
+	private final String ROTATE_ID = "ROTATE-";
+
 	private String streamName;
 	private String streamId;
-	private String userId;
+	private String transcoderId;
 	private String meetingId;
 	private String ipAddress;
 	private MessagePublisher publisher;
@@ -40,7 +42,7 @@ public class VideoRotator {
 		this.publisher = publisher;
 
 		IConnection conn = Red5.getConnectionLocal();
-		this.userId = getUserId();
+		this.transcoderId = ROTATE_ID + streamName;
 		this.meetingId = conn.getScope().getName();
 		this.ipAddress = conn.getHost();
 
@@ -62,13 +64,13 @@ public class VideoRotator {
 	private void start() {
 		switch (getDirection(streamId)) {
 			case ROTATE_RIGHT:
-				publisher.startRotateRightTranscoderRequest(meetingId, userId, streamName, ipAddress);
+				publisher.startRotateRightTranscoderRequest(meetingId, transcoderId, streamName, ipAddress);
 				break;
 			case ROTATE_LEFT:
-				publisher.startRotateLeftTranscoderRequest(meetingId, userId, streamName, ipAddress);
+				publisher.startRotateLeftTranscoderRequest(meetingId, transcoderId, streamName, ipAddress);
 				break;
 			case ROTATE_UPSIDE_DOWN:
-				publisher.startRotateUpsideDownTranscoderRequest(meetingId, userId, streamName, ipAddress);
+				publisher.startRotateUpsideDownTranscoderRequest(meetingId, transcoderId, streamName, ipAddress);
 				break;
 			default:
 				break;
@@ -100,7 +102,7 @@ public class VideoRotator {
 	}
 
 	public void stop() {
-		publisher.stopTranscoderRequest(meetingId, userId);
+		publisher.stopTranscoderRequest(meetingId, transcoderId);
 	}
 
 	private String getUserId() {

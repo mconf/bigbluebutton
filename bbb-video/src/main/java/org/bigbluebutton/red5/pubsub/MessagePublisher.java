@@ -29,54 +29,49 @@ public class MessagePublisher {
 		sender.send(MessagingConstants.TO_USERS_CHANNEL, msg.toJson());
 	}
 	
-	public void startRotateLeftTranscoderRequest(String meetingId, String userId, String streamName, String ipAddress) {
+	public void startRotateLeftTranscoderRequest(String meetingId, String transcoderId, String streamName, String ipAddress) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put(Constants.TRANSCODER_TYPE, Constants.TRANSCODE_ROTATE_LEFT);
 		params.put(Constants.LOCAL_IP_ADDRESS, ipAddress);
 		params.put(Constants.DESTINATION_IP_ADDRESS, ipAddress);
 		params.put(Constants.INPUT, streamName);
-		// TODO: transcoderId is getting userId, this may have to change
-		StartTranscoderRequestMessage msg = new StartTranscoderRequestMessage(meetingId, userId, params);
+		StartTranscoderRequestMessage msg = new StartTranscoderRequestMessage(meetingId, transcoderId, params);
 		sender.send(MessagingConstants.TO_BBB_TRANSCODE_SYSTEM_CHAN, msg.toJson());
 	}
 
-	public void startRotateRightTranscoderRequest(String meetingId, String userId, String streamName, String ipAddress) {
+	public void startRotateRightTranscoderRequest(String meetingId, String transcoderId, String streamName, String ipAddress) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put(Constants.TRANSCODER_TYPE, Constants.TRANSCODE_ROTATE_RIGHT);
 		params.put(Constants.LOCAL_IP_ADDRESS, ipAddress);
 		params.put(Constants.DESTINATION_IP_ADDRESS, ipAddress);
 		params.put(Constants.INPUT, streamName);
-		// TODO: transcoderId is getting userId, this may have to change
-		StartTranscoderRequestMessage msg = new StartTranscoderRequestMessage(meetingId, userId, params);
+		StartTranscoderRequestMessage msg = new StartTranscoderRequestMessage(meetingId, transcoderId, params);
 		sender.send(MessagingConstants.TO_BBB_TRANSCODE_SYSTEM_CHAN, msg.toJson());
 	}
 
-	public void startRotateUpsideDownTranscoderRequest(String meetingId, String userId, String streamName, String ipAddress) {
+	public void startRotateUpsideDownTranscoderRequest(String meetingId, String transcoderId, String streamName, String ipAddress) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put(Constants.TRANSCODER_TYPE, Constants.TRANSCODE_ROTATE_UPSIDE_DOWN);
 		params.put(Constants.LOCAL_IP_ADDRESS, ipAddress);
 		params.put(Constants.DESTINATION_IP_ADDRESS, ipAddress);
 		params.put(Constants.INPUT, streamName);
-		// TODO: transcoderId is getting userId, this may have to change
-		StartTranscoderRequestMessage msg = new StartTranscoderRequestMessage(meetingId, userId, params);
+		StartTranscoderRequestMessage msg = new StartTranscoderRequestMessage(meetingId, transcoderId, params);
 		sender.send(MessagingConstants.TO_BBB_TRANSCODE_SYSTEM_CHAN, msg.toJson());
 	}
 
-	public void startH264ToH263TranscoderRequest(String meetingId, String userId, String streamName, String ipAddress) {
+	public void startH264ToH263TranscoderRequest(String meetingId, String transcoderId, String streamName, String ipAddress) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put(Constants.TRANSCODER_TYPE, Constants.TRANSCODE_H264_TO_H263);
 		params.put(Constants.MODULE, "video");
 		params.put(Constants.LOCAL_IP_ADDRESS, ipAddress);
 		params.put(Constants.DESTINATION_IP_ADDRESS, ipAddress);
 		params.put(Constants.INPUT, streamName);
-		// TODO: transcoderId is getting userId, this may have to change
-		StartTranscoderRequestMessage msg = new StartTranscoderRequestMessage(meetingId, userId, params);
+		StartTranscoderRequestMessage msg = new StartTranscoderRequestMessage(meetingId, transcoderId, params);
 		sender.send(MessagingConstants.TO_BBB_TRANSCODE_SYSTEM_CHAN, msg.toJson());
 	}
 
-	public void stopTranscoderRequest(String meetingId, String userId) {
-		// TODO: transcoderId is getting userId, this may have to change
-		StopTranscoderRequestMessage msg = new StopTranscoderRequestMessage(meetingId, userId);
+	public void stopTranscoderRequest(String meetingId, String transcoderId) {
+		StopTranscoderRequestMessage msg = new StopTranscoderRequestMessage(meetingId, transcoderId);
 		sender.send(MessagingConstants.TO_BBB_TRANSCODE_SYSTEM_CHAN, msg.toJson());
 	}
 }

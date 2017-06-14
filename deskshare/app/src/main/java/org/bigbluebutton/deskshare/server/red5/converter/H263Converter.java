@@ -28,6 +28,8 @@ public class H263Converter {
 
 	private static Logger log = Red5LoggerFactory.getLogger(H263Converter.class, "deskshare");
 
+	private final String H263_ID = "H263-";
+
 	private String origin;
 	private Integer numListeners = 0;
 
@@ -35,12 +37,14 @@ public class H263Converter {
 	private Boolean publishing;
 	private String ipAddress;
 	private String meetingId;
+	private String transcoderId;
 
 	public H263Converter(String origin, MessagePublisher publisher) {
 		log.info("Spawn FFmpeg to convert H264 to H263 for stream [{}]", origin);
 		this.origin = origin;
 		this.publisher = publisher;
 		this.publishing = false;
+		this.transcoderId = H263_ID + origin;
 
 		IConnection conn = Red5.getConnectionLocal();
 		this.ipAddress = conn.getHost();
@@ -49,7 +53,7 @@ public class H263Converter {
 
 	private void startConverter() {
 		if (!publishing) {
-			publisher.startH264ToH263TranscoderRequest(meetingId, ipAddress);
+			publisher.startH264ToH263TranscoderRequest(meetingId, transcoderId, ipAddress);
 			publishing = true;
 		} else log.debug("No need to start transcoder, it is already running");
 	}
@@ -77,7 +81,7 @@ public class H263Converter {
 	public synchronized void stopConverter() {
 		if (publishing) {
 			this.numListeners = 0;
-			publisher.stopTranscoderRequest(meetingId);
+			publisher.stopTranscoderRequest(meetingId, transcoderId);
 			publishing = false;
 			log.debug("Transcoder force-stopped");
 		} else log.debug("No need to stop transcoder, it already stopped");

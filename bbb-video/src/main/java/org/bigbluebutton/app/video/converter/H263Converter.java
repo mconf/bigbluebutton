@@ -20,6 +20,8 @@ public class H263Converter {
 
 	public final static String H263PREFIX = "h263/";
 
+	private final String H263_ID = "H263-";
+
 	private String origin;
 	private Integer numListeners = 0;
 
@@ -27,7 +29,7 @@ public class H263Converter {
 	private Boolean publishing;
 	private String ipAddress;
 	private String meetingId;
-	private String userId;
+	private String transcoderId;
 	
 	/**
 	 * Creates a H263Converter from a given streamName. It is assumed
@@ -45,7 +47,7 @@ public class H263Converter {
 		IConnection conn = Red5.getConnectionLocal();
 		this.ipAddress = conn.getHost();
 		this.meetingId = conn.getScope().getName();
-		this.userId = getUserId();
+		this.transcoderId = H263_ID + origin;
 	}
 
 	/**
@@ -53,7 +55,7 @@ public class H263Converter {
 	 */
 	private void startConverter() {
 		if (!publishing) {
-			publisher.startH264ToH263TranscoderRequest(meetingId, userId, origin, ipAddress);
+			publisher.startH264ToH263TranscoderRequest(meetingId, transcoderId, origin, ipAddress);
 			publishing = true;
 		} else log.debug("No need to start transcoder, it is already running");
 	}
@@ -93,7 +95,7 @@ public class H263Converter {
 	public synchronized void stopConverter() {
 		if (publishing) {
 			this.numListeners = 0;
-			publisher.stopTranscoderRequest(meetingId, userId);
+			publisher.stopTranscoderRequest(meetingId, transcoderId);
 			publishing = false;
 			log.debug("Transcoder force-stopped");
 		} else log.debug("No need to stop transcoder, it already stopped");
