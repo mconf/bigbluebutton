@@ -410,9 +410,9 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
                 </mx:Box>
             </mx:HBox>
             <mx:Box
-                    width="100%"
-                    paddingTop="15"
-                    paddingRight="15"
+                    width="95%"
+                    height="5%"
+                    verticalAlign="bottom"
                     horizontalAlign="right" >
                 <mx:Box
                         id="muteBtnWrapper"
