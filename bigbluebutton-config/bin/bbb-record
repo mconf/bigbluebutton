@@ -63,7 +63,7 @@ mark_for_rebuild() {
 
 	# Clear out the relevant done files
 	rm -vf $STATUS/archived/$MEETING_ID.norecord
-	rm -vf $STATUS/sanity/$MEETING_ID*
+	rm -vf $STATUS/sanity*/$MEETING_ID*
 	rm -vf $STATUS/processed/$MEETING_ID*
 	rm -vf $STATUS/published/$MEETING_ID*
 
@@ -354,7 +354,7 @@ if [ $DELETE ]; then
   # recording processing
   rm -f /var/bigbluebutton/recording/status/recorded/$MEETING_ID*
   rm -f /var/bigbluebutton/recording/status/archived/$MEETING_ID*
-  rm -f /var/bigbluebutton/recording/status/sanity/$MEETING_ID*
+  rm -f /var/bigbluebutton/recording/status/sanity*/$MEETING_ID*
   rm -f /var/bigbluebutton/recording/status/processed/$MEETING_ID*
   rm -f /var/bigbluebutton/recording/status/published/$MEETING_ID*
   
@@ -383,7 +383,7 @@ if [ $DELETEALL ]; then
   # recording processing
   rm -f /var/bigbluebutton/recording/status/recorded/*
   rm -f /var/bigbluebutton/recording/status/archived/*
-  rm -f /var/bigbluebutton/recording/status/sanity/*
+  rm -f /var/bigbluebutton/recording/status/sanity*/*
   rm -f /var/bigbluebutton/recording/status/processed/*
   rm -f /var/bigbluebutton/recording/status/published/*
 
