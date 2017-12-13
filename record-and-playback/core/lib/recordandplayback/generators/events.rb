@@ -182,9 +182,25 @@ module BigBlueButton
       return video_edl
     end
 
+    # If was the last deskshare stop event that we lost, create a virtual one
+    def self.inject_last_stop_deskshare_event(start_events, stop_events, events_xml)
+      # Check if the last stop event was lost
+      last_start = start_events.last
+      stop_evt = find_video_event_matched(stop_events, last_start)
+      if !stop_evt
+        s = {:stop_timestamp => last_event_timestamp(events_xml), :stream => last_start[:stream]}
+        stop_events << s
+      end
+      stop_events
+    end
+
     def self.get_matched_start_and_stop_deskshare_events(events_path)
       deskshare_start_events = BigBlueButton::Events.get_start_deskshare_events(events_path)
       deskshare_stop_events = BigBlueButton::Events.get_stop_deskshare_events(events_path)
+      # Check if we missed any stop event
+      if deskshare_start_events.size > deskshare_stop_events.size
+        deskshare_stop_events = inject_last_stop_deskshare_event(deskshare_start_events, deskshare_stop_events, events_path)
+      end
       return BigBlueButton::Events.match_start_and_stop_deskshare_events(deskshare_start_events, deskshare_stop_events)
     end
 
