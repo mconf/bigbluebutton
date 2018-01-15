@@ -45,6 +45,7 @@ public class Meeting {
 	private String welcomeMsg;
 	private String modOnlyMessage = "";
 	private String logoutUrl;
+	private int logoutTimer = 0;
 	private int maxUsers;
 	private boolean record;
 	private boolean autoStartRecording = false;
@@ -62,6 +63,9 @@ public class Meeting {
 	private final ConcurrentMap<String, Config> configs;
 	private final Boolean isBreakout;
 	private final List<String> breakoutRooms = new ArrayList<String>();
+	private String customLogoURL = "";
+	private String customCopyright = "";
+	private Boolean muteOnStart = false;
 
 	private Integer maxInactivityTimeoutMinutes = 120;
 	private Integer warnMinutesBeforeMax = 5;
@@ -76,6 +80,7 @@ public class Meeting {
         moderatorPass = builder.moderatorPass;
         maxUsers = builder.maxUsers;
         logoutUrl = builder.logoutUrl;
+        logoutTimer = builder.logoutTimer;
         defaultAvatarURL = builder.defaultAvatarURL;
         record = builder.record;
         autoStartRecording = builder.autoStartRecording;
@@ -163,8 +168,8 @@ public class Meeting {
 		return createdTime;
 	}
 
-	public Integer setSequence(Integer s) {
-        return sequence = s;
+	public void setSequence(Integer s) {
+        sequence = s;
     }
 
 	public Integer getSequence() {
@@ -219,8 +224,8 @@ public class Meeting {
 		return intMeetingId;
 	}
 
-	public String setParentMeetingId(String p) {
-        return parentMeetingId = p;
+	public void setParentMeetingId(String p) {
+        parentMeetingId = p;
     }
 
 	public String getParentMeetingId() {
@@ -266,6 +271,10 @@ public class Meeting {
 	public int getMaxUsers() {
 		return maxUsers;
 	}
+	
+	public int getLogoutTimer() {
+		return logoutTimer;
+	}
 
 	public boolean isRecord() {
 		return record;
@@ -286,7 +295,31 @@ public class Meeting {
 	public boolean hasUserJoined() {
 		return userHasJoined;
 	}
-	
+
+	public String getCustomLogoURL() {
+		return customLogoURL;
+	}
+
+	public void setCustomLogoURL(String url) {
+		customLogoURL = url;
+	}
+
+	public void setCustomCopyright(String copyright) {
+    	customCopyright = copyright;
+	}
+
+	public String getCustomCopyright() {
+    	return customCopyright;
+	}
+
+	public void setMuteOnStart(Boolean mute) {
+    	muteOnStart = mute;
+	}
+
+	public Boolean getMuteOnStart() {
+    	return muteOnStart;
+	}
+
 	public void userJoined(User user) {
 	    userHasJoined = true;
 	    this.users.put(user.getInternalUserId(), user);
@@ -410,6 +443,7 @@ public class Meeting {
     	private String welcomeMsgTemplate;
     	private String welcomeMsg;
     	private String logoutUrl;
+    	private int logoutTimer;
     	private Map<String, String> metadata;
     	private String dialNumber;
     	private String defaultAvatarURL;
@@ -507,6 +541,12 @@ public class Meeting {
     		logoutUrl = l;
     		return this;
     	}
+    	
+    	public Builder withLogoutTimer(int l) {
+    		logoutTimer = l;
+    		return this;
+    	}
+    	
     	
     	public Builder withMetadata(Map<String, String> m) {
     		metadata = m;

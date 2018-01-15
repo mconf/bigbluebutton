@@ -60,6 +60,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 		import mx.core.mx_internal;
 		import mx.events.FlexEvent;
 		import mx.events.ListEvent;
+		import mx.managers.PopUpManager;
 		import mx.utils.StringUtil;
 		
 		import flashx.textLayout.formats.Direction;
@@ -109,14 +110,13 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       private var fileToUpload:FileReference = new FileReference();
       [Bindable] private var presentOptions:PresentOptions;
 		
-      override public function move(x:Number, y:Number):void{
-        return;
-      }
-
 		protected function onCreationComplete(event:FlexEvent):void
 		{
 			dispatcher = new Dispatcher();
 			updateStyles();
+			
+			// For an unknown reason this popup cannot be centred directly using PopUpUtil
+			PopUpManager.centerPopUp(this)
 		}
 		
 		private function updateStyles() : void {
@@ -189,6 +189,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 
         progressReportBox.visible = true;
         progressBar.visible = true;
+		progressBarLabel.visible = true;
         
         disableClosing();
         
@@ -243,14 +244,26 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       }
 
       private function handleOfficeDocumentConversionFailed(e:OfficeDocConvertFailedEvent):void {
+        var logData:Object = UsersUtil.initLogData();
+        logData.tags = ["presentation-conversion"];
+        logData.filename = fileToUpload.name;
+        logData.message = "Presentation conversion failed";
+        LOGGER.warn(JSON.stringify(logData));
+
         enableClosing();
         displayAlert(ResourceUtil.getInstance().getString('bbb.presentation.error.document.convert.failed'));
       }
-		
-		private function handleOfficeDocumentConversionInvalid(e:OfficeDocConvertInvalidEvent):void {
-			enableClosing();
-			displayAlert(ResourceUtil.getInstance().getString('bbb.presentation.error.document.convert.invalid'));
-		}
+
+      private function handleOfficeDocumentConversionInvalid(e:OfficeDocConvertInvalidEvent):void {
+        var logData:Object = UsersUtil.initLogData();
+        logData.tags = ["presentation-conversion"];
+        logData.filename = fileToUpload.name;
+        logData.message = "Presentation conversion invalid";
+        LOGGER.warn(JSON.stringify(logData));
+
+        enableClosing();
+        displayAlert(ResourceUtil.getInstance().getString('bbb.presentation.error.document.convert.failed'));
+      }
 
       private function handleOfficeDocumentConversionSuccess(e:OfficeDocConvertSuccessEvent):void {
 		buildProgressLabel(ResourceUtil.getInstance().getString('bbb.presentation.document.converted'));
@@ -307,7 +320,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       }
 		
 	  private function buildProgressLabel(value:String) : void {
-		  progressBar.label = ResourceUtil.getInstance().getString('bbb.fileupload.progBarLbl') + " " + value;
+		  progressBarLabel.text = ResourceUtil.getInstance().getString('bbb.fileupload.progBarLbl') + " " + value;
 	  }
 
       private function handleConversionCompleted(e:ConversionCompletedEvent):void{
@@ -370,11 +383,9 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 	
 
   <mx:VBox width="100%" height="100%" verticalAlign="top" horizontalAlign="center" top="15">
-	  <mx:HBox width="100%">
-	    <common:AdvancedLabel text="{ResourceUtil.getInstance().getString('bbb.fileupload.title')}"
-							  styleName="titleWindowStyle"
-							  width="100%" />
-	  </mx:HBox>
+    <common:AdvancedLabel text="{ResourceUtil.getInstance().getString('bbb.fileupload.title')}"
+						  styleName="titleWindowStyle"
+						  maxWidth="550" />
 
 	<mx:Box width="100%" height="100%" paddingLeft="5" paddingRight="5" includeIn="normal">
 	  <mx:Box width="100%" height="100%" verticalAlign="middle" horizontalAlign="center" styleName="presentationUploadFileFormatHintBoxStyle">
@@ -397,11 +408,13 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				 toolTip="{ResourceUtil.getInstance().getString('bbb.fileupload.letUserDownload.tooltip')}"
 				 paddingLeft="5" paddingTop="5" visible="{presentOptions.enableDownload}" includeInLayout="{presentOptions.enableDownload}"/>
 	  
-    <mx:HBox id="progressReportBox" width="100%" paddingLeft="10" paddingRight="10" paddingTop="5" paddingBottom="5" verticalAlign="middle"
+    <mx:VBox id="progressReportBox" width="100%" paddingLeft="10" paddingRight="10" paddingTop="5" paddingBottom="5" verticalAlign="middle"
 			 includeInLayout="true" visible="false" excludeFrom="error">
-      <mx:ProgressBar id="progressBar" mode="manual" label="{ResourceUtil.getInstance().getString('bbb.fileupload.progBarLbl')}"
-                      styleName="presentationUploadProgressBar" labelPlacement="top" width="100%" visible="false"/>
-    </mx:HBox>
+	  <mx:Text id="progressBarLabel" styleName="presentationUploadProgressBarLabel"
+			   visible="{progressBar.visible}" width="100%" text="{ResourceUtil.getInstance().getString('bbb.fileupload.progBarLbl')}" />
+      <mx:ProgressBar id="progressBar" mode="manual"
+                      styleName="presentationUploadProgressBar" width="100%" visible="false"/>
+    </mx:VBox>
 	
 	<mx:VBox id="errorBox" paddingTop="5" paddingBottom="5" width="100%" horizontalAlign="center" includeIn="error">
 		<s:Label id="progressErrorLbl" styleName="progressErrorLblStyle" width="540"/>
@@ -409,13 +422,11 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				  label="{ResourceUtil.getInstance().getString('bbb.fileupload.retry')}" click="retryButtonClikcHandler(event)"/>
 	</mx:VBox>
 
-    <mx:Canvas width="100%" height="145" verticalScrollPolicy="off">
-      <mx:List height="160" left="5" top="5" right="5" bottom="5" id="uploadedFilesList" allowMultipleSelection="false"
-               itemRenderer="org.bigbluebutton.modules.present.ui.views.UploadedPresentationRenderer"
-			   itemRollOver="onItemRollOver(event)" itemRollOut="onItemRollOut(event)"
-               dragEnabled="false" dataProvider="{presentationNamesAC}">
-      </mx:List>
-    </mx:Canvas>
+    <mx:List id="uploadedFilesList" rowCount="{presentationNamesAC.length > 3 ? Math.min(6, presentationNamesAC.length) : 3}" width="100%" styleName="presentationFilesList"
+             itemRenderer="org.bigbluebutton.modules.present.ui.views.UploadedPresentationRenderer"
+		     itemRollOver="onItemRollOver(event)" itemRollOut="onItemRollOut(event)"
+			 allowMultipleSelection="false" dragEnabled="false" dataProvider="{presentationNamesAC}">
+    </mx:List>
   </mx:VBox>
 	
 	<mx:Button id="closeButton2" click="onCancelClicked()" styleName="titleWindowCloseButton"

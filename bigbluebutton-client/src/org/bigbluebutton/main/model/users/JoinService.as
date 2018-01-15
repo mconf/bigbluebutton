@@ -27,6 +27,7 @@ package org.bigbluebutton.main.model.users
   import flash.net.URLRequest;
   import flash.net.URLRequestMethod;
   import flash.net.URLVariables;
+  
   import org.as3commons.logging.api.ILogger;
   import org.as3commons.logging.api.getClassLogger;
   import org.bigbluebutton.core.UsersUtil;
@@ -117,7 +118,7 @@ package org.bigbluebutton.main.model.users
     
     private function handleComplete(e:Event):void {			
       var result:Object = JSON.parse(e.target.data);
-      
+
       var logData:Object = UsersUtil.initLogData();
       logData.tags = ["initialization"];
       
@@ -149,16 +150,16 @@ package org.bigbluebutton.main.model.users
         
         apiResponse.record = (result.response.record.toUpperCase() == "TRUE");
         apiResponse.allowStartStopRecording = result.response.allowStartStopRecording;
-        apiResponse.webcamsOnlyForModerator = result.response.webcamsOnlyForModerator;
-        
 
         apiResponse.dialnumber = result.response.dialnumber;
         apiResponse.voiceConf = result.response.voicebridge;
 
         apiResponse.welcome = result.response.welcome;
         apiResponse.logoutUrl = processLogoutUrl(result.response);
+        apiResponse.logoutTimer = result.response.logoutTimer;
         apiResponse.defaultLayout = result.response.defaultLayout;
-        apiResponse.avatarURL = result.response.avatarURL
+        apiResponse.avatarURL = result.response.avatarURL;
+        
         apiResponse.customdata = new Object();
         
         if (result.response.customdata) {
@@ -176,7 +177,11 @@ package org.bigbluebutton.main.model.users
         if (result.response.hasOwnProperty("modOnlyMessage")) {
           apiResponse.modOnlyMessage = result.response.modOnlyMessage;
         }
-        
+				
+				apiResponse.customLogo = result.response.customLogoURL;
+        apiResponse.customCopyright = result.response.customCopyright;
+				apiResponse.muteOnStart = result.response.muteOnStart as Boolean;
+				
         if (_resultListener != null) _resultListener(true, apiResponse);
       }
       

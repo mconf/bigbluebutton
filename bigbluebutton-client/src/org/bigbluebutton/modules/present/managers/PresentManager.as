@@ -21,11 +21,11 @@ package org.bigbluebutton.modules.present.managers
 	import com.asfusion.mate.events.Dispatcher;
 	
 	import flash.display.DisplayObject;
-	import flash.geom.Point;
 	
 	import mx.core.FlexGlobals;
 	
 	import org.bigbluebutton.common.IBbbModuleWindow;
+	import org.bigbluebutton.common.events.CloseWindowEvent;
 	import org.bigbluebutton.common.events.OpenWindowEvent;
 	import org.bigbluebutton.core.Options;
 	import org.bigbluebutton.core.PopUpUtil;
@@ -57,7 +57,9 @@ package org.bigbluebutton.modules.present.managers
 		}
 		
 		public function handleStopModuleEvent():void{
-			presentWindow.close();
+			var event:CloseWindowEvent = new CloseWindowEvent(CloseWindowEvent.CLOSE_WINDOW_EVENT);
+			event.window = presentWindow;
+			globalDispatcher.dispatchEvent(event);
 		}
 		
 		private function openWindow(window:IBbbModuleWindow):void{
@@ -67,16 +69,10 @@ package org.bigbluebutton.modules.present.managers
 		}
 
 		public function handleOpenUploadWindow(e:UploadEvent):void{
+			// Never use "center" true with FileUploadWindow
 			var uploadWindow : FileUploadWindow = PopUpUtil.createModalPopUp(FlexGlobals.topLevelApplication as DisplayObject, FileUploadWindow, false) as FileUploadWindow;
 			if (uploadWindow) {
 				uploadWindow.maxFileSize = e.maxFileSize;
-				
-				var point1:Point = new Point();
-				point1.x = FlexGlobals.topLevelApplication.width / 2;
-				point1.y = FlexGlobals.topLevelApplication.height / 2;  
-				
-				uploadWindow.x = point1.x - (uploadWindow.width/2);
-				uploadWindow.y = point1.y - (uploadWindow.height/2);
 			}
 		}
 		
@@ -85,15 +81,7 @@ package org.bigbluebutton.modules.present.managers
 		}
 
 		public function handleOpenDownloadWindow():void {
-			var downloadWindow:FileDownloadWindow = PopUpUtil.createModalPopUp(FlexGlobals.topLevelApplication as DisplayObject, FileDownloadWindow, false) as FileDownloadWindow;
-			if (downloadWindow) {
-				var point1:Point = new Point();
-				point1.x = FlexGlobals.topLevelApplication.width / 2;
-				point1.y = FlexGlobals.topLevelApplication.height / 2;
-
-				downloadWindow.x = point1.x - (downloadWindow.width/2);
-				downloadWindow.y = point1.y - (downloadWindow.height/2);
-			}
+			PopUpUtil.createModalPopUp(FlexGlobals.topLevelApplication as DisplayObject, FileDownloadWindow, true) as FileDownloadWindow;
 		}
 
 		public function handleCloseDownloadWindow():void {

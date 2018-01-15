@@ -1,11 +1,11 @@
-import React from 'react';
 import Auth from '/imports/ui/services/auth';
-import Users from '/imports/api/2.0/users';
-
-const isUserPresenter = () => Users.findOne({
-  userId: Auth.userID,
-}).presenter;
+import Users from '/imports/api/users';
+import { makeCall } from '/imports/ui/services/api';
+import { EMOJI_STATUSES } from '/imports/utils/statuses';
 
 export default {
-  isUserPresenter,
+  isUserPresenter: () => Users.findOne({ userId: Auth.userID }).presenter,
+  getEmoji: () => Users.findOne({ userId: Auth.userID }).emoji,
+  setEmoji: status => makeCall('setEmojiStatus', Auth.userID, status),
+  getEmojiList: () => EMOJI_STATUSES,
 };

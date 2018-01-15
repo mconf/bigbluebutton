@@ -21,10 +21,11 @@ package org.bigbluebutton.modules.layout.model {
 	
 	import flexlib.mdi.containers.MDICanvas;
 	import flexlib.mdi.containers.MDIWindow;
-	import org.bigbluebutton.core.UsersUtil;
+	
 	import org.as3commons.logging.api.ILogger;
 	import org.as3commons.logging.api.getClassLogger;
 	import org.bigbluebutton.common.Role;
+	import org.bigbluebutton.core.UsersUtil;
 	import org.bigbluebutton.modules.layout.managers.OrderManager;
 
 	public class LayoutDefinition {
@@ -39,9 +40,8 @@ package org.bigbluebutton.modules.layout.model {
     
 		private var _layoutsPerRole:Dictionary = new Dictionary();
 		
-		static private var _ignoredWindows:Array = new Array("AvatarWindow", "PublishWindow", 
-				"VideoWindow", "ScreensharePublishWindow", "ScreenshareViewWindow",
-				"LogWindow", "NetworkStatsWindow", "ShortcutHelpWindow");
+		static private var _ignoredWindows:Array = new Array("ScreensharePublishWindow", "ScreenshareViewWindow",
+			"LogWindow", "NetworkStatsWindow", "ShortcutHelpWindow");
 		static private var _roles:Array = new Array(Role.VIEWER, Role.MODERATOR, Role.PRESENTER);
 				
 		private function loadLayout(vxml:XML):void {

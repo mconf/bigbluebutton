@@ -69,7 +69,9 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			
 			import mx.collections.ArrayCollection;
 			import mx.controls.Menu;
+			import mx.core.FlexGlobals;
 			import mx.events.MenuEvent;
+			import mx.managers.PopUpManager;
 			
 			import flashx.textLayout.formats.Direction;
 			
@@ -160,7 +162,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			private function onCreationComplete():void{
 				//check for the polling module in config.xml
 				var vxml:XML = BBB.getConfigForModule("PollingModule");
-				if (vxml == null) presenterControls.removeChild(pollStartBtn);
+				if (vxml == null) fileAndPollControls.removeChild(pollStartBtn);
 				
 				setControlBarState("presenter");
 				
@@ -297,7 +299,9 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			}
 						
 			private function onSliderZoom():void {
-				slideView.onZoomSlide(zoomSlider.value);
+				if (UsersUtil.amIPresenter()) {
+					slideView.onZoomSlide(zoomSlider.value);
+				}
 			}
 			
 			private function onResetZoom():void {
@@ -364,12 +368,8 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				
 				pollStartBtn.visible = showButtons;
 				quickPollBtn.visible = showButtons;
-				backButton.visible = showButtons;
-				forwardButton.visible = showButtons;
-				zoomSlider.visible = showButtons;
-				btnSlideNum.visible = showButtons;
-				btnFitToWidth.visible = showButtons;
-				btnFitToPage.visible = showButtons;
+				navigationControls.visible = showButtons;
+				zoomControls.visible = showButtons;
 				
 				fitSlideToWindowMaintainingAspectRatio();
 			}
@@ -435,12 +435,8 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				pollStartBtn.visible = false;
 				quickPollBtn.visible = false;
 
-				backButton.visible = false;
-				forwardButton.visible = false;
-				zoomSlider.visible = false;
-				btnSlideNum.visible = false;
-				btnFitToWidth.visible = false;
-				btnFitToPage.visible = false;
+				navigationControls.visible = false;
+				zoomControls.visible = false;
 
 				// Change the title of the window.
 				currentPresentation = ResourceUtil.getInstance().getString('bbb.presentation.title');				
@@ -494,7 +490,11 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				if(Capabilities.hasAccessibility)
 					Accessibility.updateProperties();
 
-				addContextMenuItems();
+				if (UsersUtil.amIPresenter()) {
+					addContextMenuItems();
+				} else {
+					this.customContextMenuItems = new Array();
+				}
 				
 				setPollMenuData();
 				
@@ -637,7 +637,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
             private function sendStartCustomPollEvent(pollType:String):void {
                 // Let's reset the page to display full size so we can display the result
                 // on the bottom right-corner.
-                var pollChoicesPopUp:PollChoicesModal = PopUpUtil.createModalPopUp(this, PollChoicesModal, true) as PollChoicesModal;
+                var pollChoicesPopUp:PollChoicesModal = PopUpUtil.createModalPopUp(FlexGlobals.topLevelApplication as DisplayObject, PollChoicesModal, true) as PollChoicesModal;
                 if (pollChoicesPopUp) {
                     pollChoicesPopUp.setPresentationWindow(this);
                 }
@@ -698,10 +698,11 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				// the event for this doesn't exist yet
 				if (UsersUtil.amIPresenter()) {
 					// display the results view
-					var pollResultsPopUp : PollResultsModal = PopUpUtil.createModalPopUp(this, PollResultsModal, true) as PollResultsModal;
+					var pollResultsPopUp : PollResultsModal = PopUpUtil.createModalPopUp(FlexGlobals.topLevelApplication as DisplayObject, PollResultsModal, true) as PollResultsModal;
 					if (pollResultsPopUp) {
 						pollResultsPopUp.setPoll(e.poll);
 					}
+					PopUpManager.centerPopUp(pollResultsPopUp);
 				} else {
 					//switch to vote state
 					setControlBarState("vote");
@@ -743,25 +744,25 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			
 			private function setControlBarState(state:String):void {
 				if (state == "vote") {
-					presenterControls.visible = false;
-					presenterControls.includeInLayout = false;
-					pollVoteBox.visible = true;
-					pollVoteBox.includeInLayout = true;
-					downloadPres.visible = false;
+					fileAndPollControls.visible = fileAndPollControls.includeInLayout= false;
+					navigationControls.visible = navigationControls.includeInLayout= false;
+					zoomControls.visible = zoomControls.includeInLayout= false;
+					pollVoteBox.visible = pollVoteBox.includeInLayout = true;
+					
 				} else if (state == "presenter" && UsersUtil.amIPresenter()) {
-					downloadPres.visible = false;
 					pollStartBtn.visible = true;
-					presenterControls.visible = true;
-					presenterControls.includeInLayout = true;
-					pollVoteBox.visible = false;
-					pollVoteBox.includeInLayout = false;
+
+					fileAndPollControls.visible = fileAndPollControls.includeInLayout= true;
+					navigationControls.visible = navigationControls.includeInLayout= true;
+					zoomControls.visible = zoomControls.includeInLayout= true;
+					pollVoteBox.visible = pollVoteBox.includeInLayout = false;
 				} else {
-					pollVoteBox.visible = false;
-					pollVoteBox.includeInLayout = false;
+					pollVoteBox.visible = pollVoteBox.includeInLayout = false;
 					pollStartBtn.visible = false;
-					downloadPres.visible = true;
-					presenterControls.visible = false;
-					presenterControls.includeInLayout = false;
+
+					fileAndPollControls.visible = fileAndPollControls.includeInLayout= true;
+					navigationControls.visible = navigationControls.includeInLayout= false;
+					zoomControls.visible = zoomControls.includeInLayout= false;
 				}
 				
 				// Need to call the function later because the heights haven't been validated yet
@@ -835,7 +836,8 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 
 	<mx:ControlBar id="presCtrlBar" name="presCtrlBar" width="100%" verticalAlign="top" styleName="presentationWindowControlsStyle" paddingTop="6" paddingBottom="6">
 		<!-- Presentation Actions -->
-		<mx:HBox width="40%" height="100%" horizontalScrollPolicy="off" verticalAlign="bottom" horizontalAlign="left">
+		<mx:HBox id="fileAndPollControls" width="40%" height="100%"
+				 horizontalScrollPolicy="off" verticalAlign="bottom" horizontalAlign="left">
 			<mx:Button id="uploadPres" includeInLayout="{uploadPres.visible}"
 					   visible="false" height="30" styleName="presentationUploadButtonStyle"
 					   toolTip="{ResourceUtil.getInstance().getString('bbb.presentation.uploadPresBtn.toolTip')}"
@@ -853,28 +855,34 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 					   click="onDownloadButtonClicked()" creationComplete="updateDownloadBtn()"/>
 		</mx:HBox>
 
-		<mx:HBox id="presenterControls" width="30%" height="100%" paddingTop="0" visible="false" includeInLayout="false" horizontalAlign="center" verticalAlign="middle">
-			<mx:Button id="backButton" visible="false" height="30" styleName="presentationBackButtonStyle"
+		<mx:HBox id="navigationControls" width="30%" height="100%" paddingTop="0"
+				 visible="false" includeInLayout="{navigationControls.visible}" horizontalAlign="center" verticalAlign="middle">
+			<mx:Button id="backButton" height="30" styleName="presentationBackButtonStyle"
 					   toolTip="{ResourceUtil.getInstance().getString('bbb.presentation.backBtn.toolTip')}" click="goToPreviousSlide()"/>
-			<mx:Button id="btnSlideNum" visible="false" height="30" click="showThumbnails()"
+			<mx:Button id="btnSlideNum" height="30" click="showThumbnails()"
 					   toolTip="{ResourceUtil.getInstance().getString('bbb.presentation.btnSlideNum.toolTip')}"/>
-			<mx:Button id="forwardButton" visible="false" height="30" styleName="presentationForwardButtonStyle"
+			<mx:Button id="forwardButton" height="30" styleName="presentationForwardButtonStyle"
 					   toolTip="{ResourceUtil.getInstance().getString('bbb.presentation.forwardBtn.toolTip')}" click="goToNextSlide()"/>
 		</mx:HBox>
 
-		<mx:HBox width="40%" height="100%" horizontalScrollPolicy="off" verticalAlign="middle" horizontalAlign="right">
-			<mx:HSlider id="zoomSlider" visible="false" value="{slideView.zoomPercentage}" styleName="presentationZoomSliderStyle"
+		<mx:HBox id="zoomControls" width="40%" height="100%"
+				 horizontalScrollPolicy="off" verticalAlign="middle" horizontalAlign="right"
+				 visible="false" includeInLayout="{zoomControls.visible}">
+			<mx:HSlider id="zoomSlider" value="{slideView.zoomPercentage}" styleName="presentationZoomSliderStyle"
 						minimum="100" maximum="400" dataTipPlacement="top" 
 						useHandCursor="true" snapInterval="5" allowTrackClick="true" liveDragging="true" 
 						dataTipFormatFunction="showPercentageInDataTip" change="onSliderZoom()" width="100"
 						accessibilityName="{ResourceUtil.getInstance().getString('bbb.presentation.slider')}"/>
-			<mx:Button id="btnFitToWidth" visible="false" height="30" styleName="presentationFitToWidthButtonStyle"
+			<mx:Button id="btnFitToWidth" height="30" styleName="presentationFitToWidthButtonStyle"
 					   toolTip="{ResourceUtil.getInstance().getString('bbb.presentation.fitToWidth.toolTip')}" 
 					   click="onFitToPage(false)"/>
-			<mx:Button id="btnFitToPage" visible="false" height="30" styleName="presentationFitToPageButtonStyle"
+			<mx:Button id="btnFitToPage" height="30" styleName="presentationFitToPageButtonStyle"
 					   toolTip="{ResourceUtil.getInstance().getString('bbb.presentation.fitToPage.toolTip')}" 
 					   click="onFitToPage(true)"/>
 		</mx:HBox>
-		<mx:HBox id="pollVoteBox" width="100%" height="100%" visible="false" includeInLayout="false" horizontalAlign="center" verticalAlign="middle"/>
+		<mx:VBox width="100%" height="100%" visible="{pollVoteBox.visible}" includeInLayout="{pollVoteBox.includeInLayout}" horizontalAlign="center">
+			<mx:Label id="pollVoteLabel" styleName="pollVoteLabel" text="{ResourceUtil.getInstance().getString('bbb.presentation.poll.response')}"/>
+			<mx:HBox id="pollVoteBox" width="100%" height="100%" visible="false" includeInLayout="false" horizontalAlign="center" verticalAlign="middle"/>	
+		</mx:VBox>
 	</mx:ControlBar>
 </pres:CustomMdiWindow>
