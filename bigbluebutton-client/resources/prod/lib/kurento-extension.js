@@ -40,8 +40,8 @@ Kurento = function (
   this.userId = userId;
   this.userName = userName;
 
-  this.vid_width = window.screen.width;
-  this.vid_height = window.screen.height;
+  this.vid_width = window.screen.width/2;
+  this.vid_height = window.screen.height/2;
 
   // TODO properly generate a uuid
   this.sessid = Math.random().toString();
