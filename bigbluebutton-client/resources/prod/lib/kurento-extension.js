@@ -1,8 +1,7 @@
-var isFirefox = typeof window.InstallTrigger !== 'undefined';
-var isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
-var isChrome = !!window.chrome && !isOpera;
-var isSafari = navigator.userAgent.indexOf("Safari") >= 0 && !isChrome;
-var kurentoHandler = null;
+const isFirefox = typeof window.InstallTrigger !== 'undefined';
+const isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+const isChrome = !!window.chrome && !isOpera;
+const isSafari = navigator.userAgent.indexOf("Safari") >= 0 && !isChrome;
 var logger = window.Logger || console;
 
 // TODO sugestions on where to store this
@@ -11,6 +10,14 @@ const SERVER_ERROR = "SERVER_ERROR";
 const PEER_ERROR = "PEER_ERROR";
 const SDP_ERROR = "SDP_ERROR";
 const EXTENSION_ERROR = "EXTENSION_ERROR";
+const SEND_ROLE = "send";
+const RECV_ROLE = "recv";
+const SFU_SCREENSHARE_APP = "screenshare";
+const SFU_AUDIO_APP = "audio";
+const ON_ICE_CANDIDATE_MSG = "onIceCandidate";
+const START_MSG = "start";
+const START_RESPONSE_MSG = "startResponse";
+const PING_INTERVAL = 15000;
 
 // TODO: We need some refactor here
 Kurento = function (
@@ -113,10 +120,6 @@ KurentoManager.prototype.exitScreenShare = function () {
     this.kurentoScreenshare.dispose();
     this.kurentoScreenshare = null;
   }
-
-  if (this.kurentoScreenshare) {
-    this.kurentoScreenshare = null;
-  }
 };
 
 KurentoManager.prototype.exitVideo = function () {
@@ -130,10 +133,6 @@ KurentoManager.prototype.exitVideo = function () {
     this.kurentoVideo.dispose();
     this.kurentoVideo = null;
   }
-
-  if (this.kurentoVideo) {
-    this.kurentoVideo = null;
-  }
 };
 
 KurentoManager.prototype.exitAudio = function () {
@@ -145,10 +144,6 @@ KurentoManager.prototype.exitAudio = function () {
     }
 
     this.kurentoAudio.dispose();
-    this.kurentoAudio = null;
-  }
-
-  if (this.kurentoAudio) {
     this.kurentoAudio = null;
   }
 };
@@ -208,9 +203,7 @@ Kurento.prototype.onWSMessage = function (message) {
   var parsedMessage = JSON.parse(message.data);
   switch (parsedMessage.id) {
 
-    case 'presenterResponse':
-    case 'viewerResponse':
-    case 'startResponse':
+    case START_RESPONSE_MSG:
       this.serverResponse(parsedMessage);
       break;
     case 'stopSharing':
@@ -238,12 +231,14 @@ Kurento.prototype.onWSMessage = function (message) {
     case 'webRTCScreenshareError':
       logger.error("[onWSMessage]", parsedMessage.error);
       this.onFail(parsedMessage.error);
+      kurentoManager.exitScreenShare();
       break;
     case 'webRTCAudioSuccess':
       this.onSuccess(parsedMessage.success);
       break;
     case 'webRTCAudioError':
       this.onFail(parsedMessage.error);
+      kurentoManager.exitAudio();
       break;
     default:
       logger.warn("[onWSMessage] Unrecognized message", parsedMessage);
@@ -259,16 +254,16 @@ Kurento.prototype.serverResponse = function (message) {
     var errorMsg = message.message ? message.message : 'Unknown error';
     logger.error("[serverResponse]", errorMsg);
     switch (message.type) {
-      case 'screenshare':
-        if (message.role === 'presenter') {
+      case SFU_SCREENSHARE_APP:
+        if (message.role === SEND_ROLE) {
           kurentoManager.exitScreenShare();
         }
-        else if (message.role === 'viewer') {
+        else if (message.role === RECV_ROLE) {
           kurentoManager.exitVideo();
         }
         break;
 
-      case 'audio':
+      case SFU_AUDIO_APP:
         kurentoManager.exitAudio();
     }
     this.onFail(SERVER_ERROR);
@@ -293,13 +288,13 @@ Kurento.prototype.onOfferPresenter = function (error, offerSdp) {
   if(error)  {
     logger.error("[onOfferPresenter]", error);
     this.onFail(SDP_ERROR);
-    return;
+    return kurentoManager.exitScreenShare();
   }
 
   var message = {
-    id : 'presenter',
-    type: 'screenshare',
-    role: 'presenter',
+    id : START_MSG,
+    type: SFU_SCREENSHARE_APP,
+    role: SEND_ROLE,
     internalMeetingId: self.internalMeetingId,
     voiceBridge: self.voiceBridge,
     callerName : self.caller_id_name,
@@ -321,7 +316,7 @@ Kurento.prototype.startScreenStreamFrom = function () {
         message: 'Missing Chrome Extension key',
       });
       self.onFail(EXTENSION_ERROR);
-      return;
+      return kurentoManager.exitScreenShare();
     }
   }
   // TODO it would be nice to check those constraints
@@ -348,6 +343,16 @@ Kurento.prototype.startScreenStreamFrom = function () {
 
     self.webRtcPeer.generateOffer(self.onOfferPresenter.bind(self));
     logger.debug("[webRtcPeer] Options", JSON.stringify(options));
+
+    // Exits via chrome extension or ongoing firefox permission denial
+    const localStream = self.webRtcPeer.peerConnection.getLocalStreams()[0];
+    localStream.getVideoTracks()[0].onended = function () {
+      return kurentoManager.exitScreenShare();
+    };
+
+    localStream.getVideoTracks()[0].oninactive = function () {
+      return kurentoManager.exitScreenShare();
+    };
   });
 };
 
@@ -357,8 +362,8 @@ Kurento.prototype.onIceCandidate = function (candidate) {
 
   var message = {
     id : 'onIceCandidate',
-    role: 'presenter',
-    type: 'screenshare',
+    role: SEND_ROLE,
+    type: SFU_SCREENSHARE_APP,
     voiceBridge: self.voiceBridge,
     candidate : candidate
   }
@@ -371,8 +376,8 @@ Kurento.prototype.onViewerIceCandidate = function (candidate) {
 
   var message = {
     id : 'viewerIceCandidate',
-    role: 'viewer',
-    type: 'screenshare',
+    role: RECV_ROLE,
+    type: SFU_SCREENSHARE_APP,
     voiceBridge: self.voiceBridge,
     candidate : candidate,
     callerName: self.caller_id_name
@@ -399,7 +404,8 @@ Kurento.prototype.viewer = function () {
 
     self.webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options, function(error) {
       if(error) {
-        return self.onFail(PEER_ERROR);
+        self.onFail(PEER_ERROR);
+	return kurentoManager.exitVideo();
       }
 
       this.generateOffer(self.onOfferViewer.bind(self));
@@ -411,12 +417,13 @@ Kurento.prototype.onOfferViewer = function (error, offerSdp) {
   let self = this;
   if(error)  {
     logger.error("[onOfferViewer]", error);
-    return this.onFail(SDP_ERROR);
+    this.onFail(SDP_ERROR);
+    return kurentoManager.exitVideo();
   }
   var message = {
-    id : 'viewer',
-    type: 'screenshare',
-    role: 'viewer',
+    id : START_MSG,
+    type: SFU_SCREENSHARE_APP,
+    role: RECV_ROLE,
     internalMeetingId: self.internalMeetingId,
     voiceBridge: self.voiceBridge,
     callerName : self.caller_id_name,
@@ -431,11 +438,11 @@ Kurento.prototype.stop = function() {
   //if (this.webRtcPeer) {
   //  var message = {
   //    id : 'stop',
-  //    type : 'screenshare',
-  //    voiceBridge: kurentoHandler.voiceBridge
+  //    type : SFU_SCREENSHARE_APP,
+  //    voiceBridge: this.voiceBridge
   //  }
-  //  kurentoHandler.sendMessage(message);
-  //  kurentoHandler.dispose();
+  //  this.sendMessage(message);
+  //  this.dispose();
   //}
 }
 
@@ -473,7 +480,8 @@ Kurento.prototype.listenOnly = function () {
 
     self.webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options, function(error) {
       if(error) {
-        return self.onFail(PEER_ERROR);
+        self.onFail(PEER_ERROR);
+	return kurentoManager.exitAudio();
       }
 
       this.generateOffer(self.onOfferListenOnly.bind(self));
@@ -488,7 +496,7 @@ Kurento.prototype.onListenOnlyIceCandidate = function (candidate) {
   var message = {
     id : 'iceCandidate',
     role: 'viewer',
-    type: 'audio',
+    type: SFU_AUDIO_APP,
     voiceBridge: self.voiceBridge,
     candidate : candidate,
     callerName: self.caller_id_name
@@ -500,12 +508,13 @@ Kurento.prototype.onOfferListenOnly = function (error, offerSdp) {
   let self = this;
   if(error)  {
     logger.error("[onOfferListenOnly]", error);
-    return this.onFail(SDP_ERROR);
+    this.onFail(SDP_ERROR);
+    return kurentoManager.exitAudio();
   }
 
   var message = {
     id : 'start',
-    type: 'audio',
+    type: SFU_AUDIO_APP,
     role: 'viewer',
     voiceBridge: self.voiceBridge,
     callerName : self.caller_id_name,
@@ -570,6 +579,7 @@ window.getScreenConstraints = function(sendSource, callback) {
       // this statement sets gets 'sourceId" and sets "chromeMediaSourceId"
       screenConstraints.video.chromeMediaSource = { exact: [sendSource]};
       screenConstraints.video.chromeMediaSourceId = sourceId;
+
       logger.debug("[getScreenConstraints] Chrome", screenConstraints);
       // now invoking native getUserMedia API
       callback(null, screenConstraints);
