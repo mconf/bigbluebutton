@@ -5,6 +5,8 @@ import logger from '/imports/startup/client/logger';
 
 import VideoRNP from './custom-players/video-rnp';
 
+import ArcPlayer from './custom-players/arc-player';
+
 import ReactPlayer from 'react-player';
 
 import { styles } from './styles';
@@ -12,6 +14,7 @@ import { styles } from './styles';
 const SYNC_INTERVAL_SECONDS = 2;
 
 ReactPlayer.addCustomPlayer(VideoRNP);
+ReactPlayer.addCustomPlayer(ArcPlayer);
 
 class VideoPlayer extends Component {
   constructor(props) {
@@ -228,7 +231,7 @@ class VideoPlayer extends Component {
           onReady={this.handleOnReady}
           onPlay={this.handleOnPlay}
           onPause={this.handleOnPause}
-          //remoteControl={isPresenter}
+          remoteControl={!isPresenter}
           ref={(ref) => { this.player = ref; }}
         />
       </div>

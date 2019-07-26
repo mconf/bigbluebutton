@@ -11,29 +11,38 @@ export class VideoRNP extends Component {
     return MATCH_URL.test(url)
   }
 
-  load() {
-    console.log('load');
-  }
-
   constructor(props) {
     super(props);
 
+    this.currentTime = 0;
     this.updateCurrentTime = this.updateCurrentTime.bind(this);
-  } 
+    this.getCurrentTime = this.getCurrentTime.bind(this);
+    this.handleEvent = this.handleEvent.bind(this);
+    this.postMessage = this.postMessage.bind(this);
+  }
 
-  duration = null
-  currentTime = null
-  secondsLoaded = null
+  handleEvent(event) {
 
-  onComponentDidMount() {
-    window.addEventListener("onPlay", this.props.onPlay, false); 
-    window.addEventListener("onPause", this.props.onPause, false); 
-    window.addEventListener("onTime", this.updateCurrentTime, false); 
+    if (event.origin !== this.getHostUrl()) {
+      return;
+    }
+
+    let data = JSON.parse(event.data);
+    if (data.event === 'onPlay') {
+      return this.props.onPlay && this.props.onPlay();
+    } else if (data.event === 'onPause') {
+      return this.props.onPause && this.props.onPause();
+    } else if (data.event === 'onTime') {
+      return this.updateCurrentTime(data.playerPosition);
+    }
+  }
+
+  load() {
+    window.addEventListener("message", this.handleEvent, false);
   }
 
   updateCurrentTime(e) {
-    console.log("Update current time");
-    console.log(e);
+    this.currentTime = e;
   }
 
   getVideoId() {
@@ -45,63 +54,62 @@ export class VideoRNP extends Component {
   getHostUrl() {
     const { url } = this.props;
     const m = url.match(MATCH_URL);
-    return m && m[1];
+    return m && 'https://' + m[1];
   }
 
   getEmbedUrl() {
-    return this.getHostUrl() + EMBED_PATH + this.getVideoId() + "&remoteControl=true";
+    return this.getHostUrl() + EMBED_PATH + this.getVideoId() + "&autostart=true&remoteControl=" + this.props.remoteControl;
+  }
+
+  postMessage(obj) {
+    if (this.container && this.container.contentWindow) {
+      this.container.contentWindow.postMessage(JSON.stringify(obj), "*");
+    }
   }
 
   play() {
-
-    console.log("WANTS TO PLAU");
+    this.postMessage({event: 'play'});
   }
 
   pause() {
-    console.log("WANTS TO PAUSE");
+    this.postMessage({event: 'pause'});
   }
 
   stop() {
-
-   console.log("NOP");
+    // TODO: STOP
   }
 
   seekTo(seconds) {
-    console.log("SEEK TO ", seconds);
-
-    window.postMessage("seek", seconds);
+    this.postMessage({event: 'seek', playerPosition: seconds});
   }
 
   setVolume(fraction) {
-    console.log("SET VOLUME");
+    // console.log("SET VOLUME");
   }
 
   setLoop(loop) {
-
-    console.log("SET LOOP");
+    // console.log("SET LOOP");
   }
 
-  mute = () => {
-
-    console.log("SET MUTE");
+  mute() {
+    // console.log("SET MUTE");
   }
 
-  unmute = () => {
-
-    console.log("SET UNMUTE");
+  unmute() {
+    // console.log("SET UNMUTE");
   }
 
   getDuration() {
-    console.log("GET DURATION");
+    //console.log("GET DURATION");
   }
 
   getCurrentTime () {
-    console.log("GET CURRENT TIME");
-    return currentTime;
+    //console.log("GET CURRENT TIME");
+    return this.currentTime;
   }
 
   getSecondsLoaded () {
-    console.log("GET SECONDS LOADED");
+    //console.log("GET SECONDS LOADED");
   }
 
   render () {
@@ -121,7 +129,12 @@ export class VideoRNP extends Component {
           height="100%"
           src={this.getEmbedUrl()}
           allowFullScreen={true}
-          ref={(container) => { this.container = container; } }
+          frameBorder="0"
+          scrolling="0"
+          ref={(container) => {
+            this.container = container;
+            this.props.onReady();
+          }}
         />
       </div>
     )
